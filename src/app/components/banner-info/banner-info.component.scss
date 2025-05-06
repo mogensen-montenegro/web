@@ -1,0 +1,31 @@
+.img-mancuernas{
+  position: relative;
+  z-index: -1;
+  border-radius:20px;
+}
+
+.titulares{
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.bloque-texto{
+  background: rgba(255,255,255,0.9);
+  top: 50px;
+  padding-top: 20px;
+  height: 320px;
+  border-radius: 20px;
+}
+
+@media screen and (max-width: 450px) {
+  .img-mancuernas {
+      left: 0px;
+      border-radius: 20px;
+      width: 100%;
+      overflow:hidden;
+      margin-top: 50px;
+  }
+  .bloque-texto{
+    top: 0px;
+  }
+}

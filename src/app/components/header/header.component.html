@@ -1,0 +1,92 @@
+<ng-container>
+<div class="cuadroColorRecto" *ngIf="!isHeader"></div>
+<div class="container">
+  <div class="row d-flex justify-content-center align-items-center px-2">
+    <div class="col-8 col-md-5 padding-header d-flex justify-content-center">
+      <img
+        alt="Logo Ideas integrales"
+        routerLink="/home"
+        class="tamanoLogoIcono w-100"
+        src="../../../../assets/img/logoIdeas.svg"
+      />
+    </div>
+    <div #menuBtn class="col-4 menu_btn" (click)="abrirMenu()">
+      <div class="menu_btn_burger"></div>
+    </div>
+    <div
+      class="col-12 col-md-7 padding-header d-flex justify-content-center menu-completo"
+    >
+      <div class="navbar-ul d-flex align-items-end">
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/home"> Home </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/funcionalidad">Productos </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/recomendaciones"> Preguntas</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/gym/login"> Nosotros</a>
+        </li>
+        <li class="nav-item">
+          <a class="btn btn-outline-light botonLogin"
+            ><b> Portal</b>
+          </a>
+        </li>
+      </div>
+    </div>
+  </div>
+
+  <div class="parallax filter-gradient" data-color="blue" *ngIf="isHeader">
+    <div class="parallax-background">
+      <div class="container homePadding">
+        <div class="row">
+          <div class="col-md-5 hidden-xs">
+            <div class="parallax-image">
+              <img class="cpu" src="../../../../assets/img/edificio.png" />
+            </div>
+          </div>
+          <div class="col-md-6 col-md-offset-1">
+            <div class="description d-flex flex-column">
+              <h2 class="tituloHeader">Contratá Ahora!</h2>
+              <span class="titulo"> Tu seguro los 365 días.</span>
+              <span class="parrafo pt-3"
+                > Porque tu
+                <b class="titulo-bold"> tranquilidad </b> no tiene horario, ni día libre.<br>
+                <b class="titulo-bold"> Estamos con vos,</b> siempre. <br><br>
+                <span class="subtitulo"> No te quedes afuera</span>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div #menuDesplegado class="menu-desplegado">
+  <div class="container pt-5">
+    <li class="nav-item">
+      <a class="nav-link" routerLink="/home"> Home </a>
+    </li>
+    <hr class="linea-divisora" />
+    <li class="nav-item">
+      <a class="nav-link" routerLink="/funcionalidad">Productos </a>
+    </li>
+    <hr class="linea-divisora" />
+    <li class="nav-item">
+      <a class="nav-link" routerLink="/recomendaciones"> Preguntas</a>
+    </li>
+    <hr class="linea-divisora" />
+    <li class="nav-item ms-2">
+      <a class="nav-link" routerLink="/gym/login"> Nosotros</a>
+    </li>
+    <li class="nav-item ms-2">
+      <a class="btn btn-outline-light botonLogin"
+        ><b> Portal</b>
+      </a>
+    </li>
+  </div>
+</div>
+</ng-container>

@@ -1,0 +1,56 @@
+.footerEstilo {
+  list-style: none;
+  font-size: 1rem;
+  text-align: left;
+  line-height: 4rem;
+}
+
+.footerEstilo a {
+  color: white;
+}
+
+.terminos{
+  color:white;
+  font-weight: 900;
+  padding-left: 10px;
+  cursor: pointer;
+}
+
+.footerTitulo {
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 1.5rem;
+}
+
+.footerHr {
+  border-top: 1px solid rgba(255, 255, 255, .1) !important;
+}
+
+.footerContacto a {
+  margin-left: 10%;
+}
+
+.footerLista a {
+  position: relative;
+  float: left;
+  color: #ea7306;
+}
+
+ul{
+  padding-inline-start: 0px;
+}
+
+@media screen and (max-width: 450px) {
+  .footerEstilo {
+      padding-right: 5%;
+  }
+}
+
+.footer-black {
+  background-color: #252422;
+  color: #DDDDDD;
+}
+
+.aa-footer a.credit {
+  color: inherit;
+  border-bottom: 1px dashed;
+}

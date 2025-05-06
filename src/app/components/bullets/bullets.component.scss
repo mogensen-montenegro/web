@@ -1,0 +1,30 @@
+.font-size {
+  font-size: 1rem;
+}
+
+.bullets{
+  margin-bottom: 1.2rem;
+  text-align: center;
+}
+
+h2{
+  font-size: 1.5rem;
+  font-weight: 900;
+}
+
+img{
+  max-width: 200px;
+}
+
+.padding-top{
+  padding-top: 80px;
+}
+
+@media screen and (max-width: 450px) {
+  img {
+    max-width: 100px;
+  }
+  .padding-top{
+    padding-top: 40px;
+  }
+}

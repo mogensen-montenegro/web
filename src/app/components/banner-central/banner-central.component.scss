@@ -1,0 +1,91 @@
+.imagenSocio {
+  background-image: url(../../../assets/img/imgFondo.jpg);
+  width: 100%;
+  height: auto;
+  padding-top: 50px;
+  padding-bottom: 50px;
+  background-attachment: fixed;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: center;
+  align-content: stretch;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.textoSocio h1 {
+  color: white;
+  text-align: center;
+  font-size: 2rem;
+  padding-top: 20px;
+}
+
+.textoSocio {
+  width: 50%;
+}
+
+.textoSocio p {
+  color: white;
+  text-align: center;
+  font-size: 1.5rem;
+  letter-spacing: 1rem;
+  background-color: #ea7306;
+}
+
+.logoSocio {
+  width: 40%;
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+  padding-top: 3%;
+}
+
+.icono-celular{
+  width: 30%;
+}
+
+.tada {
+  animation-name: tada;
+  animation-duration: 2.5s;
+  animation-fill-mode: both;
+  animation-iteration-count: infinite;
+}
+  @keyframes tada {
+  0% {
+  transform: scale3d(1, 1, 1);
+  }
+  10%, 20% {
+  transform: scale3d(.9, .9, .9) rotate3d(0, 0, 1, -3deg);
+  }
+  30%, 40%, 50% {
+  transform: scale3d(1.1, 1.1, 1.1) rotate3d(0, 0, 1, 3deg);
+  }
+  35%, 45%  {
+  transform: scale3d(1.1, 1.1, 1.1) rotate3d(0, 0, 1, -3deg);
+  }
+  60%, 100% {
+  transform: scale3d(1, 1, 1);
+  }
+  }
+
+  @media screen and (max-width: 450px) {
+    .imagenSocio {
+      background-position-x: -400px;
+      padding-top: 30px;
+      padding-bottom: 30px;
+    }
+    .textoSocio{
+      width: 80%;
+    }
+
+    .textoSocio p{
+      font-size: 1rem;
+      padding: 10px;
+    }
+
+    .textoSocio h1{
+font-size: 1.3rem;
+    }
+  }
