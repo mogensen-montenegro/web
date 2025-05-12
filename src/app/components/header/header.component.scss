@@ -9,6 +9,9 @@
 
 }
 
+.white
+{color:white}
+
 .padding-header {
   padding-top: 35px;
   padding-bottom: 35px;
@@ -63,8 +66,10 @@ ul {
 }
 
 .cpu {
-  width: 400px;
+  right: 60px;
+  width: 490px;
   animation: vueloCPU 6s infinite ease-in-out;
+  position: relative;
 }
 
 .parrafo {
