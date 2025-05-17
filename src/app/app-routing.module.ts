@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { PagesComponent } from './pages/pages.component';
 import { HomeComponent } from './pages/home/home.component';
+import { ProductosComponent } from './pages/productos/productos.component';
 
 const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -9,6 +10,7 @@ const routes: Routes = [
     path: '', component: PagesComponent,
     children: [
        { path: 'home', component: HomeComponent },
+       { path: 'productos', component: ProductosComponent },
       // { path: 'recomendaciones', component: RecomendacionesComponent },
       // { path: 'terminos', component: TerminosCondicionesComponent },
       // { path: 'politicas', component: PoliticasPrivacidadComponent },

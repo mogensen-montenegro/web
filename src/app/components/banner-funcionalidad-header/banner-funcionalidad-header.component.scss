@@ -1,0 +1,52 @@
+.imagenSocio {
+  background-image: url(../../../assets/img/fondoUso.jpg);
+  width: 90%;
+  height: 450px;
+  padding-top: 60px;
+  padding-bottom: 50px;
+  background-attachment: fixed;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: center;
+  align-content: stretch;
+  background-repeat: no-repeat;
+  border-radius: 0 0 25px 25px;
+  background-position: bottom;
+}
+
+.textoSocio{
+  background-color: white;
+  padding: 25px;
+  border-radius: 25px;
+  margin: 150px;
+  p {
+    color: #ea7306;
+    font-size: 1.2rem;
+  }
+  h1{
+    font-size: 2rem;
+  }
+}
+
+
+.row{
+  z-index: -1;
+  position: relative;
+}
+
+@media screen and (max-width: 450px) {
+  .textoSocio{
+    padding: 0;
+  }
+  .textoSocio h1{
+    font-size: 1.8rem;
+  }
+  .imagenSocio{
+    height: auto;
+    padding-top: 70px;
+    background-image: none;
+    padding-bottom: 30px ;
+  }
+}

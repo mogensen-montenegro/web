@@ -1,0 +1,47 @@
+
+.padding{
+  padding-top: 50px;
+}
+
+@media screen and (max-width: 450px) {
+  .padding{
+    padding-top: 0;
+  }
+}
+
+.section-productos{
+  margin: 0 90px;
+}
+
+.icon-w{
+  width: 65px;
+  padding-right: 15px;
+}
+
+.accordion-button{
+  background-color: #dedede;
+}
+
+.accordion-item{
+  padding-bottom: 10px;
+}
+
+button{border-radius: 10px;}
+
+.sub-icon-w{
+  width: 40px;
+    padding-right: 15px;
+}
+
+.title-producto{
+  font-size: 14px;
+}
+
+.title{
+  font-size: 16px;
+}
+
+.accordion-body span{
+  font-size: 12px;
+}
+
