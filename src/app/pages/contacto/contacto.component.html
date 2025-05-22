@@ -1,0 +1,35 @@
+<app-header [isHeader]="false"></app-header>
+<ng-container>
+  <div class="row">
+    <div class="col d-flex justify-content-center">
+      <div class="imagenSocio">
+        <div class="textoSocio">
+          <p>Conocé todos nuestros canales de contacto.</p>
+          <h1>Para cualquier consulta podes comunicarte por cualquier de nuestros medios. Un asesor esta esperando tu
+            llamada.</h1>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-container>
+<div class="d-flex justify-content-center align-items-center py-5">
+   <a href="https://wa.me/5491164778878?text=Hola%20quiero%20información" target="_blank" class="text-decoration-none">
+  <div class="card mr-5 d-flex justify-content-center align-items-center">
+    <img class="w-icon" src="../../../assets/img/whatsappIcon.png">
+    <h5>Seguros Generales</h5>
+    <span class="number-tel">(011)-6477-8878 </span>
+  </div>
+  </a>
+ <a href="https://wa.me/5491145280955?text=Hola%20quiero%20información" target="_blank" class="text-decoration-none">
+  <div class="card mr-5 d-flex justify-content-center align-items-center">
+    <img class="w-icon" src="../../../assets/img/whatsappIcon.png">
+    <h5>Seguros de Vida/ART</h5>
+    <span class="number-tel">(011)-4528-0955</span>
+  </div>
+</a>
+  <div class="card mr-5 d-flex justify-content-center align-items-center">
+    <img class="w-icon-email" src="../../../assets/img/email.png">
+    <h5>Email</h5>
+    <span class="number-tel">{{email}}</span>
+  </div>
+</div>
