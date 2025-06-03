@@ -108,6 +108,12 @@
   font-weight: 600;
 }
 
+.text-email{
+  color: #b91828;
+  font-weight: 600;
+  font-size: 11px;
+}
+
 .card:hover::after {
   filter: blur(30px);
 }

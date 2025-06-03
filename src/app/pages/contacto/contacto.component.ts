@@ -11,6 +11,6 @@ import { HeaderComponent } from 'src/app/components/header/header.component';
 })
 export class ContactoComponent {
 
-  public email: string = 'segurosmmas@gmail.com'
+  public email: string = 'mogensenmontenegroseguros@gmail.com'
 
 }
