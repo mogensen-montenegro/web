@@ -10,7 +10,7 @@ import { Subject, takeUntil } from 'rxjs';
   imports:[RouterModule]
 })
 export class FooterComponent{
-  public web :string = 'segurosmmas@gmail.com'
+  public web :string = 'mogensenmontenegroseguros@gmail.com'
 
   constructor(){}
 

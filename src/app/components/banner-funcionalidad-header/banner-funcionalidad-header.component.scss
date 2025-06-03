@@ -1,20 +1,25 @@
-.imagenSocio {
-  background-image: url(../../../assets/img/fondoUso.jpg);
+.imagen-generica {
   width: 90%;
   height: 450px;
-  padding-top: 60px;
-  padding-bottom: 50px;
+  padding: 60px 0 50px;
   background-attachment: fixed;
   display: flex;
   flex-direction: column;
-  flex-wrap: nowrap;
   justify-content: center;
   align-items: center;
-  align-content: stretch;
-  background-repeat: no-repeat;
   border-radius: 0 0 25px 25px;
+  background-repeat: no-repeat;
   background-position: bottom;
+
+  &.socio {
+    background-image: url(../../../assets/img/fondoUso.jpg);
+  }
+
+  &.personal {
+    background-image: url(../../../assets/img/fondoUsoPersonal.jpg);
+  }
 }
+
 
 .textoSocio{
   background-color: white;

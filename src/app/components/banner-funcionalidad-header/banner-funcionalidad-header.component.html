@@ -1,13 +1,20 @@
-<ng-container>
+<ng-container *ngIf="esProducto">
   <div class="row">
     <div class="col d-flex justify-content-center">
-      <div class="imagenSocio">
+      <div class="imagen-generica socio">
         <div class="textoSocio">
-            <p>Todos nuestros seguros.</p>
-            <h1>Conocé las coberturas y servicios de seguros que tenemos para vos, adaptados a tus necesidades.</h1>
+          <p>Todos nuestros seguros.</p>
+          <h1>Conocé las coberturas y servicios de seguros que tenemos para vos, adaptados a tus necesidades.</h1>
         </div>
-    </div>
+      </div>
     </div>
   </div>
-  </ng-container>
+</ng-container>
 
+<ng-container *ngIf="esNosotros">
+  <div class="row">
+    <div class="col d-flex justify-content-center">
+      <div class="imagen-generica personal"></div>
+    </div>
+  </div>
+</ng-container>
