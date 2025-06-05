@@ -5,6 +5,7 @@ import { HomeComponent } from './pages/home/home.component';
 import { ProductosComponent } from './pages/productos/productos.component';
 import { ContactoComponent } from './pages/contacto/contacto.component';
 import { NosotrosComponent } from './pages/nosotros/nosotros.component';
+import { ServiciosComponent } from './pages/servicios/servicios.component';
 
 const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -15,9 +16,7 @@ const routes: Routes = [
        { path: 'productos', component: ProductosComponent },
        { path: 'contacto', component: ContactoComponent },
        { path: 'nosotros', component: NosotrosComponent },
-      // { path: 'terminos', component: TerminosCondicionesComponent },
-      // { path: 'politicas', component: PoliticasPrivacidadComponent },
-      // { path: 'funcionalidad', component: FuncionalidadComponent },
+       { path: 'servicios', component: ServiciosComponent },
     ]
   },
 ];

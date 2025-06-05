@@ -12,6 +12,7 @@ import { Component, Input } from '@angular/core';
 export class BannerFuncionalidadHeaderComponent{
   @Input() public esProducto: boolean = false;
   @Input() public esNosotros: boolean = false;
+  @Input() public esServicio: boolean = false;
 
   constructor(){}
 
