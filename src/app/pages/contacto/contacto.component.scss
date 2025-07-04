@@ -1,61 +1,55 @@
 .imagenSocio {
   background-image: url(../../../assets/img/contacto.jpg);
-  width: 90%;
-  height: 450px;
+  width: 95%;
+  height: 490px;
   padding-top: 60px;
   padding-bottom: 50px;
   background-attachment: fixed;
   display: flex;
-  flex-direction: column;
-  flex-wrap: nowrap;
   justify-content: center;
   align-items: center;
-  align-content: stretch;
   background-repeat: no-repeat;
-  border-radius: 0 0 25px 25px;
   background-position: bottom;
+  border-radius: 0 0 25px 25px;
 }
 
-.textoSocio{
+.textoSocio {
   background-color: white;
   padding: 25px;
   border-radius: 25px;
-  margin: 150px;
-  p {
-    color: #b91828;
+  margin: 50px;
+}
+
+.textoSocio p {
+  color: #b91828;
+  font-size: 1.2rem;
+}
+
+.textoSocio h1 {
+  font-size: 2rem;
+}
+
+@media screen and (max-width: 576px) {
+  .textoSocio {
+    padding: 10px;
+    margin: 0;
+  }
+
+  .textoSocio h1 {
     font-size: 1.2rem;
   }
-  h1{
-    font-size: 2rem;
-  }
-}
 
-
-.row{
-  z-index: -1;
-  position: relative;
-}
-
-@media screen and (max-width: 450px) {
-  .textoSocio{
-    padding: 0;
-  }
-  .textoSocio h1{
-    font-size: 1.8rem;
-  }
-  .imagenSocio{
+  .imagenSocio {
     height: auto;
-    padding-top: 70px;
+    padding: 30px 10px;
     background-image: none;
-    padding-bottom: 30px ;
   }
 }
 
-/* From Uiverse.io by Pravins01 */
 .card {
   position: relative;
-  width: 240px;
-  height: 254px;
+  width: 100%;
+  max-width: 280px;
   background-color: #fff;
   display: flex;
   flex-direction: column;
@@ -63,66 +57,35 @@
   padding: 12px;
   gap: 12px;
   border-radius: 8px;
-  cursor: pointer;
   color: black;
   text-align: center;
+  margin: 0 auto;
 }
 
 .card-email {
-  width: 440px !important;
-
-  &::before {
-    width: 450px !important;
-    height: 270px !important;
-  }
+  max-width: 100% !important;
 }
 
-.card-email:hover::before {
-  transform: rotate(-90deg) scaleX(0.6) scaleY(1.7) !important;
-}
-
-.card-email:hover::after {
-  filter: blur(15px);
-}
-
-.card::before {
+.card::before, .card::after {
   content: '';
   position: absolute;
   inset: 0;
-  left: -5px;
-  margin: auto;
-  width: 250px;
-  height: 264px;
   border-radius: 10px;
-  background: linear-gradient(-45deg, #960514 0%, #ff8f26 100% );
-  z-index: -10;
+  background: linear-gradient(-45deg, #960514 0%, #ff8f26 100%);
+  z-index: -1;
   pointer-events: none;
-  transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: all 0.6s ease-in-out;
+}
+
+.banner-top{
+      padding-top: 23px;
+    z-index: -1;
+    position: relative;
 }
 
 .card::after {
-  content: "";
-  z-index: -1;
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(-45deg, #960514 0%, #ff8f26 100% );
-  transform: translate3d(0, 0, 0) scale(0.95);
+  transform: scale(0.95);
   filter: blur(20px);
-}
-
-.heading {
-  font-size: 20px;
-  text-transform: capitalize;
-  font-weight: 700;
-}
-
-.card p:not(.heading) {
-  font-size: 14px;
-}
-
-.number-tel {
-  color: #b91828;
-  font-weight: 600;
 }
 
 .card:hover::after {
@@ -133,13 +96,16 @@
   transform: rotate(-90deg) scaleX(1.1) scaleY(1);
 }
 
-.w-icon{
-  width: 100px;
+.number-tel {
+  color: #b91828;
+  font-weight: 600;
 }
 
-.w-icon-email{
+.w-icon {
+  width: 80px;
+}
+
+.w-icon-email {
   width: 50px;
   padding-bottom: 11px;
 }
-
-

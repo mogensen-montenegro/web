@@ -1,6 +1,7 @@
 <app-header [isHeader]="false"></app-header>
+
 <ng-container>
-  <div class="row">
+  <div class="row banner-top">
     <div class="col d-flex justify-content-center">
       <div class="imagenSocio">
         <div class="textoSocio">
@@ -12,24 +13,35 @@
     </div>
   </div>
 </ng-container>
-<div class="d-flex justify-content-center align-items-center py-5">
-   <a href="https://wa.me/5491164778878?text=Hola%20quiero%20información" target="_blank" class="text-decoration-none">
-  <div class="card mr-5 d-flex justify-content-center align-items-center">
-    <img class="w-icon" src="../../../assets/img/whatsappIcon.png">
-    <h5>Seguros Generales</h5>
-    <span class="number-tel">(011)-6477-8878 </span>
-  </div>
-  </a>
- <a href="https://wa.me/5491145280955?text=Hola%20quiero%20información" target="_blank" class="text-decoration-none">
-  <div class="card mr-5 d-flex justify-content-center align-items-center">
-    <img class="w-icon" src="../../../assets/img/whatsappIcon.png">
-    <h5>Seguros de Vida/ART</h5>
-    <span class="number-tel">(011)-4528-0955</span>
-  </div>
-</a>
-  <div class="card card-email mr-5 d-flex justify-content-center align-items-center">
-    <img class="w-icon-email" src="../../../assets/img/email.png">
-    <h5>Email</h5>
-    <span class="number-tel">{{email}}</span>
+
+<div class="container py-5">
+  <div class="row justify-content-center text-center">
+    <div class="col-12 col-md-3 mb-4">
+      <a href="https://wa.me/5491164778878?text=Hola%20quiero%20información" target="_blank" class="text-decoration-none">
+        <div class="card d-flex justify-content-center align-items-center py-4 h-100">
+          <img class="w-icon mb-2" src="../../../assets/img/whatsappIcon.png" alt="WhatsApp Icon">
+          <h5>Seguros Generales</h5>
+          <span class="number-tel">(011)-6477-8878</span>
+        </div>
+      </a>
+    </div>
+
+    <div class="col-12 col-md-3 mb-4">
+      <a href="https://wa.me/5491145280955?text=Hola%20quiero%20información" target="_blank" class="text-decoration-none">
+        <div class="card d-flex justify-content-center align-items-center py-4 h-100">
+          <img class="w-icon mb-2" src="../../../assets/img/whatsappIcon.png" alt="WhatsApp Icon">
+          <h5>Seguros de Vida/ART</h5>
+          <span class="number-tel">(011)-4528-0955</span>
+        </div>
+      </a>
+    </div>
+
+    <div class="col-12 col-md-4 mb-4 card-email">
+      <div class="card card-email d-flex justify-content-center align-items-center py-4 h-100">
+        <img class="w-icon-email mb-2" src="../../../assets/img/email.png" alt="Email Icon">
+        <h5>Email</h5>
+        <span class="number-tel">{{email}}</span>
+      </div>
+    </div>
   </div>
 </div>

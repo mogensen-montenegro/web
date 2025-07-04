@@ -43,7 +43,8 @@
 
 @media screen and (max-width: 450px) {
   .textoSocio{
-    padding: 0;
+    padding: 20px;
+    margin: 40px;
   }
   .textoSocio h1{
     font-size: 1.8rem;
@@ -53,5 +54,8 @@
     padding-top: 70px;
     background-image: none;
     padding-bottom: 30px ;
+  }
+  .imagen-generica{
+    width: 100%;
   }
 }

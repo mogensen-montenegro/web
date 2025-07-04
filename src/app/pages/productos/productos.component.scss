@@ -3,12 +3,6 @@
   padding-top: 50px;
 }
 
-@media screen and (max-width: 450px) {
-  .padding{
-    padding-top: 0;
-  }
-}
-
 .section-productos{
   margin: 0 90px;
 }
@@ -44,4 +38,14 @@ button{border-radius: 10px;}
 .accordion-body span{
   font-size: 12px;
 }
+
+@media screen and (max-width: 450px) {
+  .padding{
+    padding-top: 0;
+  }
+  .section-productos{
+  margin: 0 10px;
+  }
+}
+
 

@@ -1,3 +1,9 @@
 .section-productos{
   margin: 0 90px;
 }
+
+@media screen and (max-width: 450px) {
+  .section-productos{
+  margin: 0 10px;
+  }
+}
