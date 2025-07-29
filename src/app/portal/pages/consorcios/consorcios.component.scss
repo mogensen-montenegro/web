@@ -1,0 +1,73 @@
+
+.form {
+    position: relative;
+  }
+
+.form .fa-search {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    color: #9ca3af;
+  }
+
+  .w-400{
+    min-width: 300px;
+  }
+
+  .f-14{
+    font-size: 16px;
+  }
+
+  .form-input {
+    height: 55px;
+    text-indent: 33px;
+    border-radius: 10px;
+  }
+
+  .btn-top{
+    padding-top: 28px;
+  }
+
+  .form-input:focus {
+    background-color: rgb(236, 235, 235);
+    border: none;
+  }
+
+  .sub-titulo {
+    color: black;
+    text-align: left;
+    font-size: 17px;
+    font-weight: 300;
+    line-height: 20px;
+    margin-bottom: 30px;
+  }
+
+  .h-button {
+    height: 55px;
+    cursor: pointer;
+  }
+
+  .box-empty{
+    width: 100%;
+    height: 200px;
+    background-color: #f1f1f1;
+    border-radius: 20px;
+  }
+
+  .icono{
+    width: 60px;
+  }
+
+  .icon-box{
+    width: 30px;
+    border-radius: 10px;
+    height: 30px;
+    background-color: rgb(242, 203, 203);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .table th, .table td{
+    font-size: 16px;
+  }

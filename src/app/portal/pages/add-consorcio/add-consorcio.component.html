@@ -1,0 +1,91 @@
+<ng-container>
+  <form class="modal-dialog" [formGroup]="agregarUsuarioForm" autocomplete="off">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">
+          {{ editUser ? 'Modificar Administrador' : 'Agregar Administrador' }}
+        </h5>
+
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col">
+            <span class="subtitle color-principal"> Datos Generales</span>
+          </div>
+        </div>
+        <div class="row">
+          <div id="nombre" class="col-12 col-sm-4 mt-3">
+           <i class="fa fa-user pr-2 color-principal"></i>
+            <span>Nombre</span>
+            <input type="text" formControlName="nombre" [(ngModel)]="nombre" />
+          </div>
+          <div class="col-12 col-sm-4 mt-3">
+            <i class="fa fa-at pr-2 color-principal"></i>
+            <span>Email</span>
+            <input formControlName="email" type="text" [(ngModel)]="email" class="observaciones" />
+          </div>
+          <div id="telefono" class="col-12 col-sm-4 mt-3">
+            <i class="fa fa-phone pr-2 color-principal"></i>
+            <span>Teléfono</span>
+            <input formControlName="telefono" type="text" [(ngModel)]="telefono" class="observaciones" />
+          </div>
+        </div>
+
+        <div class="row pt-1">
+          <div class="col-12 col-sm-4 mt-3">
+            <i class="fa fa-house pr-2 color-principal"></i>
+            <span class="d-block">Dirección</span>
+            <input formControlName="direccion" type="text" [(ngModel)]="direccion" class="observaciones" />
+          </div>
+          <div class="col-12 col-sm-4 mt-3">
+            <i class="fa fa-building pr-2 color-principal"></i>
+            <span class="d-block">Consorcios</span>
+            <input formControlName="consorcio" type="text" [(ngModel)]="consorcio" class="observaciones" />
+          </div>
+        </div>
+
+        <hr />
+
+        <div class="row">
+          <div class="col">
+            <span class="subtitle color-principal"> Credenciales de Administrador</span>
+          </div>
+        </div>
+        <div class="row" id="registro">
+          <div id="nombreUsuario" class="col-12 col-sm-4 mt-3">
+            <i class="fa fa-user pr-2 color-principal"></i>
+            <span>Nombre Usuario</span>
+            <input formControlName="nombreUsuario" type="text" [(ngModel)]="nombreUsuario" class="observaciones" />
+          </div>
+
+          <div class="col-6 col-sm-4 mt-3">
+            <i class="fa fa-key pr-2 color-principal"></i>
+            <span> Password</span>
+            <input formControlName="altura" type="password" [(ngModel)]="password" class="password" />
+          </div>
+          <div class="col-12 col-sm-4 mt-3">
+            <i class="fa fa-key pr-2 color-principal"></i>
+            <i class="fa fa-key pr-2 color-principal"></i>
+            <span> Repetir Password</span>
+            <input formControlName="password2" type="text" [(ngModel)]="password2" class="observaciones" />
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" (click)="closeModal()">
+          Cancelar
+        </button>
+        <button *ngIf="editUser" [disabled]="isLoading" type="button" class="btn btn-warning"
+          (click)="modificarAdministrador()">
+          Modificar
+        </button>
+        <button *ngIf="editUser" type="button" class="btn btn-danger" (click)="eliminarAdministrador()">
+          Eliminar
+        </button>
+        <button *ngIf="!editUser" type="button" class="btn btn-warning" (click)="agregarConsorcio()">
+          Agregar
+        </button>
+      </div>
+    </div>
+  </form>
+</ng-container>
