@@ -1,0 +1,87 @@
+<div class="row p-5">
+  <div class="col-6">
+    <h3 class="title">Mis Administradores</h3>
+    <span class="sub-titulo">Se almanecerán todos los datos de los administradores almacenados.</span>
+  </div>
+  <div class="col-6 d-flex justify-content-end">
+  <div class="w-400">
+    <div class="form">
+      <i class="fa fa-search"></i>
+      <input type="text" [(ngModel)]="busqueda" class="form-control form-input"
+        placeholder="Ingrese un valor a buscar..." (keydown.enter)="buscarData()">
+    </div>
+  </div>
+  <div class="pl-3">
+    <button class="btn btn-primary h-button btn-color"
+      data-bs-toggle="modal" data-bs-target="#agregarConsorcio"
+      (click)="crearNuevoAdministrador()">
+      Crear Nuevo Administrador
+    </button>
+  </div>
+</div>
+</div>
+
+<!-- <div class="row" *ngIf="spinner">
+  <div class="col d-flex justify-content-center">
+    <app-spinner></app-spinner>
+  </div>
+</div> -->
+
+<div class="row px-5" *ngIf="data.length">
+  <div class="col tabla-scroll">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Email</th>
+          <th>Teléfono</th>
+          <th>Dirección</th>
+          <th>Consorcios</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="pointer usuario-selector fadeIn" *ngFor="let usuario of data">
+          <td data-bs-toggle="modal" data-bs-target="#agregarConsorcio">
+            {{ usuario.nombre ? usuario.nombre : "-" }}
+          </td>
+          <td data-bs-toggle="modal" data-bs-target="#agregarConsorcio">
+            {{ usuario.email ? usuario.email : "-" }}
+          </td>
+          <td data-bs-toggle="modal" data-bs-target="#agregarConsorcio">
+            {{ usuario.telefono ? usuario.telefono : "-" }}
+          </td>
+          <td data-bs-toggle="modal" data-bs-target="#agregarConsorcio">
+            {{ usuario.direccion ? usuario.direccion : "-" }}
+          </td>
+          <td data-bs-toggle="modal" data-bs-target="#agregarConsorcio">
+            {{ usuario.cantidadConsorcio ? usuario.cantidadConsorcio : "-" }}
+          </td>
+           <td class="min-width d-flex">
+             <div class=" icon-box mr-3" (click)="eliminarConsorcio()">
+              <i class="fa fa-trash color-principal"></i>
+            </div>
+
+          <div class=" icon-box">
+            <i class="fa fa-pencil color-principal"></i>
+            </div>
+        </td>
+
+        </tr>
+      </tbody>
+    </table>
+    <!-- <ng-container *ngIf="showLoader" [ngTemplateOutlet]="loading"></ng-container> -->
+  </div>
+</div>
+
+  <div class="modal fade" id="agregarConsorcio" tabindex="-1" aria-labelledby="agregarConsorcioLabel" aria-hidden="true">
+        <app-add-administrador (clicked)="cerrarModal()"/>
+  </div>
+
+<div class="row px-5 fadeIn" *ngIf="data.length === 0 && showEmpty">
+  <div class="box-empty d-flex align-items-center justify-content-center flex-column">
+    <img class="icono" src="../../../assets/img/caja.png">
+    <span class="pt-2">No se encontraron resultados a la búsqueda <b>{{busquedaEmpty}}</b></span>
+  </div>
+</div>
+

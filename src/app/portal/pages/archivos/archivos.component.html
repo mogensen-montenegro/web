@@ -1,0 +1,56 @@
+<div class="row p-5">
+  <div class="col-6">
+    <h3 class="title">Carga de Archivos</h3>
+    <span class="sub-titulo">Se almanecerán todos los archivos de los consorvios almacenados.</span>
+  </div>
+  <div class="col-6 d-flex justify-content-end">
+    <div id="administradores">
+      <select class="form-select" [(ngModel)]="consorvioSeleccionadoId" (change)="onConsorvioSeleccionado()">
+        <option class="color-principal bg-color-light" disabled selected value="">
+          Seleccionar un administrador
+        </option>
+        <option *ngIf="!consorvio?.length" value="">
+          Sin Consorvios
+        </option>
+
+        <option *ngFor="let data of consorvio" [ngValue]="data._id">
+          {{ data.nombre }}
+        </option>
+      </select>
+    </div>
+    <div class="pl-3">
+      <button class="btn btn-primary h-button btn-color" data-bs-toggle="modal" data-bs-target="#agregarConsorcio"
+        (click)="crearNuevaCarpeta()">
+        Nueva Carpeta
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="row p-5">
+  <!-- From Uiverse.io by Smit-Prajapati -->
+<div class="card mr-5 mb-3" *ngFor="let archivo of archivosAdjuntos">
+  <div class="top-section">
+    <div class="border"></div>
+    <div class="icons">
+      <div class="logo">
+        <span class="text-file">{{archivo.cantidadArchivos}} archivos</span>
+      </div>
+    </div>
+  </div>
+  <div class="bottom-section">
+    <span class="title">{{archivo.titulo}}</span>
+    <div class="row row1">
+      <button class="btn btn-ligth">Editar</button>
+      <button class="btn btn-danger">Eliminar</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="row px-5 fadeIn" *ngIf="consorvio.length === 0 && showEmpty">
+  <div class="box-empty d-flex align-items-center justify-content-center flex-column">
+    <img class="icono" src="../../../assets/img/caja.png">
+    <span class="pt-2">No se encontraron resultados a la búsqueda</span>
+  </div>
+</div>

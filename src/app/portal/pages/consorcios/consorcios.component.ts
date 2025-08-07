@@ -1,9 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { of, Subject, switchMap, takeUntil } from 'rxjs';
-import { ConsorcioData } from '../../interface/dataUser.interface';
-import Swal from 'sweetalert2';
+import { Component } from '@angular/core';
+import { AdministradorData, ConsorcioData } from '../../interface/dataUser.interface';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AddConsorcioComponent } from '../add-consorcio/add-consorcio.component';
 
 @Component({
@@ -11,66 +9,43 @@ import { AddConsorcioComponent } from '../add-consorcio/add-consorcio.component'
   templateUrl: './consorcios.component.html',
   styleUrls: ['./consorcios.component.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, AddConsorcioComponent]
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, AddConsorcioComponent]
 })
-export class ConsorciosComponent implements OnDestroy{
-  public busqueda: string = '';
-  public busquedaHandle: string = '';
-  public busquedaEmpty: string = '';
-  public data: Array<ConsorcioData> = [
-    {nombre: 'Jorge Martinez',
-      email: 'jorgitoMar@gmail.com',
+export class ConsorciosComponent {
+  public showEmpty: boolean = false;
+  public administrador: AdministradorData[] = [{
+    nombre: 'Jorge Martinez',
+    email: 'jorgitoMar@gmail.com',
+    telefono: '1143256535',
+    direccion: 'calle falsa 123',
+    cantidadConsorcio: 4
+  }];
+  public consorcioSeleccionado: ConsorcioData =
+    {
+      nombre: 'Rivadavia',
+      encargado: 'Pepito Juarez',
       telefono: '1143256535',
       direccion: 'calle falsa 123',
-      cantidadConsorcio: 4
+      cantidadCarpetas: 4,
+      cantidadArchivos: 15
     }
-  ];
-  private destroy$: Subject<void> = new Subject();
-  public showEmpty:boolean = false;
-  public spinner: boolean = false;
+  public adminSeleccionadoId: string = '';
+  public administradorSeleccionado: AdministradorData | null = null;
 
-  constructor(){
-  }
-
-  public crearNuevoConsorcio(): void {
-
-  }
-  public buscarData(): void {
-
-  }
-
-  public eliminarConsorcio():void{
-        Swal.fire({
-      title: `Eliminar Consorcio`,
-      text: `¿Desea eliminar el consorcio (nombre consorcio)?`,
-      icon: 'question',
-      showCancelButton: true,
-      backdrop: false,
-      confirmButtonColor: '#dc3545',
-      confirmButtonText: 'Aceptar',
-    }).then((result) => {
-      if (result.isConfirmed) {
-      Swal.fire({
-        position: 'center',
-        icon: 'success',
-        title: '¡Listo!',
-        text: 'El consorcio se eliminó correctamente',
-        showConfirmButton: false,
-        timer: 1500,
-      });
-
-      }
-    });
-  }
-
-    public cerrarModal(): void {
+  public cerrarModal(): void {
     // @ts-ignore
     $('#agregarEjercicio').modal('hide');
   }
 
-  public ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.unsubscribe();
-  }
+  public eliminarConsorcio(): void { }
+  public crearNuevoConsorcio(): void { }
 
+  public onAdministradorSeleccionado(): void {
+    this.administradorSeleccionado = this.administrador.find(
+      (a) => a._id === this.adminSeleccionadoId
+    ) || null;
+
+    console.log('Administrador seleccionado:', this.administradorSeleccionado);
+    // Podés usar esto para cargar datos, consorcios, etc.
+  }
 }
