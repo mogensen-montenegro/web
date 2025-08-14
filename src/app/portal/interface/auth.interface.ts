@@ -1,17 +1,21 @@
+import {Data} from "@angular/router";
+
 export interface TokenInterface {
-    token: string | null;
-    refreshToken: string | null;
+  token: string | null;
+  refreshToken: string | null;
+  accessToken: string | null;
 }
 
-export interface LoginResponse extends TokenInterface {
-    '@odata.context': string,
-    SessionId: string,
-    Version: string,
-    SessionTimeout: number
+export interface LoginResponse {
+  ok: boolean;
+  msj: string;
+  auth: TokenInterface;
+  sessionId: string;
+  version: string;
+  sessionTimeout: Data;
 }
 
 export interface LoginDataRequest {
-    CompanyDB: string,
-    UserName: string,
-    Password: string,
+  user: string | null | undefined;
+  password: string | null | undefined;
 }

@@ -1,10 +1,10 @@
-import { NgModule } from '@angular/core';
-import { BrowserModule } from '@angular/platform-browser';
-import { AppRoutingModule } from './app-routing.module';
-import { AppComponent } from './app.component';
-import { PagesModule } from './pages/pages.module';
-import { LoginModule } from './portal/pages/login/login.module';
-import { PanelControlModule } from './portal/pages/panel-control/panel-control.module';
+import {NgModule} from '@angular/core';
+import {BrowserModule} from '@angular/platform-browser';
+import {AppRoutingModule} from './app-routing.module';
+import {AppComponent} from './app.component';
+import {PagesModule} from './pages/pages.module';
+import {LoginModule} from './portal/pages/login/login.module';
+import {PanelControlModule} from './portal/pages/panel-control/panel-control.module';
 
 @NgModule({
   declarations: [
@@ -21,4 +21,5 @@ import { PanelControlModule } from './portal/pages/panel-control/panel-control.m
   providers: [],
   bootstrap: [AppComponent]
 })
-export class AppModule { }
+export class AppModule {
+}

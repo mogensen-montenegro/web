@@ -1,9 +1,10 @@
-import { CommonModule } from '@angular/common';
-import { HttpClientModule } from '@angular/common/http';
-import { NgModule } from '@angular/core';
-import { ReactiveFormsModule } from '@angular/forms';
-import { LoginComponent } from './login.component';
-import { LoginService } from '../../services/login.service';
+import {CommonModule} from '@angular/common';
+import {HttpClientModule} from '@angular/common/http';
+import {NgModule} from '@angular/core';
+import {ReactiveFormsModule} from '@angular/forms';
+import {LoginComponent} from './login.component';
+import {LoginService} from '../../services/login.service';
+import {RouterLinkActive} from "@angular/router";
 
 @NgModule({
   declarations: [LoginComponent],
@@ -11,8 +12,10 @@ import { LoginService } from '../../services/login.service';
     CommonModule,
     ReactiveFormsModule,
     HttpClientModule,
+    RouterLinkActive
   ],
   exports: [LoginComponent],
   providers: [LoginService]
 })
-export class LoginModule { }
+export class LoginModule {
+}

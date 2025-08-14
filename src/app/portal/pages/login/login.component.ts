@@ -1,42 +1,39 @@
-import { Component, HostBinding, OnDestroy, OnInit } from '@angular/core';
-import { AbstractControl, FormBuilder, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
-import { Subject } from 'rxjs';
+import {Component, HostBinding, OnDestroy} from '@angular/core';
+import {AbstractControl, FormBuilder, Validators} from '@angular/forms';
+import {Router} from '@angular/router';
+import {Subject} from 'rxjs';
+import {LoginService} from "../../services/login.service";
+import Swal from "sweetalert2";
+import {LoginDataRequest} from "../../interface";
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
-  styleUrls: ['./login.component.scss'],
+  styleUrls: ['./login.component.scss']
 })
 export class LoginComponent implements OnDestroy {
+  public items = Array(10).fill(0);
+  private _themeColor: string = '';
+  private destroy$: Subject<void> = new Subject();
+
+  constructor(private fb: FormBuilder, private loginService: LoginService, private router: Router) {
+    sessionStorage.removeItem('token');
+  }
 
   @HostBinding('style.--themeColor')
   private set themeColor(value: string) {
     if (value) this._themeColor = value;
   }
+
   public get themeColor(): string {
     return this._themeColor;
   }
 
-  public formSubmite = false;
   public loginForm = this.fb.group({
     nombre: [localStorage.getItem('nombre'), [Validators.required, Validators.minLength(2)]],
     password: ['', [Validators.required]],
     role: ['']
   });
-
-  private _themeColor: string = '';
-  private destroy$: Subject<void> = new Subject();
-
-  constructor(
-    private fb: FormBuilder,
-    //private loginService: LoginService,
-   // private spinnerService: SpinnerService,
-    private router: Router,
-   ) {
-    sessionStorage.removeItem('token');
-  }
-
 
   public recordarUsuario(remember: boolean): void {
     if (remember) {
@@ -49,20 +46,22 @@ export class LoginComponent implements OnDestroy {
   public login(): void {
     localStorage.clear();
     sessionStorage.removeItem("token");
-    //this.spinnerService.setSpinnerState(true);
     this.limpiarEspaciosForm();
-    // this.loginService.login(this.loginForm.value)
-    //   .subscribe({
-    //     next: () => {
-    //       localStorage.setItem('nombreGym', this.loginForm.value.nombre)
-    //       this.loginService.validarToken(this.idioma).pipe(takeUntil(this.destroy$)).subscribe();
-    //     },
-    //     error: (err) => {
-    //       Swal.fire('Error', err.error.msj, 'error');
-    //       this.spinnerService.setSpinnerState(false);
-    //     },
-    //     complete: () => { this.spinnerService.setSpinnerState(false) }
-    //   });
+    const {nombre, password} = this.loginForm.getRawValue();
+    const loginDataRequest: LoginDataRequest = {
+      user: nombre,
+      password: password,
+    };
+    this.loginService.login(loginDataRequest).subscribe({
+      next: () => {
+        this.router.navigate(['/panel']).then();
+      },
+      error: (err) => {
+        Swal.fire('Error', err.error.msj, 'error').then();
+      },
+      complete: () => {
+      }
+    });
   }
 
   private limpiarEspaciosForm(): void {
@@ -86,5 +85,4 @@ export class LoginComponent implements OnDestroy {
     this.destroy$.next();
     this.destroy$.unsubscribe();
   }
-
 }

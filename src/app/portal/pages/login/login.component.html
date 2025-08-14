@@ -1,54 +1,45 @@
 <ng-container>
-<section id="wrapper" class="login-register login-sidebar">
+  <section id="wrapper" class="login-register login-sidebar">
     <div class="boxRedBotton">
-        <div class="area">
-            <ul class="circles">
-                <li></li>
-                <li></li>
-                <li></li>
-                <li></li>
-                <li></li>
-                <li></li>
-                <li></li>
-                <li></li>
-                <li></li>
-                <li></li>
-            </ul>
-        </div>
+      <div class="area">
+        <ul class="circles">
+          <li *ngFor="let _ of items"></li>
+        </ul>
+      </div>
     </div>
 
     <div class="login-box card">
-        <div class="card-body">
-            <form class="" [formGroup]="loginForm" autocomplete="off">
-                <a href="/home" class="d-flex justify-content-center"><img class="tamanoLogo"
-                        src="../../../assets/img/logoMongensen.jpg" alt="Home" /></a>
-                <div class="form-group m-t-40">
-                    <div class="col">
-                        <input class="form-control" type="text" formControlName="nombre"
-                            placeholder="Usuario">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <div class="col">
-                        <input class="form-control" type="password" formControlName="password" placeholder="Password">
-                    </div>
-                </div>
+      <div class="card-body">
+        <form class="" [formGroup]="loginForm" autocomplete="off">
+          <a href="/home" class="d-flex justify-content-center">
+            <img class="tamanoLogo" src="../../../assets/img/logoMongensen.jpg" alt="Home"/>
+          </a>
+          <div class="form-group m-t-40">
+            <div class="col">
+              <input class="form-control" type="text" formControlName="nombre" placeholder="Usuario">
+            </div>
+          </div>
+          <div class="form-group">
+            <div class="col">
+              <input class="form-control" type="password" formControlName="password" placeholder="Password">
+            </div>
+          </div>
 
-                <div class="form-group text-center m-t-20">
-                    <div class="col">
-                        <button [disabled]="!isValid" class="btn btn-primary btn-lg btn-block btn-rounded"
-                            (click)="login()">Ingresar</button>
-                    </div>
-                </div>
+          <div class="form-group text-center m-t-20">
+            <div class="col">
+              <button [disabled]="!isValid" class="btn btn-primary btn-lg btn-block btn-rounded" (click)="login()">
+                Ingresar
+              </button>
+            </div>
+          </div>
 
-                <div class="form-group m-b-0">
-                    <div class="col-sm-12 text-center">
-                      ¿No tenés una cuenta? <a href="/contacto" routerLinkActive="active"
-                            class="color-principal"><b>Solicitar</b></a>
-                    </div>
-                </div>
-            </form>
-        </div>
+          <div class="form-group m-b-0">
+            <div class="col-sm-12 text-center">
+              ¿No tenés una cuenta? <a href="/contacto" routerLinkActive="active" class="color-principal"><b>Solicitar</b></a>
+            </div>
+          </div>
+        </form>
+      </div>
     </div>
-</section>
+  </section>
 </ng-container>

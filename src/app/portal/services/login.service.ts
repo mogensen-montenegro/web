@@ -1,44 +1,66 @@
-import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
-import { Router } from '@angular/router';
-import { Observable, tap } from 'rxjs';
-import { LoginDataRequest, LoginResponse } from '../interface';
+import {HttpClient} from '@angular/common/http';
+import {Injectable} from '@angular/core';
+import {Router} from '@angular/router';
+import {Observable, tap} from 'rxjs';
+import {LoginDataRequest, LoginResponse} from '../interface';
+import {environment} from 'src/environments/environment';
 
-@Injectable()
+@Injectable({providedIn: 'root'})
 export class LoginService {
+  private base_url: string = environment.baseUrl;
 
-  /**
-   * Subject que almacena el Rol del usuario logueado.
-   */
+  private readonly TOKEN = 'token';
+  private readonly REFRESH_TOKEN = 'refreshToken';
+  private readonly ACCCESS_TOKEN = 'accessToken';
+  private readonly SESSION_ID = 'sessionID';
 
-  constructor(private http: HttpClient, private router: Router) { }
-
-  public get refreshToken(): string {
-    return sessionStorage.getItem('refresh-token') || '';
+  constructor(private http: HttpClient, private router: Router) {
   }
 
   public login(formData: LoginDataRequest): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`/api/b1s/v2/Login`, formData)
+    return this.http.post<LoginResponse>(`${this.base_url}/login`, formData)
       .pipe(
-        tap((resp: LoginResponse) => {
-          if (resp?.SessionId) {
-            localStorage.setItem('sessionId', resp.SessionId);
-            localStorage.setItem('user', formData.UserName);
+        tap((response: LoginResponse) => {
+          if (response?.auth?.token) {
+            localStorage.setItem(this.TOKEN, response.auth.token);
+          }
+          if (response?.auth?.refreshToken) {
+            localStorage.setItem(this.REFRESH_TOKEN, response.auth.refreshToken);
+          }
+          if (response?.auth?.accessToken) {
+            localStorage.setItem(this.SESSION_ID, response.sessionId);
+          }
+          if (response?.sessionId) {
+            localStorage.setItem(this.SESSION_ID, response.sessionId);
           }
         })
       );
   }
 
   public logout(): void {
-    localStorage.removeItem('sessionId');
-    localStorage.removeItem('user');
-
-    this.router.navigateByUrl('/login')
+    localStorage.removeItem(this.TOKEN);
+    localStorage.removeItem(this.REFRESH_TOKEN);
+    localStorage.removeItem(this.SESSION_ID);
+    this.router.navigateByUrl('/login').then();
   }
 
-  public isSessionValid(): boolean {
-    const sessionId = localStorage.getItem('sessionId');
-    if (!sessionId) return false;
-    else return true
+  isLoggedIn(): boolean {
+    return !!localStorage.getItem(this.TOKEN);
+  }
+
+  get token(): string | null {
+    return localStorage.getItem(this.TOKEN);
+  }
+
+  get refreshToken(): string | null {
+    return localStorage.getItem(this.REFRESH_TOKEN);
+  }
+
+  get accessToken(): string | null {
+    return localStorage.getItem(this.ACCCESS_TOKEN);
+  }
+
+  get sessionID(): string | null {
+    return localStorage.getItem(this.SESSION_ID);
   }
 }
