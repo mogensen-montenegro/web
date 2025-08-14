@@ -15,27 +15,27 @@
         </div>
         <div class="row">
           <div id="nombre" class="col-12 col-sm-4 mt-3">
-           <i class="fa fa-user pr-2 color-principal"></i>
+            <i class="fa fa-user pr-2 color-principal"></i>
             <span>Nombre</span>
-            <input type="text" [(ngModel)]="nombre" />
+            <input type="text" [(ngModel)]="nombre" [ngModelOptions]="{standalone: true}"/>
           </div>
           <div class="col-12 col-sm-4 mt-3">
             <i class="fa fa-at pr-2 color-principal"></i>
             <span>Encargado</span>
-            <input type="text" [(ngModel)]="encargado" class="observaciones" />
+            <input type="text" [(ngModel)]="encargado" class="observaciones" [ngModelOptions]="{standalone: true}"/>
           </div>
           <div id="telefono" class="col-12 col-sm-4 mt-3">
             <i class="fa fa-phone pr-2 color-principal"></i>
             <span>Teléfono</span>
-            <input type="text" [(ngModel)]="telefono" class="observaciones" />
+            <input type="text" [(ngModel)]="telefono" class="observaciones" [ngModelOptions]="{standalone: true}"/>
           </div>
         </div>
 
         <div class="row pt-1">
-             <div id="nombre" class="col-12 col-sm-4 mt-3">
-           <i class="fa fa-user pr-2 color-principal"></i>
+          <div id="nombre" class="col-12 col-sm-4 mt-3">
+            <i class="fa fa-user pr-2 color-principal"></i>
             <span>Dirección</span>
-            <input type="text" [(ngModel)]="direccion" />
+            <input type="text" [(ngModel)]="direccion" [ngModelOptions]="{standalone: true}"/>
           </div>
         </div>
 
@@ -44,8 +44,7 @@
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" (click)="closeModal()">
           Cancelar
         </button>
-        <button *ngIf="editUser" [disabled]="isLoading" type="button" class="btn btn-warning"
-          (click)="modificarConsorcio()">
+        <button *ngIf="editUser" [disabled]="isLoading" type="button" class="btn btn-warning" (click)="modificarConsorcio()">
           Modificar
         </button>
         <button *ngIf="editUser" type="button" class="btn btn-danger" (click)="eliminarConsorcio()">

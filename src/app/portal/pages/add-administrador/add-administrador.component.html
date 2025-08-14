@@ -15,19 +15,19 @@
         </div>
         <div class="row">
           <div id="nombre" class="col-12 col-sm-4 mt-3">
-           <i class="fa fa-user pr-2 color-principal"></i>
+            <i class="fa fa-user pr-2 color-principal"></i>
             <span>Nombre</span>
-            <input type="text" [(ngModel)]="nombre" />
+            <input type="text" [(ngModel)]="nombre" [ngModelOptions]="{standalone: true}"/>
           </div>
           <div class="col-12 col-sm-4 mt-3">
             <i class="fa fa-at pr-2 color-principal"></i>
             <span>Email</span>
-            <input type="text" [(ngModel)]="email" class="observaciones" />
+            <input type="text" [(ngModel)]="email" class="observaciones" [ngModelOptions]="{standalone: true}"/>
           </div>
           <div id="telefono" class="col-12 col-sm-4 mt-3">
             <i class="fa fa-phone pr-2 color-principal"></i>
             <span>Teléfono</span>
-            <input type="text" [(ngModel)]="telefono" class="observaciones" />
+            <input type="text" [(ngModel)]="telefono" class="observaciones" [ngModelOptions]="{standalone: true}"/>
           </div>
         </div>
 
@@ -35,16 +35,16 @@
           <div class="col-12 col-sm-4 mt-3">
             <i class="fa fa-house pr-2 color-principal"></i>
             <span class="d-block">Dirección</span>
-            <input type="text" [(ngModel)]="direccion" class="observaciones" />
+            <input type="text" [(ngModel)]="direccion" class="observaciones" [ngModelOptions]="{standalone: true}"/>
           </div>
           <div class="col-12 col-sm-4 mt-3">
             <i class="fa fa-building pr-2 color-principal"></i>
             <span class="d-block">Consorcios</span>
-            <input type="text" [(ngModel)]="consorcio" class="observaciones" />
+            <input type="text" [(ngModel)]="consorcio" class="observaciones" [ngModelOptions]="{standalone: true}"/>
           </div>
         </div>
 
-        <hr />
+        <hr/>
 
         <div class="row">
           <div class="col">
@@ -55,19 +55,19 @@
           <div id="nombreUsuario" class="col-12 col-sm-4 mt-3">
             <i class="fa fa-user pr-2 color-principal"></i>
             <span>Nombre Usuario</span>
-            <input type="text" [(ngModel)]="nombreUsuario" class="observaciones" />
+            <input type="text" [(ngModel)]="nombreUsuario" class="observaciones" [ngModelOptions]="{standalone: true}"/>
           </div>
 
           <div class="col-6 col-sm-4 mt-3">
             <i class="fa fa-key pr-2 color-principal"></i>
             <span> Password</span>
-            <input type="password" [(ngModel)]="password" class="password" />
+            <input type="password" [(ngModel)]="password" class="password" [ngModelOptions]="{standalone: true}"/>
           </div>
           <div class="col-12 col-sm-4 mt-3">
             <i class="fa fa-key pr-2 color-principal"></i>
             <i class="fa fa-key pr-2 color-principal"></i>
             <span> Repetir Password</span>
-            <input type="text" [(ngModel)]="password2" class="observaciones" />
+            <input type="text" [(ngModel)]="password2" class="observaciones" [ngModelOptions]="{standalone: true}"/>
           </div>
         </div>
       </div>
@@ -75,8 +75,7 @@
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" (click)="closeModal()">
           Cancelar
         </button>
-        <button *ngIf="editUser" [disabled]="isLoading" type="button" class="btn btn-warning"
-          (click)="modificarAdministrador()">
+        <button *ngIf="editUser" [disabled]="isLoading" type="button" class="btn btn-warning" (click)="modificarAdministrador()">
           Modificar
         </button>
         <button *ngIf="editUser" type="button" class="btn btn-danger" (click)="eliminarAdministrador()">
