@@ -2,9 +2,9 @@ import {Component, HostBinding, OnDestroy} from '@angular/core';
 import {AbstractControl, FormBuilder, Validators} from '@angular/forms';
 import {Router} from '@angular/router';
 import {Subject} from 'rxjs';
-import {LoginService} from "../../services/login.service";
+import {LoginService} from "./core-login/login.service";
 import Swal from "sweetalert2";
-import {LoginDataRequest} from "../../interface";
+import {LoginDataRequest} from "./core-login/auth.interface";
 
 @Component({
   selector: 'app-login',

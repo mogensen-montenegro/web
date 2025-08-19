@@ -29,16 +29,15 @@
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-span{
+span {
   padding-top: 10px;
-    display: block;
-    padding-left: 20px;
-    padding-bottom: 10px;
-    display: absolute;
-    position: relative;
+  display: block;
+  padding-left: 20px;
+  padding-bottom: 10px;
+  position: relative;
 }
 
-.efecto-cartel{
+.efecto-cartel {
   animation: fadeinout 5s linear;
   opacity: 0;
 }

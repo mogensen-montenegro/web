@@ -1,6 +1,6 @@
 export interface SidebarConfig {
-    id: string;
-    name: string;
-    url: string;
-    icon: string;
+  id: string;
+  name: string;
+  url: string;
+  icon: string;
 }

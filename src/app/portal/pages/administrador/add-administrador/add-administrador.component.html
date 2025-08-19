@@ -1,16 +1,15 @@
 <ng-container>
-  <form class="modal-dialog" [formGroup]="agregarUsuarioForm" autocomplete="off">
+  <form class="modal-dialog" [formGroup]="administradorForm" autocomplete="off">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="exampleModalLabel">
           {{ editUser ? 'Modificar Administrador' : 'Agregar Administrador' }}
         </h5>
-
       </div>
       <div class="modal-body">
         <div class="row">
           <div class="col">
-            <span class="subtitle color-principal"> Datos Generales</span>
+            <span class="subtitle color-principal">Datos Generales</span>
           </div>
         </div>
         <div class="row">
@@ -30,7 +29,6 @@
             <input type="text" [(ngModel)]="telefono" class="observaciones" [ngModelOptions]="{standalone: true}"/>
           </div>
         </div>
-
         <div class="row pt-1">
           <div class="col-12 col-sm-4 mt-3">
             <i class="fa fa-house pr-2 color-principal"></i>
@@ -43,12 +41,10 @@
             <input type="text" [(ngModel)]="consorcio" class="observaciones" [ngModelOptions]="{standalone: true}"/>
           </div>
         </div>
-
         <hr/>
-
         <div class="row">
           <div class="col">
-            <span class="subtitle color-principal"> Credenciales de Administrador</span>
+            <span class="subtitle color-principal">Credenciales de Administrador</span>
           </div>
         </div>
         <div class="row" id="registro">
@@ -57,7 +53,6 @@
             <span>Nombre Usuario</span>
             <input type="text" [(ngModel)]="nombreUsuario" class="observaciones" [ngModelOptions]="{standalone: true}"/>
           </div>
-
           <div class="col-6 col-sm-4 mt-3">
             <i class="fa fa-key pr-2 color-principal"></i>
             <span> Password</span>
@@ -67,7 +62,7 @@
             <i class="fa fa-key pr-2 color-principal"></i>
             <i class="fa fa-key pr-2 color-principal"></i>
             <span> Repetir Password</span>
-            <input type="text" [(ngModel)]="password2" class="observaciones" [ngModelOptions]="{standalone: true}"/>
+            <input type="text" [(ngModel)]="passwordConfirm" class="observaciones" [ngModelOptions]="{standalone: true}"/>
           </div>
         </div>
       </div>
@@ -81,7 +76,7 @@
         <button *ngIf="editUser" type="button" class="btn btn-danger" (click)="eliminarAdministrador()">
           Eliminar
         </button>
-        <button *ngIf="!editUser" type="button" class="btn btn-warning" (click)="agregarConsorcio()">
+        <button *ngIf="!editUser" type="button" class="btn btn-warning" (click)="agregarAdministrador()">
           Agregar
         </button>
       </div>

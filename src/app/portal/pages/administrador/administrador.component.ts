@@ -1,76 +1,134 @@
-import { CommonModule } from '@angular/common';
-import { Component, OnDestroy } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { of, Subject, switchMap, takeUntil } from 'rxjs';
-import { AdministradorData } from '../../interface/dataUser.interface';
+import {CommonModule} from '@angular/common';
+import {Component, OnDestroy, OnInit} from '@angular/core';
+import {FormsModule} from '@angular/forms';
+import {Subject, takeUntil} from 'rxjs';
 import Swal from 'sweetalert2';
-import { AddAdministradorComponent } from '../add-administrador/add-administrador.component';
+import {AddAdministradorComponent} from './add-administrador/add-administrador.component';
+import {HttpClientModule} from '@angular/common/http';
+import {Administrador, AdministradorResponse} from "./core-administrador/administrador.interface";
+import {AdministradorService} from "./core-administrador/administrador.service";
 
 @Component({
   selector: 'app-administrador',
   templateUrl: './administrador.component.html',
   styleUrls: ['./administrador.component.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, AddAdministradorComponent]
+  imports: [CommonModule, FormsModule, HttpClientModule, AddAdministradorComponent]
 })
-export class AdministradorComponent implements OnDestroy{
-  public busqueda: string = '';
-  public busquedaHandle: string = '';
-  public busquedaEmpty: string = '';
-  public data: Array<AdministradorData> = [
-    {nombre: 'Jorge Martinez',
-      email: 'jorgitoMar@gmail.com',
-      telefono: '1143256535',
-      direccion: 'calle falsa 123',
-      cantidadConsorcio: 4
-    }
-  ];
-  private destroy$: Subject<void> = new Subject();
-  public showEmpty:boolean = false;
-  public spinner: boolean = false;
+export class AdministradorComponent implements OnInit, OnDestroy {
+  public busqueda = '';
+  public busquedaEmpty = '';
+  public administradores: Administrador[] = [];
+  private administradoresAll: Administrador[] = [];
+  private destroy$ = new Subject<void>();
+  public showEmpty = false;
+  public loading = false;
 
-  constructor(){
+  constructor(private adminSvc: AdministradorService) {
+  }
+
+  ngOnInit(): void {
+    this.cargarAdministradores();
+  }
+
+  private getUserId(): string {
+    return localStorage.getItem('userId') ?? '689c8f69e1e0a8d54f2229b2';
+  }
+
+  private cargarAdministradores(): void {
+    this.loading = true;
+    this.showEmpty = false;
+    this.adminSvc
+      .getAll(this.getUserId())
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (resp: AdministradorResponse) => {
+          this.administradoresAll = resp.body ?? [];
+          this.administradores = [...this.administradoresAll];
+          this.showEmpty = this.administradores.length === 0;
+          this.loading = false;
+        },
+        error: (err) => {
+          this.loading = false;
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No se pudieron cargar los administradores',
+          }).then();
+          console.error(err);
+        },
+      });
   }
 
   public crearNuevoAdministrador(): void {
-
   }
+
   public buscarData(): void {
+    const term = this.busqueda.trim().toLowerCase();
+    if (!term) {
+      this.administradores = [...this.administradoresAll];
+      this.showEmpty = this.administradores.length === 0;
+      this.busquedaEmpty = '';
+      return;
+    }
 
+    const matches = (a: Administrador, t: string) =>
+      (a.nombre ?? '').toLowerCase().includes(t) ||
+      (a.email ?? '').toLowerCase().includes(t) ||
+      (a.telefono ?? '').toLowerCase().includes(t) ||
+      (a.direccion ?? '').toLowerCase().includes(t);
+
+    this.administradores = this.administradoresAll.filter((a) => matches(a, term));
+    this.showEmpty = this.administradores.length === 0;
+    this.busquedaEmpty = this.busqueda;
   }
 
-  public eliminarConsorcio():void{
-        Swal.fire({
-      title: `Eliminar Consorcio`,
-      text: `¿Desea eliminar el consorcio (nombre consorcio)?`,
+  public eliminarAdministrador(usuario: Administrador): void {
+    Swal.fire({
+      title: `Eliminar Administrador`,
+      text: `¿Desea eliminar el administrador ${usuario.nombre}?`,
       icon: 'question',
       showCancelButton: true,
       backdrop: false,
       confirmButtonColor: '#dc3545',
-      confirmButtonText: 'Aceptar',
+      confirmButtonText: 'Eliminar',
+      cancelButtonText: 'Cancelar',
     }).then((result) => {
-      if (result.isConfirmed) {
-      Swal.fire({
-        position: 'center',
-        icon: 'success',
-        title: '¡Listo!',
-        text: 'El consorcio se eliminó correctamente',
-        showConfirmButton: false,
-        timer: 1500,
-      });
-
-      }
+      if (!result.isConfirmed || !usuario._id) return;
+      this.adminSvc
+        .deleteById(usuario._id)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            Swal.fire({
+              position: 'center',
+              icon: 'success',
+              title: '¡Listo!',
+              text: 'El administrador se eliminó correctamente',
+              showConfirmButton: false,
+              timer: 1200,
+            }).then();
+            this.cargarAdministradores();
+          },
+          error: (err) => {
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: 'No se pudo eliminar el administrador',
+            }).then();
+            console.error(err);
+          },
+        });
     });
   }
 
-    public cerrarModal(): void {
+  public cerrarModal(): void {
     // @ts-ignore
     $('#agregarEjercicio').modal('hide');
   }
 
-  public ngOnDestroy(): void {
+  ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.unsubscribe();
   }
-
 }

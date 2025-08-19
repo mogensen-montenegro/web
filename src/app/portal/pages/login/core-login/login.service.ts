@@ -2,8 +2,8 @@ import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {Router} from '@angular/router';
 import {Observable, tap} from 'rxjs';
-import {LoginDataRequest, LoginResponse} from '../interface';
 import {environment} from 'src/environments/environment';
+import {LoginDataRequest, LoginResponse} from "./auth.interface";
 
 @Injectable({providedIn: 'root'})
 export class LoginService {

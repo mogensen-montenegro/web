@@ -7,7 +7,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
-import { LoginService } from '../../services/login.service';
+import { LoginService } from '../../pages/login/core-login/login.service';
 
 @Component({
   standalone: true,
