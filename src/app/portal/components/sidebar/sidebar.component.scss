@@ -64,32 +64,39 @@ $white: #ffffff;
 .sidebar-nav {
   background: $sidebar;
   padding: 15px 0 0 0px;
+
   ul {
     margin: 0px;
     padding: 0px;
+
     li {
       list-style: none;
+
       a {
         width: 200px;
         color: $sidebar-text;
         padding: 8px 35px 8px 15px;
         display: block;
+
         &.active,
         &:hover {
           color: $themecolor;
           text-decoration: none;
         }
+
         &.active,
         li a:hover {
           font-weight: 500;
           color: white;
         }
       }
+
       svg {
         fill: $themecolor;
         margin-top: 8px;
         margin-left: 15px;
       }
+
       svg:last-child {
         margin-right: 10px;
       }

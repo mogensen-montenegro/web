@@ -1,4 +1,4 @@
-import {SidebarConfig} from "./sidebar.interfaces"
+import {SidebarConfig} from "./sidebar.interface"
 
 export const GYM_ROUTES_CONFIG: SidebarConfig[] = [
   {

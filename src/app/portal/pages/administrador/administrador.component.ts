@@ -106,7 +106,7 @@ export class AdministradorComponent implements OnInit, OnDestroy {
               title: '¡Listo!',
               text: 'El administrador se eliminó correctamente',
               showConfirmButton: false,
-              timer: 1200,
+              timer: 3000,
             }).then();
             this.cargarAdministradores();
           },

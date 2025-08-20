@@ -11,7 +11,7 @@ import {PanelControlComponent} from './portal/pages/panel-control/panel-control.
 import {AdministradorComponent} from './portal/pages/administrador/administrador.component';
 import {ConsorciosComponent} from './portal/pages/consorcios/consorcios.component';
 import {ArchivosComponent} from './portal/pages/archivos/archivos.component';
-import {AuthGuard} from "./portal/pages/login/core-login/auth.guard";
+import {AuthGuard} from "./portal/pages/login/login-core/auth.guard";
 
 const routes: Routes = [
   {

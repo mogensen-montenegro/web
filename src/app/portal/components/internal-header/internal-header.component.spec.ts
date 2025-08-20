@@ -1,6 +1,6 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {ComponentFixture, TestBed} from '@angular/core/testing';
 
-import { InternalHeaderComponent } from './internal-header.component';
+import {InternalHeaderComponent} from './internal-header.component';
 
 describe('InternalHeaderComponent', () => {
   let component: InternalHeaderComponent;

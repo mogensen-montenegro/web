@@ -28,7 +28,7 @@
         <th>Teléfono</th>
         <th>Dirección</th>
         <th>Consorcios</th>
-        <th class="text-end">Acciones</th>
+        <th>Acciones</th>
       </tr>
       </thead>
       <tbody>
@@ -38,7 +38,7 @@
         <td data-bs-toggle="modal" data-bs-target="#agregarConsorcio">{{ usuario.telefono || '-' }}</td>
         <td data-bs-toggle="modal" data-bs-target="#agregarConsorcio">{{ usuario.direccion || '-' }}</td>
         <td data-bs-toggle="modal" data-bs-target="#agregarConsorcio">{{ usuario.cantConsorcios }}</td>
-        <td class="min-width d-flex justify-content-end">
+        <td class="min-width d-flex">
           <div class="icon-box mr-3" (click)="eliminarAdministrador(usuario)">
             <i class="fa fa-trash color-principal"></i>
           </div>
@@ -59,6 +59,6 @@
 <div class="row px-5 fadeIn" *ngIf="administradores?.length === 0 && showEmpty">
   <div class="box-empty d-flex align-items-center justify-content-center flex-column">
     <img class="icono" src="../../../assets/img/caja.png"/>
-    <span class="pt-2">No se encontraron resultados para <b>{{ busquedaEmpty }}</b></span>
+    <span class="pt-2">No se encontraron resultados.</span>
   </div>
 </div>
