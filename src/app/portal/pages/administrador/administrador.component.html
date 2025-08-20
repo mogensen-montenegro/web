@@ -7,7 +7,7 @@
     <div class="w-400">
       <div class="form">
         <i class="fa fa-search"></i>
-        <input type="text" [(ngModel)]="busqueda" class="form-control form-input" placeholder="Ingrese un valor a buscar..." (keydown.enter)="buscarData()"/>
+        <input type="text" [(ngModel)]="busqueda" (ngModelChange)="buscarData()" class="form-control form-input" placeholder="Ingrese un valor a buscar..." (keydown.enter)="buscarData()"/>
       </div>
     </div>
     <div class="pl-3">

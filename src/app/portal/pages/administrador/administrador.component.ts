@@ -131,8 +131,18 @@ export class AdministradorComponent implements OnInit, OnDestroy {
     }
   }
 
+  private norm(v: unknown): string {
+    return (v ?? '')
+      .toString()
+      .trim()
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+  }
+
   public buscarData(): void {
-    const term = this.busqueda.trim().toLowerCase();
+    const term = this.norm(this.busqueda);
+
     if (!term) {
       this.administradores = [...this.administradoresAll];
       this.showEmpty = this.administradores.length === 0;
@@ -140,13 +150,20 @@ export class AdministradorComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const matches = (a: Administrador, t: string) =>
-      (a.nombre ?? '').toLowerCase().includes(t) ||
-      (a.email ?? '').toLowerCase().includes(t) ||
-      (a.telefono ?? '').toLowerCase().includes(t) ||
-      (a.direccion ?? '').toLowerCase().includes(t);
+    const words = term.split(/\s+/).filter(Boolean);
 
-    this.administradores = this.administradoresAll.filter((a) => matches(a, term));
+    const matches = (a: Administrador): boolean => {
+      const blob = [
+        this.norm(a.nombre),
+        this.norm(a.email),
+        this.norm(a.telefono),
+        this.norm(a.direccion),
+      ].join(' ');
+
+      return words.every(w => blob.includes(w));
+    };
+
+    this.administradores = this.administradoresAll.filter(matches);
     this.showEmpty = this.administradores.length === 0;
     this.busquedaEmpty = this.busqueda;
   }
