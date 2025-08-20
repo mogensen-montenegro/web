@@ -2,81 +2,83 @@
   <form class="modal-dialog" [formGroup]="administradorForm" autocomplete="off">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">
+        <h5 class="modal-title">
           {{ editUser ? 'Modificar Administrador' : 'Agregar Administrador' }}
         </h5>
       </div>
+
       <div class="modal-body">
         <div class="row">
-          <div class="col">
-            <span class="subtitle color-principal">Datos Generales</span>
-          </div>
+          <div class="col"><span class="subtitle color-principal">Datos Generales</span></div>
         </div>
+
         <div class="row">
           <div id="nombre" class="col-12 col-sm-4 mt-3">
             <i class="fa fa-user pr-2 color-principal"></i>
             <span>Nombre</span>
-            <input type="text" [(ngModel)]="nombre" [ngModelOptions]="{standalone: true}"/>
+            <input type="text" formControlName="nombre"/>
           </div>
           <div class="col-12 col-sm-4 mt-3">
             <i class="fa fa-at pr-2 color-principal"></i>
             <span>Email</span>
-            <input type="text" [(ngModel)]="email" class="observaciones" [ngModelOptions]="{standalone: true}"/>
+            <input type="text" formControlName="email" class="observaciones"/>
           </div>
           <div id="telefono" class="col-12 col-sm-4 mt-3">
             <i class="fa fa-phone pr-2 color-principal"></i>
             <span>Teléfono</span>
-            <input type="text" [(ngModel)]="telefono" class="observaciones" [ngModelOptions]="{standalone: true}"/>
+            <input type="text" formControlName="telefono" class="observaciones"/>
           </div>
         </div>
+
         <div class="row pt-1">
           <div class="col-12 col-sm-4 mt-3">
             <i class="fa fa-house pr-2 color-principal"></i>
             <span class="d-block">Dirección</span>
-            <input type="text" [(ngModel)]="direccion" class="observaciones" [ngModelOptions]="{standalone: true}"/>
+            <input type="text" formControlName="direccion" class="observaciones"/>
           </div>
           <div class="col-12 col-sm-4 mt-3">
             <i class="fa fa-building pr-2 color-principal"></i>
             <span class="d-block">Consorcios</span>
-            <input type="text" [(ngModel)]="consorcio" class="observaciones" [ngModelOptions]="{standalone: true}"/>
+            <input type="number" formControlName="cantConsorcios" class="observaciones"/>
           </div>
         </div>
+
         <hr/>
         <div class="row">
-          <div class="col">
-            <span class="subtitle color-principal">Credenciales de Administrador</span>
-          </div>
+          <div class="col"><span class="subtitle color-principal">Credenciales de Administrador</span></div>
         </div>
+
         <div class="row" id="registro">
           <div id="nombreUsuario" class="col-12 col-sm-4 mt-3">
             <i class="fa fa-user pr-2 color-principal"></i>
             <span>Nombre Usuario</span>
-            <input type="text" [(ngModel)]="nombreUsuario" class="observaciones" [ngModelOptions]="{standalone: true}"/>
+            <input type="text" formControlName="user" class="observaciones"/>
           </div>
+
           <div class="col-6 col-sm-4 mt-3">
             <i class="fa fa-key pr-2 color-principal"></i>
-            <span> Password</span>
-            <input type="password" [(ngModel)]="password" class="password" [ngModelOptions]="{standalone: true}"/>
+            <span>Password</span>
+            <input type="password" formControlName="password" class="password"/>
           </div>
-          <div class="col-12 col-sm-4 mt-3">
+
+          <div class="col-12 col-sm-4 mt-3" *ngIf="!editUser">
             <i class="fa fa-key pr-2 color-principal"></i>
-            <i class="fa fa-key pr-2 color-principal"></i>
-            <span> Repetir Password</span>
-            <input type="text" [(ngModel)]="passwordConfirm" class="observaciones" [ngModelOptions]="{standalone: true}"/>
+            <span>Repetir Password</span>
+            <input type="password" formControlName="passwordConfirm" class="observaciones"/>
+          </div>
+
+          <div class="col-12" *ngIf="hasPasswordMismatch">
+            <small class="text-danger">Las contraseñas no coinciden.</small>
           </div>
         </div>
       </div>
+
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" (click)="closeModal()">
-          Cancelar
-        </button>
-        <button *ngIf="editUser" [disabled]="isLoading" type="button" class="btn btn-warning" (click)="modificarAdministrador()">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" (click)="closeModal()">Cancelar</button>
+        <button *ngIf="editUser" [disabled]="isLoading || administradorForm.invalid" type="button" class="btn btn-warning" (click)="modificarAdministrador()">
           Modificar
         </button>
-        <button *ngIf="editUser" type="button" class="btn btn-danger" (click)="eliminarAdministrador()">
-          Eliminar
-        </button>
-        <button *ngIf="!editUser" type="button" class="btn btn-warning" (click)="agregarAdministrador()">
+        <button *ngIf="!editUser" [disabled]="isLoading || administradorForm.invalid" type="button" class="btn btn-warning" (click)="agregarAdministrador()">
           Agregar
         </button>
       </div>

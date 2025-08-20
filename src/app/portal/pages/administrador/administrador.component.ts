@@ -8,6 +8,8 @@ import {HttpClientModule} from '@angular/common/http';
 import {Administrador, AdministradorResponse} from "./core-administrador/administrador.interface";
 import {AdministradorService} from "./core-administrador/administrador.service";
 
+declare const bootstrap: any;
+
 @Component({
   selector: 'app-administrador',
   templateUrl: './administrador.component.html',
@@ -23,6 +25,8 @@ export class AdministradorComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   public showEmpty = false;
   public loading = false;
+  public isEdit = false;
+  public selectedAdmin: Administrador | null = null;
 
   constructor(private adminSvc: AdministradorService) {
   }
@@ -50,17 +54,81 @@ export class AdministradorComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           this.loading = false;
-          Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'No se pudieron cargar los administradores',
-          }).then();
+          Swal.fire({icon: 'error', title: 'Error', text: 'No se pudieron cargar los administradores'}).then();
           console.error(err);
         },
       });
   }
 
   public crearNuevoAdministrador(): void {
+    this.isEdit = false;
+    this.selectedAdmin = null;
+    this.openModal();
+  }
+
+  public editarAdministrador(usuario: Administrador): void {
+    this.isEdit = true;
+    this.selectedAdmin = {...usuario};
+    this.openModal();
+  }
+
+  private openModal(): void {
+    const modalEl = document.getElementById('agregarConsorcio');
+    if (!modalEl) return;
+    const modal = new bootstrap.Modal(modalEl);
+    modal.show();
+  }
+
+  public onSubmit(evt: { mode: 'create' | 'edit', payload: Administrador, id?: string }): void {
+    const userId = this.getUserId();
+    if (evt.mode === 'create') {
+      this.adminSvc.crearAdministrador(userId, evt.payload)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            Swal.fire({
+              position: 'center',
+              icon: 'success',
+              title: '¡Listo!',
+              text: 'Administrador creado correctamente',
+              timer: 2000,
+              showConfirmButton: false
+            }).then();
+            this.cargarAdministradores();
+            this.cerrarModal();
+          },
+          error: (err) => {
+            Swal.fire({icon: 'error', title: 'Error', text: 'No se pudo crear el administrador'}).then();
+            console.error(err);
+          }
+        });
+    } else {
+      if (!evt.id) return;
+      if (!evt.payload.password) {
+        // @ts-ignore
+        delete evt.payload.password;
+      }
+      this.adminSvc.updateById(evt.id, userId, evt.payload)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            Swal.fire({
+              position: 'center',
+              icon: 'success',
+              title: '¡Listo!',
+              text: 'Administrador actualizado correctamente',
+              timer: 2000,
+              showConfirmButton: false
+            }).then();
+            this.cargarAdministradores();
+            this.cerrarModal();
+          },
+          error: (err) => {
+            Swal.fire({icon: 'error', title: 'Error', text: 'No se pudo modificar el administrador'}).then();
+            console.error(err);
+          }
+        });
+    }
   }
 
   public buscarData(): void {
@@ -106,16 +174,12 @@ export class AdministradorComponent implements OnInit, OnDestroy {
               title: '¡Listo!',
               text: 'El administrador se eliminó correctamente',
               showConfirmButton: false,
-              timer: 3000,
+              timer: 3000
             }).then();
             this.cargarAdministradores();
           },
           error: (err) => {
-            Swal.fire({
-              icon: 'error',
-              title: 'Error',
-              text: 'No se pudo eliminar el administrador',
-            }).then();
+            Swal.fire({icon: 'error', title: 'Error', text: 'No se pudo eliminar el administrador'}).then();
             console.error(err);
           },
         });
@@ -123,8 +187,10 @@ export class AdministradorComponent implements OnInit, OnDestroy {
   }
 
   public cerrarModal(): void {
-    // @ts-ignore
-    $('#agregarEjercicio').modal('hide');
+    const modalEl = document.getElementById('agregarConsorcio');
+    if (!modalEl) return;
+    const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+    modal.hide();
   }
 
   ngOnDestroy(): void {

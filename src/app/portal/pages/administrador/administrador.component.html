@@ -11,7 +11,7 @@
       </div>
     </div>
     <div class="pl-3">
-      <button class="btn btn-primary h-button btn-color" data-bs-toggle="modal" data-bs-target="#agregarConsorcio" (click)="crearNuevoAdministrador()">
+      <button class="btn btn-primary h-button btn-color" (click)="crearNuevoAdministrador()">
         Crear Nuevo Administrador
       </button>
     </div>
@@ -33,16 +33,16 @@
       </thead>
       <tbody>
       <tr class="pointer usuario-selector fadeIn" *ngFor="let usuario of administradores">
-        <td data-bs-toggle="modal" data-bs-target="#agregarConsorcio">{{ usuario.nombre || '-' }}</td>
-        <td data-bs-toggle="modal" data-bs-target="#agregarConsorcio">{{ usuario.email || '-' }}</td>
-        <td data-bs-toggle="modal" data-bs-target="#agregarConsorcio">{{ usuario.telefono || '-' }}</td>
-        <td data-bs-toggle="modal" data-bs-target="#agregarConsorcio">{{ usuario.direccion || '-' }}</td>
-        <td data-bs-toggle="modal" data-bs-target="#agregarConsorcio">{{ usuario.cantConsorcios }}</td>
+        <td (click)="editarAdministrador(usuario)">{{ usuario.nombre || '-' }}</td>
+        <td (click)="editarAdministrador(usuario)">{{ usuario.email || '-' }}</td>
+        <td (click)="editarAdministrador(usuario)">{{ usuario.telefono || '-' }}</td>
+        <td (click)="editarAdministrador(usuario)">{{ usuario.direccion || '-' }}</td>
+        <td (click)="editarAdministrador(usuario)">{{ usuario.cantConsorcios }}</td>
         <td class="min-width d-flex">
           <div class="icon-box mr-3" (click)="eliminarAdministrador(usuario)">
             <i class="fa fa-trash color-principal"></i>
           </div>
-          <div class="icon-box">
+          <div class="icon-box" (click)="editarAdministrador(usuario)">
             <i class="fa fa-pencil color-principal"></i>
           </div>
         </td>
@@ -53,7 +53,14 @@
 </div>
 
 <div class="modal fade" id="agregarConsorcio" tabindex="-1" aria-labelledby="agregarConsorcioLabel" aria-hidden="true">
-  <app-add-administrador (clicked)="cerrarModal()"></app-add-administrador>
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <app-add-administrador
+      [editUser]="isEdit"
+      [initialData]="selectedAdmin"
+      (submit)="onSubmit($event)"
+      (clicked)="cerrarModal()">
+    </app-add-administrador>
+  </div>
 </div>
 
 <div *ngIf="this.loading" class="empty-container">

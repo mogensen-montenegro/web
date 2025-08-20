@@ -1,7 +1,7 @@
 import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {environment} from 'src/environments/environment';
-import {Observable, tap} from "rxjs";
+import {Observable, tap} from 'rxjs';
 import {Administrador, AdministradorResponse} from "./administrador.interface";
 
 @Injectable({providedIn: 'root'})
@@ -11,13 +11,12 @@ export class AdministradorService {
   constructor(private http: HttpClient) {
   }
 
-  crearAdministrador(idUser: number, formData: Administrador): Observable<AdministradorResponse> {
-    return this.http.post<AdministradorResponse>(`${this.base_url}/administrador/crear/${idUser}`, formData)
-      .pipe(
-        tap((response: AdministradorResponse) => {
-          return response;
-        })
-      );
+  crearAdministrador(idUser: string, formData: Administrador): Observable<AdministradorResponse> {
+    return this.http.post<AdministradorResponse>(`${this.base_url}/administrador/create/${idUser}`, formData).pipe(tap((response) => response));
+  }
+
+  updateById(idAdmin: string, idUser: string, formData: Administrador): Observable<AdministradorResponse> {
+    return this.http.put<AdministradorResponse>(`${this.base_url}/administrador/update/${idUser}/${idAdmin}`, formData).pipe(tap((response) => response));
   }
 
   getAll(userId: string): Observable<AdministradorResponse> {
@@ -25,6 +24,6 @@ export class AdministradorService {
   }
 
   deleteById(id: string) {
-    return this.http.delete<{ ok: boolean; msj: string }>(`${this.base_url}/administrador/${id}`);
+    return this.http.delete<{ ok: boolean; msj: string }>(`${this.base_url}/administrador/delete/${id}`);
   }
 }
