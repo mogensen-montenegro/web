@@ -56,7 +56,14 @@
   <app-add-administrador (clicked)="cerrarModal()"></app-add-administrador>
 </div>
 
-<div *ngIf="administradores?.length === 0 && showEmpty" class="empty-container">
+<div *ngIf="this.loading" class="empty-container">
+  <div class="d-flex align-items-center justify-content-center flex-column">
+    <img class="icono" src="../../../assets/img/cargando.png"/>
+    <span class="pt-2">Cargando...</span>
+  </div>
+</div>
+
+<div *ngIf="!this.loading && administradores?.length === 0 && showEmpty" class="empty-container">
   <div class="d-flex align-items-center justify-content-center flex-column">
     <img class="icono" src="../../../assets/img/default.png"/>
     <span class="pt-2">No se encontraron resultados.</span>
