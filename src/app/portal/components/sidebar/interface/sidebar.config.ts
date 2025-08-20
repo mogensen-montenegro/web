@@ -3,13 +3,13 @@ import {SidebarConfig} from "./sidebar.interface"
 export const GYM_ROUTES_CONFIG: SidebarConfig[] = [
   {
     id: 'consorcio',
-    name: 'Mis Administradores',
+    name: 'Administradores',
     url: '/panel/administrador',
     icon: 'fa-home'
   },
   {
     id: 'consorcios',
-    name: 'Mis Consorcios',
+    name: 'Consorcios',
     url: '/panel/consorcios',
     icon: 'fa-building'
   },
