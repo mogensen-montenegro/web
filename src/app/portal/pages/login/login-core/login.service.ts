@@ -13,6 +13,7 @@ export class LoginService {
   private readonly REFRESH_TOKEN = 'refreshToken';
   private readonly ACCCESS_TOKEN = 'accessToken';
   private readonly SESSION_ID = 'sessionID';
+  private readonly USER_ID = 'userId';
 
   constructor(private http: HttpClient, private router: Router) {
   }
@@ -32,6 +33,9 @@ export class LoginService {
           }
           if (response?.sessionId) {
             localStorage.setItem(this.SESSION_ID, response.sessionId);
+          }
+          if (response?.userId) {
+            localStorage.setItem(this.USER_ID, response.userId);
           }
         })
       );

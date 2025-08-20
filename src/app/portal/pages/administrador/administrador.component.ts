@@ -1,12 +1,13 @@
 import {CommonModule} from '@angular/common';
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {FormsModule} from '@angular/forms';
-import {Subject, takeUntil} from 'rxjs';
+import {filter, Subject, takeUntil} from 'rxjs';
 import Swal from 'sweetalert2';
 import {AddAdministradorComponent} from './add-administrador/add-administrador.component';
 import {HttpClientModule} from '@angular/common/http';
 import {Administrador, AdministradorResponse} from "./core-administrador/administrador.interface";
 import {AdministradorService} from "./core-administrador/administrador.service";
+import {NavigationEnd, Router} from "@angular/router";
 
 declare const bootstrap: any;
 
@@ -28,15 +29,21 @@ export class AdministradorComponent implements OnInit, OnDestroy {
   public isEdit = false;
   public selectedAdmin: Administrador | null = null;
 
-  constructor(private adminSvc: AdministradorService) {
+  constructor(private adminSvc: AdministradorService, private router: Router) {
   }
 
   ngOnInit(): void {
     this.cargarAdministradores();
+
+    this.router.events
+      .pipe(takeUntil(this.destroy$), filter(ev => ev instanceof NavigationEnd))
+      .subscribe(() => {
+        this.cargarAdministradores();
+      });
   }
 
   private getUserId(): string {
-    return localStorage.getItem('userId') ?? '689c8f69e1e0a8d54f2229b2';
+    return localStorage.getItem('userId') ?? '000000000000000000000000';
   }
 
   private cargarAdministradores(): void {

@@ -16,7 +16,7 @@ export class AdministradorService {
   }
 
   updateById(idAdmin: string, idUser: string, formData: Administrador): Observable<AdministradorResponse> {
-    return this.http.put<AdministradorResponse>(`${this.base_url}/administrador/update/${idUser}/${idAdmin}`, formData).pipe(tap((response) => response));
+    return this.http.put<AdministradorResponse>(`${this.base_url}/administrador/update/${idAdmin}/${idUser}`, formData).pipe(tap((response) => response));
   }
 
   getAll(userId: string): Observable<AdministradorResponse> {
