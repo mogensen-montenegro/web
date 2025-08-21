@@ -57,7 +57,14 @@ export class LoginComponent implements OnDestroy {
         this.router.navigate(['/panel']).then();
       },
       error: (err) => {
-        Swal.fire('Error', err.error.msj, 'error').then();
+         Swal.fire({
+          position: 'center',
+          icon: 'error',
+          title: '¡Ups!',
+          text: 'Usuario o Pass incorrectos',
+          showConfirmButton: false,
+          timer: 2500
+        });
       },
       complete: () => {
       }
