@@ -39,7 +39,7 @@ export class AddAdministradorComponent implements OnDestroy, OnChanges {
 
   private createForm(): void {
     this.administradorForm = this.fb.group({
-        nombre: ['', [Validators.required, Validators.minLength(2)]],
+        nombre: ['', [Validators.required]],
         email: ['', [Validators.email]],
         telefono: [''],
         direccion: [''],
@@ -68,7 +68,7 @@ export class AddAdministradorComponent implements OnDestroy, OnChanges {
     if (!passwordCtrl || !passwordConfirmCtrl) return;
 
     if (this.editUser) {
-      passwordCtrl.clearValidators();
+      passwordCtrl.setValidators([Validators.minLength(6)]);
       passwordConfirmCtrl.clearValidators();
       this.administradorForm.setValidators(this.passwordsMatchValidator);
     } else {
@@ -163,6 +163,13 @@ export class AddAdministradorComponent implements OnDestroy, OnChanges {
 
   get f() {
     return this.administradorForm.controls;
+  }
+
+  get showPwdMismatch(): boolean {
+    const confirm = this.f['passwordConfirm'];
+    return (
+      confirm.value && (confirm.dirty || confirm.touched) && this.hasPasswordMismatch
+    );
   }
 
   get hasPasswordMismatch(): boolean {

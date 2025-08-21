@@ -6,73 +6,70 @@
           {{ editUser ? 'Modificar Administrador' : 'Agregar Administrador' }}
         </h5>
       </div>
-
       <div class="modal-body">
-        <div class="row">
-          <div class="col"><span class="subtitle color-principal">Datos Generales</span></div>
-        </div>
-
-        <div class="row">
-          <div id="nombre" class="col-12 col-sm-4 mt-3">
-            <i class="fa fa-user pr-2 color-principal"></i>
-            <span>Nombre</span>
-            <input type="text" formControlName="nombre"/>
-          </div>
-          <div class="col-12 col-sm-4 mt-3">
-            <i class="fa fa-at pr-2 color-principal"></i>
-            <span>Email</span>
-            <input type="text" formControlName="email" class="observaciones"/>
-          </div>
-          <div id="telefono" class="col-12 col-sm-4 mt-3">
-            <i class="fa fa-phone pr-2 color-principal"></i>
-            <span>Teléfono</span>
-            <input type="text" formControlName="telefono" class="observaciones"/>
+        <div class="row padding-bottom-1">
+          <div class="col">
+            <span class="subtitle color-principal">Datos Generales</span>
           </div>
         </div>
-
-        <div class="row pt-1">
-          <div class="col-12 col-sm-4 mt-3">
-            <i class="fa fa-house pr-2 color-principal"></i>
-            <span class="d-block">Dirección</span>
-            <input type="text" formControlName="direccion" class="observaciones"/>
+        <div class="row g-3 padding-bottom-1">
+          <div class="col-12 col-md-6">
+            <label class="form-label">
+              <i class="fa fa-user me-2 color-principal"></i> Nombre
+            </label>
+            <input type="text" class="form-control" formControlName="nombre">
           </div>
-          <div class="col-12 col-sm-4 mt-3">
-            <i class="fa fa-building pr-2 color-principal"></i>
-            <span class="d-block">Consorcios</span>
-            <input type="number" formControlName="cantConsorcios" class="observaciones"/>
+          <div class="col-12 col-md-6">
+            <label class="form-label">
+              <i class="fa fa-at me-2 color-principal"></i> Email
+            </label>
+            <input type="text" class="form-control" formControlName="email">
           </div>
         </div>
-
+        <div class="row g-3">
+          <div class="col-12 col-md-6">
+            <label class="form-label">
+              <i class="fa fa-phone me-2 color-principal"></i> Teléfono
+            </label>
+            <input type="text" class="form-control" formControlName="telefono">
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label">
+              <i class="fa fa-house me-2 color-principal"></i> Dirección
+            </label>
+            <input type="text" class="form-control" formControlName="direccion">
+          </div>
+        </div>
         <hr/>
         <div class="row">
           <div class="col"><span class="subtitle color-principal">Credenciales de Administrador</span></div>
         </div>
-
         <div class="row" id="registro">
           <div id="nombreUsuario" class="col-12 col-sm-4 mt-3">
             <i class="fa fa-user pr-2 color-principal"></i>
-            <span>Nombre Usuario</span>
+            <span>Usuario</span>
             <input type="text" formControlName="user" class="observaciones"/>
           </div>
-
           <div class="col-6 col-sm-4 mt-3">
             <i class="fa fa-key pr-2 color-principal"></i>
-            <span>Password</span>
+            <span>Contraseña</span>
             <input type="password" formControlName="password" class="password"/>
+            <div *ngIf="f['password'].touched && f['password'].errors?.['minlength']">
+              <small class="text-danger">
+                Debe tener mínimo 6 caracteres.
+              </small>
+            </div>
           </div>
-
           <div class="col-12 col-sm-4 mt-3">
             <i class="fa fa-key pr-2 color-principal"></i>
-            <span>Repetir Password</span>
+            <span>Repetir Contraseña</span>
             <input type="password" formControlName="passwordConfirm" class="observaciones"/>
-          </div>
-
-          <div class="col-12" *ngIf="hasPasswordMismatch">
-            <small class="text-danger">Las contraseñas no coinciden.</small>
+            <small class="text-danger" *ngIf="showPwdMismatch">
+              Las contraseñas no coinciden.
+            </small>
           </div>
         </div>
       </div>
-
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" (click)="closeModal()">Cancelar</button>
         <button *ngIf="editUser" [disabled]="isLoading || administradorForm.invalid" type="button" class="btn btn-warning" (click)="modificarAdministrador()">

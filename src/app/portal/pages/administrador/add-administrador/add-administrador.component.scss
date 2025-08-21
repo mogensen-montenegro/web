@@ -10,6 +10,15 @@ input, textarea {
   transition: all 0.3s ease;
 }
 
+input:focus, textarea:focus {
+  background-color: #e1dfdf;
+  box-shadow: 0 0 0 2px #b9b9b9;
+}
+
+.padding-bottom-1 {
+  padding-bottom: 1rem;
+}
+
 .subtitle {
   font-weight: 900;
   font-size: 18px;
