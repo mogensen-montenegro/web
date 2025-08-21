@@ -57,7 +57,7 @@ export class AddAdministradorComponent implements OnDestroy, OnChanges {
   private passwordsMatchValidator = (group: AbstractControl): ValidationErrors | null => {
     const pass = group.get('password')?.value ?? '';
     const confirm = group.get('passwordConfirm')?.value ?? '';
-    if (!pass && !confirm) return null;
+    if (this.editUser && !pass && !confirm) return null;
     return pass === confirm ? null : {passwordMismatch: true};
   };
 
@@ -70,9 +70,11 @@ export class AddAdministradorComponent implements OnDestroy, OnChanges {
     if (this.editUser) {
       passwordCtrl.clearValidators();
       passwordConfirmCtrl.clearValidators();
+      this.administradorForm.setValidators(this.passwordsMatchValidator);
     } else {
       passwordCtrl.setValidators([Validators.required, Validators.minLength(6)]);
       passwordConfirmCtrl.setValidators([Validators.required]);
+      this.administradorForm.setValidators(this.passwordsMatchValidator);
     }
 
     passwordCtrl.updateValueAndValidity({emitEvent: false});
