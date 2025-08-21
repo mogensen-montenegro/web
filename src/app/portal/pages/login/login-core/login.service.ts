@@ -2,8 +2,8 @@ import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {Router} from '@angular/router';
 import {Observable, tap} from 'rxjs';
-import {LoginDataRequest, LoginResponse} from '../interface';
 import {environment} from 'src/environments/environment';
+import {LoginDataRequest, LoginResponse} from "./auth.interface";
 
 @Injectable({providedIn: 'root'})
 export class LoginService {
@@ -13,6 +13,7 @@ export class LoginService {
   private readonly REFRESH_TOKEN = 'refreshToken';
   private readonly ACCCESS_TOKEN = 'accessToken';
   private readonly SESSION_ID = 'sessionID';
+  private readonly USER_ID = 'userId';
 
   constructor(private http: HttpClient, private router: Router) {
   }
@@ -32,6 +33,9 @@ export class LoginService {
           }
           if (response?.sessionId) {
             localStorage.setItem(this.SESSION_ID, response.sessionId);
+          }
+          if (response?.userId) {
+            localStorage.setItem(this.USER_ID, response.userId);
           }
         })
       );

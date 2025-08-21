@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { ConsorcioData } from '../../interface/dataUser.interface';
+import { ConsorcioData } from '../consorcios/interface/consorcio.interface';
 
 @Component({
   selector: 'app-archivos',

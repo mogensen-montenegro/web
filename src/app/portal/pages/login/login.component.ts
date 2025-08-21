@@ -2,9 +2,9 @@ import {Component, HostBinding, OnDestroy} from '@angular/core';
 import {AbstractControl, FormBuilder, Validators} from '@angular/forms';
 import {Router} from '@angular/router';
 import {Subject} from 'rxjs';
-import {LoginService} from "../../services/login.service";
+import {LoginService} from "./login-core/login.service";
 import Swal from "sweetalert2";
-import {LoginDataRequest} from "../../interface";
+import {LoginDataRequest} from "./login-core/auth.interface";
 
 @Component({
   selector: 'app-login',
@@ -57,7 +57,14 @@ export class LoginComponent implements OnDestroy {
         this.router.navigate(['/panel']).then();
       },
       error: (err) => {
-        Swal.fire('Error', err.error.msj, 'error').then();
+         Swal.fire({
+          position: 'center',
+          icon: 'error',
+          title: '¡Ups!',
+          text: 'Usuario o Pass incorrectos',
+          showConfirmButton: false,
+          timer: 2500
+        });
       },
       complete: () => {
       }

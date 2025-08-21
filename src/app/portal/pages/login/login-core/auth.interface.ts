@@ -12,6 +12,7 @@ export interface LoginResponse {
   auth: TokenInterface;
   sessionId: string;
   version: string;
+  userId: string;
   sessionTimeout: Data;
 }
 

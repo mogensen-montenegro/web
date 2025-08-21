@@ -1,19 +1,14 @@
-<ng-container>
 <div id="main-wrapper">
-  <app-internal-header></app-internal-header>
-  <div class="row">
-    <div class="col-2 sidebar">
-    <app-sidebar></app-sidebar>
-    </div>
-    <div class="col-12 col-sm-10">
+  <app-internal-header class="topbar"></app-internal-header>
+
+  <div class="content">
+    <aside class="sidebar">
+      <app-sidebar></app-sidebar>
+    </aside>
+    <main class="main">
       <router-outlet></router-outlet>
-    </div>
+    </main>
   </div>
 
-  <!--Sistema de rutas-->
-
-  <footer class="footer d-flex justify-content-center aling-items-center">
-    <span class="pt-3">© 2025 Derechos exclusivos de Mogensen Montenegro </span>
-  </footer>
+  <app-footer class="footer"></app-footer>
 </div>
-</ng-container>

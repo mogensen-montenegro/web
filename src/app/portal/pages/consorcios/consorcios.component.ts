@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
-import { AdministradorData, ConsorcioData } from '../../interface/dataUser.interface';
+import { AdministradorData, ConsorcioData } from './interface/consorcio.interface';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { AddConsorcioComponent } from '../add-consorcio/add-consorcio.component';
+import { AddConsorcioComponent } from './add-consorcio/add-consorcio.component';
 
 @Component({
   selector: 'app-consorcios',

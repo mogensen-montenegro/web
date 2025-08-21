@@ -1,6 +1,6 @@
-$color: #b91828;;
+$color: #b91828;
 
-.box-languaje{
+.box-languaje {
   position: absolute;
   top: 109px;
   right: 12px;
@@ -14,15 +14,14 @@ $color: #b91828;;
   cursor: pointer;
   background: white;
   border-radius: 0 0 10px 10px;
-  box-shadow: 0px 5px 5px 0px rgba(0,0,0,0.25);
+  box-shadow: 0px 5px 5px 0px rgba(0, 0, 0, 0.25);
 }
 
-
-.icon-big{
+.icon-big {
   width: 30% !important;
 }
 
-.icon{
+.icon {
   width: 23%;
 }
 
@@ -117,12 +116,13 @@ $color: #b91828;;
 .linea-divisora {
   border-bottom: 1px solid rgba(255, 255, 255, 0.5);
 }
+
 hr {
   margin-top: 0;
   margin-bottom: 0;
 }
 
-.text-salir{
+.text-salir {
   color: white;
   font-weight: 500;
   font-size: 18px;

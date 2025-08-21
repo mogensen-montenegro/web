@@ -1,7 +1,4 @@
 input, textarea {
-  width: 700px;
-  width: 100%;
-  text-align: left;
   padding: 10px;
   border: 0;
   outline: 0;
@@ -13,7 +10,16 @@ input, textarea {
   transition: all 0.3s ease;
 }
 
-.subtitle{
+input:focus, textarea:focus {
+  background-color: #e1dfdf;
+  box-shadow: 0 0 0 2px #b9b9b9;
+}
+
+.padding-bottom-1 {
+  padding-bottom: 1rem;
+}
+
+.subtitle {
   font-weight: 900;
   font-size: 18px;
 }
@@ -30,8 +36,7 @@ input, textarea {
   font-weight: 300;
   color: #8D8D8D;
   transition: all 0.3s ease;
-  }
-
+}
 
 input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button {

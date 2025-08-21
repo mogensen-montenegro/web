@@ -1,28 +1,16 @@
 <aside class="left-sidebar">
-    <div class="scroll-sidebar">
-      <nav class="sidebar-nav">
-        <ul id="sidebarnav">
-          <li
-            *ngFor="let item of navigationItems"
-            [id]="item.id"
-            class="d-flex aling-items-center px-3"
-            [ngClass]="{
-              'pt-3': item.id !== 'home' && item.id !== 'userMessage'
-            }"
-          >
-            <div class="d-flex align-items-center w-30">
-              <i class="fa color-principal" [ngClass]="item.icon"></i>
-            </div>
-            <a
-              class="has-arrow waves-effect waves-dark"
-              [routerLink]="item.url"
-              routerLinkActive="active"
-            >
-              <span class="select-option">{{ item.name }}</span>
-            </a>
-
-          </li>
-        </ul>
-      </nav>
-    </div>
-  </aside>
+  <div class="scroll-sidebar">
+    <nav class="sidebar-nav">
+      <ul id="sidebarnav">
+        <li *ngFor="let item of navigationItems" [id]="item.id" class="d-flex aling-items-center px-3" [ngClass]="{'pt-3': item.id !== 'home' && item.id !== 'userMessage'}">
+          <div class="d-flex align-items-center w-30">
+            <i class="fa color-principal" [ngClass]="item.icon"></i>
+          </div>
+          <a class="has-arrow waves-effect waves-dark" [routerLink]="item.url" routerLinkActive="active">
+            <span class="select-option">{{ item.name }}</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</aside>
