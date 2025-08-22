@@ -80,7 +80,7 @@ export class AdministradorComponent implements OnInit, OnDestroy {
   }
 
   private openModal(): void {
-    const modalEl = document.getElementById('agregarConsorcio');
+    const modalEl = document.getElementById('addAdministrador');
     if (!modalEl) return;
     const modal = new bootstrap.Modal(modalEl);
     modal.show();
@@ -211,7 +211,7 @@ export class AdministradorComponent implements OnInit, OnDestroy {
   }
 
   public cerrarModal(): void {
-    const modalEl = document.getElementById('agregarConsorcio');
+    const modalEl = document.getElementById('addAdministrador');
     if (!modalEl) return;
     const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
     modal.hide();

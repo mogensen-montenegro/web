@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { ConsorcioData } from '../consorcios/interface/consorcio.interface';
+import { Consorcio } from '../consorcios/core-consorcio/consorcio.interface';
 
 @Component({
   selector: 'app-archivos',
@@ -13,7 +13,7 @@ import { ConsorcioData } from '../consorcios/interface/consorcio.interface';
 export class ArchivosComponent {
   public consorvioSeleccionadoId:string = '';
   public showEmpty: boolean = false;
-  public consorvio: ConsorcioData[] =
+  public consorvio: Consorcio[] =
     [{
       nombre: 'Rivadavia',
       encargado: 'Pepito Juarez',

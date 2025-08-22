@@ -1,6 +1,6 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {ComponentFixture, TestBed} from '@angular/core/testing';
 
-import { AddConsorcioComponent } from './add-consorcio.component';
+import {AddConsorcioComponent} from './add-consorcio.component';
 
 describe('AddConsorcioComponent', () => {
   let component: AddConsorcioComponent;
