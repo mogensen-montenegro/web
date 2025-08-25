@@ -2,7 +2,7 @@ import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {environment} from 'src/environments/environment';
 import {Observable, tap} from 'rxjs';
-import {Consorcio, ConsorcioResponse} from "./consorcio.interface";
+import {Consorcio, ConsorcioResponse, CrearConsorcioResponse} from "./consorcio.interface";
 
 @Injectable({providedIn: 'root'})
 export class ConsorcioService {
@@ -11,12 +11,12 @@ export class ConsorcioService {
   constructor(private http: HttpClient) {
   }
 
-  crearConsorcio(idUser: string, formData: Consorcio): Observable<ConsorcioResponse> {
-    return this.http.post<ConsorcioResponse>(`${this.base_url}/consorcio/create/${idUser}`, formData).pipe(tap((response) => response));
+  crearConsorcio(idUser: string, formData: Consorcio): Observable<CrearConsorcioResponse> {
+    return this.http.post<CrearConsorcioResponse>(`${this.base_url}/consorcio/create/${idUser}`, formData).pipe(tap((response) => response));
   }
 
-  updateById(idAdmin: string, idUser: string, formData: Consorcio): Observable<ConsorcioResponse> {
-    return this.http.put<ConsorcioResponse>(`${this.base_url}/consorcio/update/${idAdmin}/${idUser}`, formData).pipe(tap((response) => response));
+  updateById(id: string, formData: Consorcio): Observable<ConsorcioResponse> {
+    return this.http.put<ConsorcioResponse>(`${this.base_url}/consorcio/update/${id}`, formData).pipe(tap((response) => response));
   }
 
   getAllById(idAdmin: string): Observable<ConsorcioResponse> {

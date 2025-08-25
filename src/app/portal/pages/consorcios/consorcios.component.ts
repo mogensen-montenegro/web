@@ -1,13 +1,15 @@
 import {CommonModule} from '@angular/common';
-import {Component, OnInit} from '@angular/core';
-import {Consorcio, ConsorcioResponse} from './core-consorcio/consorcio.interface';
+import {AfterViewInit, Component, OnInit} from '@angular/core';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {AddConsorcioComponent} from './add-consorcio/add-consorcio.component';
 import {Subject, takeUntil} from "rxjs";
 import {Administrador, AdministradorResponse} from "../administrador/core-administrador/administrador.interface";
+import {Consorcio, ConsorcioResponse} from './core-consorcio/consorcio.interface';
 import Swal from "sweetalert2";
 import {AdministradorService} from "../administrador/core-administrador/administrador.service";
 import {ConsorcioService} from "./core-consorcio/consorcio.service";
+
+declare const bootstrap: any;
 
 @Component({
   selector: 'app-consorcios',
@@ -16,40 +18,90 @@ import {ConsorcioService} from "./core-consorcio/consorcio.service";
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, FormsModule, AddConsorcioComponent]
 })
-export class ConsorciosComponent implements OnInit {
-  public showEmpty: boolean = false;
-  public adminSeleccionadoId: string = '';
+export class ConsorciosComponent implements OnInit, AfterViewInit {
+  public showEmpty = false;
+  public adminSeleccionadoId = '';
   public administradorSeleccionado: Administrador | null = null;
   public loading = false;
   private destroy$ = new Subject<void>();
   public administradores: Administrador[] = [];
   public consorcios: Consorcio[] = [];
+  public consorcioSeleccionado: Consorcio | null = null;
+  private modal?: any;
 
   constructor(private administradorService: AdministradorService, private consorcioService: ConsorcioService) {
   }
 
   ngOnInit(): void {
     this.cargarAdministradores();
-    console.log(this.administradorSeleccionado);
   }
 
   private getUserId(): string {
     return localStorage.getItem('userId') ?? '000000000000000000000000';
   }
 
-  private getAdminId(): string {
+  protected getAdminId(): string {
     return this.administradorSeleccionado?._id ?? '000000000000000000000000';
   }
 
   public cerrarModal(): void {
-    // @ts-ignore
-    $('#agregarEjercicio').modal('hide');
+    const modalEl = document.getElementById('agregarConsorcio');
+    if (!modalEl) return;
+    const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+    modal.hide();
   }
 
-  public eliminarConsorcio(): void {
+  public eliminarConsorcio(consorcio: Consorcio): void {
+    Swal.fire({
+      title: `Eliminar Consorcio`,
+      text: `¿Desea eliminar el consorcio ${consorcio.nombre}?`,
+      icon: 'question',
+      showCancelButton: true,
+      backdrop: false,
+      confirmButtonColor: '#dc3545',
+      confirmButtonText: 'Eliminar',
+      cancelButtonText: 'Cancelar',
+    }).then((result) => {
+      if (!result.isConfirmed || !consorcio._id) return;
+      this.consorcioService
+        .deleteById(consorcio._id)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            Swal.fire({
+              position: 'center',
+              icon: 'success',
+              title: '¡Listo!',
+              text: 'El consorcio se eliminó correctamente',
+              showConfirmButton: false,
+              timer: 3000
+            }).then();
+            this.cargarConsorcios();
+          },
+          error: (err) => {
+            Swal.fire({icon: 'error', title: 'Error', text: 'No se pudo eliminar el consorcio'}).then();
+            console.error(err);
+          },
+        });
+    });
+  }
+
+  public editarConsorcio(c: Consorcio): void {
+    this.consorcioSeleccionado = {...c};
+    setTimeout(() => {
+      const el = document.getElementById('agregarConsorcio');
+      if (el) new bootstrap.Modal(el).show();
+    }, 0);
+    setTimeout(() => this.openModal(), 0);
   }
 
   public crearNuevoConsorcio(): void {
+    this.consorcioSeleccionado = null;
+    setTimeout(() => {
+      const el = document.getElementById('agregarConsorcio');
+      if (el) new bootstrap.Modal(el).show();
+    }, 0);
+    setTimeout(() => this.openModal(), 0);
   }
 
   public onAdministradorSeleccionado(): void {
@@ -78,6 +130,10 @@ export class ConsorciosComponent implements OnInit {
   }
 
   private cargarConsorcios(): void {
+    if (!this.getAdminId()) {
+      this.consorcios = [];
+      return;
+    }
     this.loading = true;
     this.showEmpty = false;
     this.consorcioService
@@ -86,7 +142,7 @@ export class ConsorciosComponent implements OnInit {
       .subscribe({
         next: (resp: ConsorcioResponse) => {
           this.consorcios = resp.body ?? [];
-          this.showEmpty = this.administradores.length === 0;
+          this.showEmpty = this.consorcios.length === 0;
           this.loading = false;
         },
         error: (err) => {
@@ -95,5 +151,39 @@ export class ConsorciosComponent implements OnInit {
           console.error(err);
         },
       });
+  }
+
+  public onConsorcioGuardado(cambio?: Consorcio): void {
+    this.cerrarModal();
+
+    const adminIdActual = this.getAdminId();
+    if (!cambio || !adminIdActual) return;
+    if (cambio.idAdmin !== adminIdActual) return;
+
+    const idx = this.consorcios.findIndex(c => c._id === cambio._id);
+    if (idx >= 0) {
+      this.consorcios = [
+        ...this.consorcios.slice(0, idx),
+        { ...this.consorcios[idx], ...cambio },
+        ...this.consorcios.slice(idx + 1),
+      ];
+    } else {
+      this.consorcios = [cambio, ...this.consorcios];
+    }
+  }
+
+  openModal() {
+    const el = document.getElementById('agregarConsorcio');
+    if (!el) return;
+    this.modal = bootstrap.Modal.getOrCreateInstance(el, {backdrop: true, keyboard: true, focus: true});
+    this.modal.show();
+  }
+
+  ngAfterViewInit() {
+    const el = document.getElementById('agregarConsorcio');
+    el?.addEventListener('hidden.bs.modal', () => {
+      document.body.classList.remove('modal-open');
+      document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+    });
   }
 }

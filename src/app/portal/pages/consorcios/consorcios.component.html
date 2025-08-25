@@ -18,8 +18,13 @@
       </select>
     </div>
     <div class="pl-3">
-      <button [disabled]="this.administradorSeleccionado == null" class="btn btn-primary h-button btn-color" data-bs-toggle="modal" data-bs-target="#agregarConsorcio" (click)="crearNuevoConsorcio()">
-        Nuevo Consorcio
+      <button
+        [disabled]="this.administradorSeleccionado == null"
+        class="btn btn-primary h-button btn-color"
+        data-bs-toggle="modal"
+        data-bs-target="#agregarConsorcio"
+        (click)="crearNuevoConsorcio()">
+        Crear Consorcio
       </button>
     </div>
   </div>
@@ -60,10 +65,10 @@
           {{ consorcio.cantidadArchivos ? consorcio.cantidadArchivos : "-" }}
         </td>
         <td class="min-width d-flex">
-          <div class=" icon-box mr-3" (click)="eliminarConsorcio()">
+          <div class="icon-box mr-3" (click)="eliminarConsorcio(consorcio)">
             <i class="fa fa-trash color-principal"></i>
           </div>
-          <div class=" icon-box">
+          <div class="icon-box" (click)="editarConsorcio(consorcio)">
             <i class="fa fa-pencil color-principal"></i>
           </div>
         </td>
@@ -75,7 +80,10 @@
 
 <div class="modal fade" id="agregarConsorcio" tabindex="-1" aria-labelledby="agregarConsorcioLabel" aria-hidden="true">
   <app-add-consorcio
-    (clicked)="cerrarModal()">
+    [consorcio]="consorcioSeleccionado"
+    [adminId]="getAdminId()"
+    (saved)="onConsorcioGuardado($event)"
+    (closed)="cerrarModal()">
   </app-add-consorcio>
 </div>
 

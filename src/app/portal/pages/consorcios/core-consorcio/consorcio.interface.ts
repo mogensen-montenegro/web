@@ -4,12 +4,19 @@ export interface Consorcio {
   encargado: string;
   telefono: string;
   direccion: string;
-  cantidadCarpetas: number;
-  cantidadArchivos: number;
+  cantidadCarpetas?: number;
+  cantidadArchivos?: number;
+  idAdmin?: string;
 }
 
 export interface ConsorcioResponse {
   ok: boolean;
   msj: string;
   body: Consorcio[]
+}
+
+export interface CrearConsorcioResponse {
+  ok: boolean;
+  msj: string;
+  body: Consorcio
 }
