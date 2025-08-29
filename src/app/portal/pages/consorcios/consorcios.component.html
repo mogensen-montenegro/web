@@ -9,88 +9,94 @@
         <option class="color-principal bg-color-light" disabled selected value="">
           Seleccionar un administrador
         </option>
-        <option *ngIf="!administrador?.length" value="">
+        <option *ngIf="!administradores?.length" value="">
           Sin administradores
         </option>
-
-        <option *ngFor="let data of administrador" [ngValue]="data._id">
+        <option *ngFor="let data of administradores" [ngValue]="data._id">
           {{ data.nombre }}
         </option>
       </select>
     </div>
     <div class="pl-3">
-      <button class="btn btn-primary h-button btn-color" data-bs-toggle="modal" data-bs-target="#agregarConsorcio"
+      <button
+        [disabled]="this.administradorSeleccionado == null"
+        class="btn btn-primary h-button btn-color"
+        data-bs-toggle="modal"
+        data-bs-target="#agregarConsorcio"
         (click)="crearNuevoConsorcio()">
-        Nuevo Consorcio
+        Crear Consorcio
       </button>
     </div>
   </div>
 </div>
 
-<!-- <div class="row" *ngIf="spinner">
-  <div class="col d-flex justify-content-center">
-    <app-spinner></app-spinner>
-  </div>
-</div> -->
-
-<div class="row px-5" *ngIf="consorcioSeleccionado">
+<div class="row px-5" *ngIf="consorcios?.length">
   <div class="col tabla-scroll">
     <table class="table table-striped">
       <thead>
-        <tr>
-          <th>Nombre</th>
-          <th>Encargado</th>
-          <th>Teléfono</th>
-          <th>Dirección</th>
-          <th>Cantidad de Carpetas</th>
-          <th>Cantidad de Archivos</th>
-          <th>Acciones</th>
-        </tr>
+      <tr>
+        <th>Nombre</th>
+        <th>Encargado</th>
+        <th>Teléfono</th>
+        <th>Dirección</th>
+        <th>Cantidad de Carpetas</th>
+        <th>Cantidad de Archivos</th>
+        <th>Acciones</th>
+      </tr>
       </thead>
       <tbody>
-        <tr class="pointer usuario-selector fadeIn">
-          <td>
-            {{ consorcioSeleccionado.nombre ? consorcioSeleccionado.nombre : "-" }}
-          </td>
-          <td>
-            {{ consorcioSeleccionado.encargado ? consorcioSeleccionado.encargado : "-" }}
-          </td>
-          <td>
-            {{ consorcioSeleccionado.telefono ? consorcioSeleccionado.telefono : "-" }}
-          </td>
-          <td>
-            {{ consorcioSeleccionado.direccion ? consorcioSeleccionado.direccion : "-" }}
-          </td>
-          <td>
-            {{ consorcioSeleccionado.cantidadCarpetas ? consorcioSeleccionado.cantidadCarpetas : "-" }}
-          </td>
-          <td>
-            {{ consorcioSeleccionado.cantidadArchivos ? consorcioSeleccionado.cantidadArchivos : "-" }}
-          </td>
-          <td class="min-width d-flex">
-            <div class=" icon-box mr-3" (click)="eliminarConsorcio()">
-              <i class="fa fa-trash color-principal"></i>
-            </div>
-
-            <div class=" icon-box">
-              <i class="fa fa-pencil color-principal"></i>
-            </div>
-          </td>
-
-        </tr>
+      <tr class="pointer usuario-selector fadeIn" *ngFor="let consorcio of consorcios">
+        <td>
+          {{ consorcio.nombre ? consorcio.nombre : "-" }}
+        </td>
+        <td>
+          {{ consorcio.encargado ? consorcio.encargado : "-" }}
+        </td>
+        <td>
+          {{ consorcio.telefono ? consorcio.telefono : "-" }}
+        </td>
+        <td>
+          {{ consorcio.direccion ? consorcio.direccion : "-" }}
+        </td>
+        <td>
+          {{ consorcio.cantidadCarpetas ? consorcio.cantidadCarpetas : "-" }}
+        </td>
+        <td>
+          {{ consorcio.cantidadArchivos ? consorcio.cantidadArchivos : "-" }}
+        </td>
+        <td class="min-width d-flex">
+          <div class="icon-box mr-3" (click)="eliminarConsorcio(consorcio)">
+            <i class="fa fa-trash color-principal"></i>
+          </div>
+          <div class="icon-box" (click)="editarConsorcio(consorcio)">
+            <i class="fa fa-pencil color-principal"></i>
+          </div>
+        </td>
+      </tr>
       </tbody>
     </table>
-    <!-- <ng-container *ngIf="showLoader" [ngTemplateOutlet]="loading"></ng-container> -->
   </div>
 </div>
 
 <div class="modal fade" id="agregarConsorcio" tabindex="-1" aria-labelledby="agregarConsorcioLabel" aria-hidden="true">
-  <app-add-consorcio (clicked)="cerrarModal()" />
+  <app-add-consorcio
+    [consorcio]="consorcioSeleccionado"
+    [adminId]="getAdminId()"
+    (saved)="onConsorcioGuardado($event)"
+    (closed)="cerrarModal()">
+  </app-add-consorcio>
 </div>
 
-<div class="row px-5 fadeIn" *ngIf="administrador.length === 0 && showEmpty">
-  <div class="box-empty d-flex align-items-center justify-content-center flex-column">
-    <img class="icono" src="../../../assets/img/caja.png">
+<div *ngIf="!this.loading && consorcios?.length === 0 && this.administradorSeleccionado != null" class="empty-container">
+  <div class="d-flex align-items-center justify-content-center flex-column">
+    <img class="icono" src="../../../assets/img/default.png"/>
     <span class="pt-2">No se encontraron resultados.</span>
+  </div>
+</div>
+
+<div *ngIf="this.administradorSeleccionado == null" class="empty-container">
+  <div class="d-flex align-items-center justify-content-center flex-column">
+    <img class="icono" src="../../../assets/img/administrador.png"/>
+    <span class="pt-2">Seleccione un administrador.</span>
   </div>
 </div>

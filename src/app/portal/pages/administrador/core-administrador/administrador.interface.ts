@@ -4,7 +4,7 @@ export interface Administrador {
   email: string,
   telefono: string,
   direccion: string,
-  cantConsorcios: number,
+  consorciosCount: number,
   user: string,
   password: string
 }

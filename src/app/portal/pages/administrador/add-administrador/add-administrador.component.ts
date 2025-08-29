@@ -101,7 +101,7 @@ export class AddAdministradorComponent implements OnDestroy, OnChanges {
       email: this.initialData.email ?? '',
       telefono: this.initialData.telefono ?? '',
       direccion: this.initialData.direccion ?? '',
-      cantConsorcios: this.initialData.cantConsorcios ?? 0,
+      cantConsorcios: this.initialData.consorciosCount ?? 0,
       user: this.initialData.user ?? '',
       password: '',
       passwordConfirm: ''
@@ -120,7 +120,7 @@ export class AddAdministradorComponent implements OnDestroy, OnChanges {
       email: value.email,
       telefono: value.telefono,
       direccion: value.direccion,
-      cantConsorcios: Number(value.cantConsorcios) || 0,
+      consorciosCount: Number(value.cantConsorcios) || 0,
       user: value.user,
       password: value.password
     };
@@ -141,7 +141,7 @@ export class AddAdministradorComponent implements OnDestroy, OnChanges {
       email: value.email,
       telefono: value.telefono,
       direccion: value.direccion,
-      cantConsorcios: Number(value.cantConsorcios) || 0,
+      consorciosCount: Number(value.cantConsorcios) || 0,
       user: value.user,
       password: value.password ? value.password : (this.initialData?.password ?? '')
     };

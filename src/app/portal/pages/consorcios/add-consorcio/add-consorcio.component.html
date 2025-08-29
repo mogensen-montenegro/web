@@ -1,57 +1,56 @@
 <ng-container>
-  <form class="modal-dialog" [formGroup]="agregarUsuarioForm" autocomplete="off">
+  <form class="modal-dialog" [formGroup]="form" autocomplete="off" (ngSubmit)="onSubmit()">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">
-          {{ editUser ? 'Modificar Consorcio' : 'Agregar Consorcio' }}
+        <h5 class="modal-title">
+          {{ isEdit ? 'Modificar Consorcio' : 'Agregar Consorcio' }}
         </h5>
-
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar" (click)="closeModal()"></button>
       </div>
+
       <div class="modal-body">
         <div class="row">
-          <div class="col">
-            <span class="subtitle color-principal"> Datos Generales</span>
-          </div>
+          <div class="col"><span class="subtitle color-principal">Datos Generales</span></div>
         </div>
+
         <div class="row">
-          <div id="nombre" class="col-12 col-sm-4 mt-3">
-            <i class="fa fa-user pr-2 color-principal"></i>
-            <span>Nombre</span>
-            <input type="text" [(ngModel)]="nombre" [ngModelOptions]="{standalone: true}"/>
-          </div>
           <div class="col-12 col-sm-4 mt-3">
-            <i class="fa fa-at pr-2 color-principal"></i>
-            <span>Encargado</span>
-            <input type="text" [(ngModel)]="encargado" class="observaciones" [ngModelOptions]="{standalone: true}"/>
+            <i class="fa fa-building pr-2 color-principal"></i>
+            <span>Nombre de Consorcio</span>
+            <input type="text" formControlName="nombre"/>
+            <small class="text-danger" *ngIf="form.get('nombre')?.invalid && form.get('nombre')?.touched">
+              El nombre es obligatorio (mín. 2 caracteres).
+            </small>
           </div>
-          <div id="telefono" class="col-12 col-sm-4 mt-3">
+
+          <div class="col-12 col-sm-4 mt-3">
+            <i class="fa fa-user-tie pr-2 color-principal"></i>
+            <span>Encargado</span>
+            <input type="text" formControlName="encargado"/>
+          </div>
+
+          <div class="col-12 col-sm-4 mt-3">
             <i class="fa fa-phone pr-2 color-principal"></i>
             <span>Teléfono</span>
-            <input type="text" [(ngModel)]="telefono" class="observaciones" [ngModelOptions]="{standalone: true}"/>
+            <input type="text" formControlName="telefono"/>
           </div>
         </div>
 
         <div class="row pt-1">
-          <div id="nombre" class="col-12 col-sm-4 mt-3">
-            <i class="fa fa-user pr-2 color-principal"></i>
+          <div class="col-12 col-sm-4 mt-3">
+            <i class="fa fa-home pr-2 color-principal"></i>
             <span>Dirección</span>
-            <input type="text" [(ngModel)]="direccion" [ngModelOptions]="{standalone: true}"/>
+            <input type="text" formControlName="direccion"/>
           </div>
         </div>
-
       </div>
+
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" (click)="closeModal()">
           Cancelar
         </button>
-        <button *ngIf="editUser" [disabled]="isLoading" type="button" class="btn btn-warning" (click)="modificarConsorcio()">
-          Modificar
-        </button>
-        <button *ngIf="editUser" type="button" class="btn btn-danger" (click)="eliminarConsorcio()">
-          Eliminar
-        </button>
-        <button *ngIf="!editUser" type="button" class="btn btn-warning" (click)="agregarConsorcio()">
-          Agregar
+        <button [disabled]="isLoading" type="submit" class="btn btn-warning">
+          {{ isEdit ? 'Modificar' : 'Agregar' }}
         </button>
       </div>
     </div>
