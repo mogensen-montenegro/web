@@ -15,8 +15,8 @@
 
         <div class="row">
           <div class="col-12 col-sm-4 mt-3">
-            <i class="fa fa-user pr-2 color-principal"></i>
-            <span>Nombre</span>
+            <i class="fa fa-building pr-2 color-principal"></i>
+            <span>Nombre de Consorcio</span>
             <input type="text" formControlName="nombre"/>
             <small class="text-danger" *ngIf="form.get('nombre')?.invalid && form.get('nombre')?.touched">
               El nombre es obligatorio (mín. 2 caracteres).
@@ -24,7 +24,7 @@
           </div>
 
           <div class="col-12 col-sm-4 mt-3">
-            <i class="fa fa-at pr-2 color-principal"></i>
+            <i class="fa fa-user-tie pr-2 color-principal"></i>
             <span>Encargado</span>
             <input type="text" formControlName="encargado"/>
           </div>
