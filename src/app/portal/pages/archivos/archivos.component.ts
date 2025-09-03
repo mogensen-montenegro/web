@@ -19,7 +19,6 @@ export class ArchivosComponent implements OnInit {
   public showEmpty = false;
   public consorcios: Consorcio[] = [];
   public consorcioSeleccionadoId = '';
-  public consorcioSeleccionado: Consorcio | null = null;
   public carpetas: Carpeta[] = [];
   public carpetaSeleccionada: Carpeta | null = null;
   public archivos: Archivo[] = [];
@@ -231,56 +230,6 @@ export class ArchivosComponent implements OnInit {
     });
   }
 
-  public onFileInputChange(ev: Event): void {
-    if (!this.carpetaSeleccionada || !this.consorcioSeleccionado) return;
-    const input = ev.target as HTMLInputElement;
-    const files = Array.from(input.files ?? []);
-    if (files.length === 0) return;
-
-    this.isUploading = true;
-    this.archivosSrv
-      .subirArchivos(this.getConsorcioId(), this.carpetaSeleccionada._id, files)
-      .subscribe({
-        next: () => {
-          this.isUploading = false;
-          this.cargarArchivos(this.carpetaSeleccionada!._id);
-          input.value = '';
-          this.cargarCarpetas();
-        },
-        error: () => {
-          this.isUploading = false;
-          alert('No se pudieron subir los archivos');
-        }
-      });
-  }
-
-  public eliminarArchivo(archivo: Archivo): void {
-    if (!confirm(`¿Eliminar el archivo "${archivo.nombreOriginal}"?`)) return;
-    this.archivosSrv.eliminarArchivo(archivo._id).subscribe({
-      next: () => {
-        if (this.carpetaSeleccionada) this.cargarArchivos(this.carpetaSeleccionada._id);
-        this.cargarCarpetas();
-      },
-      error: () => alert('No se pudo eliminar el archivo')
-    });
-  }
-
-  public renombrarArchivo(archivo: Archivo): void {
-    const nuevo = prompt('Nuevo nombre (visual)', archivo.nombreOriginal);
-    if (!nuevo || nuevo.trim() === archivo.nombreOriginal) return;
-    this.archivosSrv.actualizarArchivo(archivo._id, {nombreOriginal: nuevo.trim()}).subscribe({
-      next: (archAct) => {
-        const i = this.archivos.findIndex(a => a._id === archivo._id);
-        if (i > -1) this.archivos[i] = {...archivo, ...archAct};
-      },
-      error: () => alert('No se pudo renombrar (falta endpoint en backend)')
-    });
-  }
-
-  public archivoUrl(a: Archivo): string {
-    return this.archivosSrv.archivoUrl(a.path);
-  }
-
   public verArchivosDeCarpeta(carpeta: Carpeta): void {
     Swal.fire({
       title: `Archivos — ${carpeta.titulo}`,
@@ -299,6 +248,11 @@ export class ArchivosComponent implements OnInit {
         }).then();
       }
     });
+  }
+
+  private truncateText(text: string, max: number): string {
+    if (text.length <= max) return text;
+    return text.substring(0, max) + '...';
   }
 
   private mostrarDialogArchivos(carpeta: Carpeta, archivos: Archivo[]): void {
@@ -326,7 +280,11 @@ export class ArchivosComponent implements OnInit {
           <tbody>
             ${archivos.map(a => `
               <tr>
-                <td class="text-left" title="${this.escape(a.nombreOriginal)}">${this.escape(a.nombreOriginal)}</td>
+                <td class="text-left">
+                  <span title="${this.escape(a.nombreOriginal)}">
+                    ${this.escape(this.truncateText(a.nombreOriginal, 25))}
+                  </span>
+                </td>
                 <td class="text-left">${this.escape(a.mimetype)}</td>
                 <td class="text-left">${this.escape(this.prettySize(a.size))}</td>
                 <td class="text-left">${new Date(a.createdAt).toLocaleString()}</td>
