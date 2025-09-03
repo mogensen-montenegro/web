@@ -1,6 +1,5 @@
 input, textarea {
   width: 700px;
-  width: 100%;
   text-align: left;
   padding: 10px;
   border: 0;
@@ -13,7 +12,7 @@ input, textarea {
   transition: all 0.3s ease;
 }
 
-.subtitle{
+.subtitle {
   font-weight: 900;
   font-size: 18px;
 }
@@ -30,8 +29,7 @@ input, textarea {
   font-weight: 300;
   color: #8D8D8D;
   transition: all 0.3s ease;
-  }
-
+}
 
 input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button {
@@ -52,23 +50,23 @@ input[type=number]::-webkit-outer-spin-button {
   color: #8D8D8D;
   transition: all 0.3s ease;
   height: 55px;
-  }
+}
 
+.icon-box {
+  width: 30px;
+  border-radius: 10px;
+  height: 30px;
+  background-color: rgb(242, 203, 203);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 
-  .icon-box{
-    width: 30px;
-    border-radius: 10px;
-    height: 30px;
-    background-color: rgb(242, 203, 203);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  .btn-color{
-    height: 55px;
-  }
+.btn-color {
+  height: 55px;
+}
 
-  .card {
+.card {
   width: 230px;
   border-radius: 20px;
   background: #1b233d;
@@ -200,6 +198,20 @@ input[type=number]::-webkit-outer-spin-button {
   border-right: 1px solid rgba(255, 255, 255, 0.126);
 }
 
-.text-file{
+.text-file {
   color: white;
+}
+
+.icono {
+  width: 60px;
+}
+
+.empty-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 60vh;
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: #555;
 }
