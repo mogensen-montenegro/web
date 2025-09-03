@@ -205,11 +205,11 @@ export class ArchivosComponent implements OnInit {
           next: (carpAct) => {
             const idx = this.carpetas.findIndex(c => c._id === carpeta._id);
             if (idx > -1) {
-              this.carpetas[idx] = { ...carpeta, ...carpAct };
+              this.carpetas[idx] = {...carpeta, ...carpAct};
             }
 
             if (this.carpetaSeleccionada?._id === carpeta._id) {
-              this.carpetaSeleccionada = { ...carpeta, ...carpAct };
+              this.carpetaSeleccionada = {...carpeta, ...carpAct};
             }
 
             Swal.fire({
@@ -279,6 +279,198 @@ export class ArchivosComponent implements OnInit {
 
   public archivoUrl(a: Archivo): string {
     return this.archivosSrv.archivoUrl(a.path);
+  }
+
+  public verArchivosDeCarpeta(carpeta: Carpeta): void {
+    Swal.fire({
+      title: `Archivos — ${carpeta.titulo}`,
+      html: 'Cargando...',
+      allowOutsideClick: false,
+      didOpen: () => Swal.showLoading()
+    }).then();
+
+    this.archivosSrv.getArchivos(carpeta._id).subscribe({
+      next: (archivos) => this.mostrarDialogArchivos(carpeta, archivos),
+      error: () => {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudieron obtener los archivos'
+        }).then();
+      }
+    });
+  }
+
+  private mostrarDialogArchivos(carpeta: Carpeta, archivos: Archivo[]): void {
+    const html = `
+    <div class="mb-3 p-2 border rounded">
+      <label for="filePicker" class="form-label mb-1">Agregar Archivo</label>
+      <input id="filePicker" class="form-control" type="file" multiple />
+      <div class="d-flex justify-content-end mt-2">
+        <button id="btnUpload" class="btn btn-primary btn-sm">Subir</button>
+      </div>
+    </div>
+
+    ${archivos.length ? `
+      <div style="max-height: 60vh; overflow:auto;">
+        <table class="table table-sm align-middle">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Formato</th>
+              <th>Tamaño</th>
+              <th>Creado</th>
+              <th class="text-center">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${archivos.map(a => `
+              <tr>
+                <td class="text-left" title="${this.escape(a.nombreOriginal)}">${this.escape(a.nombreOriginal)}</td>
+                <td class="text-left">${this.escape(a.mimetype)}</td>
+                <td class="text-left">${this.escape(this.prettySize(a.size))}</td>
+                <td class="text-left">${new Date(a.createdAt).toLocaleString()}</td>
+                <td class="text-end">
+                  <a class="btn btn-outline-secondary btn-sm me-2" href="${this.archivosSrv.archivoUrl(a.path)}" target="_blank" rel="noopener">Descargar</a>
+                  <button class="btn btn-danger btn-sm js-del" data-id="${a._id}">Eliminar</button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>` : `
+      <div class="d-flex flex-column align-items-center p-4">
+        <img src="../../../assets/img/default.png" class="mb-2" style="width:72px;height:72px;">
+        <div>Esta carpeta no tiene archivos.</div>
+      </div>
+      `
+    }`;
+
+    Swal.fire({
+      title: `${carpeta.titulo}`,
+      html,
+      width: 900,
+      showConfirmButton: true,
+      confirmButtonText: 'Cerrar',
+      didOpen: () => {
+        const fileInput = document.getElementById('filePicker') as HTMLInputElement | null;
+        const btnUpload = document.getElementById('btnUpload') as HTMLButtonElement | null;
+
+        const doUpload = () => {
+          if (!fileInput) return;
+          const files = Array.from(fileInput.files ?? []);
+          if (!files.length) {
+            Swal.fire({
+              icon: 'info',
+              title: 'Seleccioná archivos',
+              timer: 1400,
+              showConfirmButton: false
+            }).then();
+            return;
+          }
+
+          Swal.fire({
+            title: 'Subiendo...',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+          }).then();
+
+          this.archivosSrv.subirArchivos(carpeta.consorcioId, carpeta._id, files).subscribe({
+            next: () => {
+              this.archivosSrv.getArchivos(carpeta._id).subscribe({
+                next: (archs) => {
+                  Swal.close();
+                  this.mostrarDialogArchivos(carpeta, archs);
+                  if (this.carpetaSeleccionada?._id === carpeta._id) {
+                    this.cargarArchivos(carpeta._id);
+                  }
+                  this.cargarCarpetas();
+
+                  Swal.fire({
+                    icon: 'success',
+                    title: 'Archivos subidos',
+                     timer: 1200,
+                    showConfirmButton: false
+                  }).then();
+                },
+                error: () => {
+                  Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                     text: 'Subió, pero no se pudo refrescar la lista'
+                  }).then();
+                }
+              });
+            },
+            error: () => {
+              Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'No se pudieron subir los archivos'
+              }).then();
+            }
+          });
+        };
+
+        btnUpload?.addEventListener('click', doUpload);
+        const btnsDel = Array.from(document.querySelectorAll<HTMLButtonElement>('.js-del'));
+        btnsDel.forEach(btn => {
+          btn.addEventListener('click', () => {
+            const id = btn.getAttribute('data-id')!;
+            this.confirmarYEliminarArchivo(carpeta, id);
+          });
+        });
+      }
+    }).then();
+  }
+
+  private confirmarYEliminarArchivo(carpeta: Carpeta, archivoId: string): void {
+    Swal.fire({
+      title: '¿Eliminar archivo?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#d33'
+    }).then(res => {
+      if (!res.isConfirmed) {
+        return;
+      }
+
+      Swal.fire({
+        title: 'Eliminando...',
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+      }).then();
+
+      this.archivosSrv.eliminarArchivo(archivoId).subscribe({
+        next: () => {
+          this.archivosSrv.getArchivos(carpeta._id).subscribe({
+            next: (archivos) => {
+              Swal.close();
+              this.mostrarDialogArchivos(carpeta, archivos); // re-render modal
+              if (this.carpetaSeleccionada?._id === carpeta._id) this.cargarArchivos(carpeta._id);
+              this.cargarCarpetas();
+              Swal.fire({
+                icon: 'success',
+                title: 'Archivo eliminado',
+                timer: 1200,
+                showConfirmButton: false
+              }).then();
+            },
+            error: () => Swal.fire({icon: 'error', title: 'Error', text: 'No se pudo refrescar el listado'})
+          });
+        },
+        error: () => Swal.fire({icon: 'error', title: 'Error', text: 'No se pudo eliminar el archivo'})
+      });
+    });
+  }
+
+  private escape(str: string): string {
+    return String(str)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
   }
 
   public prettySize(bytes: number | undefined): string {

@@ -27,70 +27,25 @@
 
 <!-- CARPETAS -->
 <div class="row p-5" *ngIf="carpetas.length">
-  <div class="card mr-5 mb-3" *ngFor="let carpeta of carpetas" (click)="seleccionarCarpeta(carpeta)"
-       style="cursor: pointer;">
-    <div class="top-section">
-      <div class="border"></div>
-      <div class="icons">
-        <div class="logo">
-          <span class="text-file">{{ carpeta.cantidadArchivos ?? 0 }} archivos</span>
+  <div class="card mr-5 mb-3" *ngFor="let carpeta of carpetas" (click)="seleccionarCarpeta(carpeta)" style="cursor: pointer;">
+    <div (click)="$event.stopPropagation(); verArchivosDeCarpeta(carpeta)">
+      <div class="top-section">
+        <div class="border"></div>
+        <div class="icons">
+          <div class="logo">
+            <span class="text-file">{{ carpeta.cantidadArchivos ?? 0 }} archivos</span>
+          </div>
+        </div>
+      </div>
+      <div class="bottom-section">
+        <span class="title">{{ carpeta.titulo }}</span>
+        <div class="row row1">
+          <button class="btn btn-light" (click)="$event.stopPropagation(); renombrarCarpeta(carpeta)">Editar</button>
+          <button class="btn btn-danger" (click)="$event.stopPropagation(); eliminarCarpeta(carpeta)">Eliminar</button>
         </div>
       </div>
     </div>
-    <div class="bottom-section">
-      <span class="title">{{ carpeta.titulo }}</span>
-      <div class="row row1">
-        <button class="btn btn-light" (click)="$event.stopPropagation(); renombrarCarpeta(carpeta)">Editar</button>
-        <button class="btn btn-danger" (click)="$event.stopPropagation(); eliminarCarpeta(carpeta)">Eliminar</button>
-      </div>
-    </div>
   </div>
-</div>
-
-<!-- ARCHIVOS DE LA CARPETA SELECCIONADA -->
-<div class="row px-5" *ngIf="carpetaSeleccionada">
-  <div class="d-flex align-items-center justify-content-between mb-3">
-    <h4 class="mb-0">Carpeta: {{ carpetaSeleccionada?.titulo }}</h4>
-    <div>
-      <input type="file" id="fileInput" (change)="onFileInputChange($event)" [disabled]="isUploading" multiple>
-    </div>
-  </div>
-
-  <div *ngIf="archivos.length; else noArchivos">
-    <div class="table-responsive">
-      <table class="table table-sm align-middle">
-        <thead>
-        <tr>
-          <th>Nombre</th>
-          <th>MIME</th>
-          <th>Tamaño</th>
-          <th>Creado</th>
-          <th class="text-end">Acciones</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr *ngFor="let a of archivos">
-          <td>{{ a.nombreOriginal }}</td>
-          <td>{{ a.mimetype }}</td>
-          <td>{{ prettySize(a.size) }}</td>
-          <td>{{ a.createdAt | date:'short' }}</td>
-          <td class="text-end">
-            <a class="btn btn-outline-secondary btn-sm me-2" [href]="archivoUrl(a)" target="_blank" rel="noopener">Descargar</a>
-            <button class="btn btn-light btn-sm me-2" (click)="renombrarArchivo(a)">Renombrar</button>
-            <button class="btn btn-danger btn-sm" (click)="eliminarArchivo(a)">Eliminar</button>
-          </td>
-        </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <ng-template #noArchivos>
-    <div class="box-empty d-flex align-items-center justify-content-center flex-column p-5">
-      <img class="icono" src="../../../assets/img/caja.png">
-      <span class="pt-2">Esta carpeta no tiene archivos.</span>
-    </div>
-  </ng-template>
 </div>
 
 <div *ngIf="(!carpetas.length && showEmpty)" class="empty-container">
