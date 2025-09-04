@@ -7,6 +7,8 @@ import {ArchivosService} from "./archivos-core/archivo.service";
 import {ConsorcioService} from "../consorcios/core-consorcio/consorcio.service";
 import {Subject, takeUntil} from "rxjs";
 import Swal from "sweetalert2";
+import {Administrador, AdministradorResponse} from "../administrador/core-administrador/administrador.interface";
+import {AdministradorService} from "../administrador/core-administrador/administrador.service";
 
 @Component({
   selector: 'app-archivos',
@@ -22,33 +24,36 @@ export class ArchivosComponent implements OnInit {
   public carpetas: Carpeta[] = [];
   public carpetaSeleccionada: Carpeta | null = null;
   public archivos: Archivo[] = [];
-  public isUploading = false;
+  public loading = false;
   private destroy$ = new Subject<void>();
+  public administradores: Administrador[] = [];
+  public adminSeleccionadoId = '';
+  public administradorSeleccionado: Administrador | null = null;
 
-  constructor(private archivosSrv: ArchivosService, private consorcioService: ConsorcioService) {
+  constructor(private administradorService: AdministradorService, private archivosSrv: ArchivosService, private consorcioService: ConsorcioService) {
   }
 
   ngOnInit(): void {
-    this.cargarConsorcios();
+    this.cargarAdministradores();
   }
 
   protected getConsorcioId(): string {
     return this.consorcioSeleccionadoId ?? '000000000000000000000000';
   }
 
-  public cargarConsorcios() {
-    this.isUploading = true;
+  public cargarConsorcios(id: string) {
+    this.loading = true;
     this.consorcioService
-      .getAllById('68a74ed3e478fe3e62023ced')
+      .getAllById(id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (resp: ConsorcioResponse) => {
           this.consorcios = resp.body ?? [];
           this.showEmpty = this.consorcios.length === 0;
-          this.isUploading = false;
+          this.loading = false;
         },
         error: (err) => {
-          this.isUploading = false;
+          this.loading = false;
           Swal.fire({
             icon: 'error',
             title: 'Error',
@@ -232,7 +237,7 @@ export class ArchivosComponent implements OnInit {
 
   public verArchivosDeCarpeta(carpeta: Carpeta): void {
     Swal.fire({
-      title: `Archivos — ${carpeta.titulo}`,
+      title: `${carpeta.titulo}`,
       html: 'Cargando...',
       allowOutsideClick: false,
       didOpen: () => Swal.showLoading()
@@ -440,5 +445,35 @@ export class ArchivosComponent implements OnInit {
     if (mb < 1024) return `${mb.toFixed(1)} MB`;
     const gb = mb / 1024;
     return `${gb.toFixed(1)} GB`;
+  }
+
+  private getUserId(): string {
+    return localStorage.getItem('userId') ?? '000000000000000000000000';
+  }
+
+  private cargarAdministradores(): void {
+    this.loading = true;
+    this.showEmpty = false;
+    this.administradorService
+      .getAll(this.getUserId())
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (resp: AdministradorResponse) => {
+          this.administradores = resp.body ?? [];
+          this.showEmpty = this.administradores.length === 0;
+          this.loading = false;
+        },
+        error: (err) => {
+          this.loading = false;
+          Swal.fire({icon: 'error', title: 'Error', text: 'No se pudieron cargar los administradores'}).then();
+          console.error(err);
+        },
+      });
+  }
+
+  public onAdministradorSeleccionado(): void {
+    this.consorcioSeleccionadoId = '';
+    this.administradorSeleccionado = this.administradores.find((a) => a._id === this.adminSeleccionadoId) || null;
+    this.cargarConsorcios(this.adminSeleccionadoId);
   }
 }

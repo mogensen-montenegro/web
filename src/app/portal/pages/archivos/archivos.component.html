@@ -5,7 +5,20 @@
   </div>
   <div class="col-6 d-flex justify-content-end">
     <div id="administradores">
-      <select class="form-select" [(ngModel)]="consorcioSeleccionadoId" (change)="onConsorvioSeleccionado()">
+      <select class="form-select" [(ngModel)]="adminSeleccionadoId" (change)="onAdministradorSeleccionado()">
+        <option class="color-principal bg-color-light" disabled selected value="">
+          Seleccionar un administrador
+        </option>
+        <option *ngIf="!administradores?.length" value="">
+          Sin administradores
+        </option>
+        <option *ngFor="let data of administradores" [ngValue]="data._id">
+          {{ data.nombre }}
+        </option>
+      </select>
+    </div>
+    <div class="pl-3" id="administradores">
+      <select class="form-select" [(ngModel)]="consorcioSeleccionadoId" (change)="onConsorvioSeleccionado()" [disabled]="!adminSeleccionadoId">
         <option class="color-principal bg-color-light" disabled selected value="">
           Seleccionar un consorcio
         </option>
