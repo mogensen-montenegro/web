@@ -76,4 +76,20 @@ export class LoginService {
   get sessionID(): string | null {
     return localStorage.getItem(this.SESSION_ID);
   }
+
+  getRole(): 'admin' | 'superuser' | null {
+    const token = this.getToken();
+    if (!token) return null;
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1] || ''));
+      return payload?.role ?? null;
+    } catch {
+      return null;
+    }
+  }
+
+  hasRole(roles: string[]): boolean {
+    const r = this.getRole();
+    return !!r && roles.includes(r);
+  }
 }

@@ -9,6 +9,7 @@ import {Subject, takeUntil} from "rxjs";
 import Swal from "sweetalert2";
 import {Administrador, AdministradorResponse} from "../administrador/core-administrador/administrador.interface";
 import {AdministradorService} from "../administrador/core-administrador/administrador.service";
+import {LoginService} from "../login/login-core/login.service";
 
 @Component({
   selector: 'app-archivos',
@@ -30,21 +31,50 @@ export class ArchivosComponent implements OnInit {
   public adminSeleccionadoId = '';
   public administradorSeleccionado: Administrador | null = null;
 
-  constructor(private administradorService: AdministradorService, private archivosSrv: ArchivosService, private consorcioService: ConsorcioService) {
+  public isSuper = false;
+  public isAdmin = false;
+
+  constructor(private administradorService: AdministradorService, private archivosSrv: ArchivosService, private consorcioService: ConsorcioService, public loginService: LoginService) {
   }
 
   ngOnInit(): void {
-    this.cargarAdministradores();
+    this.isSuper = this.loginService.hasRole(['superuser']);
+    this.isAdmin = this.loginService.hasRole(['admin']);
+
+    if (this.isSuper) {
+      this.cargarAdministradores();
+    } else if (this.isAdmin) {
+      this.adminSeleccionadoId = this.getCurrentUserId();
+      this.administradorSeleccionado = {_id: this.adminSeleccionadoId} as Administrador;
+      this.cargarConsorcios(this.adminSeleccionadoId);
+    } else {
+      this.consorcios = [];
+    }
+  }
+
+  private getCurrentUserId(): string {
+    return localStorage.getItem('userId') ?? '000000000000000000000000';
   }
 
   protected getConsorcioId(): string {
     return this.consorcioSeleccionadoId ?? '000000000000000000000000';
   }
 
-  public cargarConsorcios(id: string) {
+  public cargarConsorcios(adminId: string) {
+    this.consorcioSeleccionadoId = '';
+    this.carpetaSeleccionada = null;
+    this.carpetas = [];
+    this.archivos = [];
+
+    if (!adminId) {
+      this.consorcios = [];
+      this.showEmpty = true;
+      return;
+    }
+
     this.loading = true;
     this.consorcioService
-      .getAllById(id)
+      .getAllById(adminId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (resp: ConsorcioResponse) => {
@@ -54,11 +84,9 @@ export class ArchivosComponent implements OnInit {
         },
         error: (err) => {
           this.loading = false;
-          Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'No se pudieron cargar los consorcios'
-          }).then();
+          this.consorcios = [];
+          this.showEmpty = true;
+          Swal.fire({icon: 'error', title: 'Error', text: 'No se pudieron cargar los consorcios'}).then();
           console.error(err);
         },
       });
@@ -352,7 +380,7 @@ export class ArchivosComponent implements OnInit {
                   Swal.fire({
                     icon: 'success',
                     title: 'Archivos subidos',
-                     timer: 1200,
+                    timer: 1200,
                     showConfirmButton: false
                   }).then();
                 },
@@ -360,7 +388,7 @@ export class ArchivosComponent implements OnInit {
                   Swal.fire({
                     icon: 'error',
                     title: 'Error',
-                     text: 'Subió, pero no se pudo refrescar la lista'
+                    text: 'Subió, pero no se pudo refrescar la lista'
                   }).then();
                 }
               });
@@ -447,15 +475,11 @@ export class ArchivosComponent implements OnInit {
     return `${gb.toFixed(1)} GB`;
   }
 
-  private getUserId(): string {
-    return localStorage.getItem('userId') ?? '000000000000000000000000';
-  }
-
   private cargarAdministradores(): void {
     this.loading = true;
     this.showEmpty = false;
     this.administradorService
-      .getAll(this.getUserId())
+      .getAll(this.getCurrentUserId())
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (resp: AdministradorResponse) => {

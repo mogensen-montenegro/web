@@ -12,6 +12,9 @@ import {AdministradorComponent} from './portal/pages/administrador/administrador
 import {ConsorciosComponent} from './portal/pages/consorcios/consorcios.component';
 import {ArchivosComponent} from './portal/pages/archivos/archivos.component';
 import {AuthGuard} from "./portal/pages/login/login-core/auth.guard";
+import {RoleGuard} from "./portal/pages/login/login-core/role.guard";
+import {RedirectGuard} from "./portal/pages/login/login-core/redirect.guard";
+import {EmptyComponent} from "./portal/pages/login/empty.component";
 
 const routes: Routes = [
   {
@@ -36,10 +39,29 @@ const routes: Routes = [
     canActivate: [AuthGuard],
     canActivateChild: [AuthGuard],
     children: [
-      {path: '', redirectTo: 'administrador', pathMatch: 'full'},
-      {path: 'administrador', component: AdministradorComponent},
-      {path: 'consorcios', component: ConsorciosComponent},
-      {path: 'archivos', component: ArchivosComponent}
+      {
+        path: '',
+        component: EmptyComponent,
+        canActivate: [RedirectGuard]
+      },
+      {
+        path: 'administrador',
+        component: AdministradorComponent,
+        canActivate: [RoleGuard],
+        data: {roles: ['superuser']}
+      },
+      {
+        path: 'consorcios',
+        component: ConsorciosComponent,
+        canActivate: [RoleGuard],
+        data: {roles: ['superuser']}
+      },
+      {
+        path: 'archivos',
+        component: ArchivosComponent,
+        canActivate: [RoleGuard],
+        data: {roles: ['admin', 'superuser']}
+      }
     ]
   },
   {

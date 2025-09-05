@@ -4,7 +4,7 @@
     <span class="sub-titulo">Se almacenarán todos los archivos de los consorcios seleccionados.</span>
   </div>
   <div class="col-6 d-flex justify-content-end">
-    <div id="administradores">
+    <div *ngIf="isSuper" id="administradores">
       <select class="form-select" [(ngModel)]="adminSeleccionadoId" (change)="onAdministradorSeleccionado()">
         <option class="color-principal bg-color-light" disabled selected value="">
           Seleccionar un administrador
@@ -17,8 +17,8 @@
         </option>
       </select>
     </div>
-    <div class="pl-3" id="administradores">
-      <select class="form-select" [(ngModel)]="consorcioSeleccionadoId" (change)="onConsorvioSeleccionado()" [disabled]="!adminSeleccionadoId">
+    <div class="pl-3" id="consorcios">
+      <select class="form-select" [(ngModel)]="consorcioSeleccionadoId" (change)="onConsorvioSeleccionado()" [disabled]="isSuper ? !adminSeleccionadoId : false">>
         <option class="color-principal bg-color-light" disabled selected value="">
           Seleccionar un consorcio
         </option>
@@ -68,9 +68,16 @@
   </div>
 </div>
 
-<div *ngIf="this.consorcioSeleccionadoId == ''" class="empty-container">
+<div *ngIf="!consorcioSeleccionadoId" class="empty-container">
   <div class="d-flex align-items-center justify-content-center flex-column">
     <img class="icono" src="../../../assets/img/consorcio.png"/>
     <span class="pt-2">Seleccione un consorcio.</span>
+  </div>
+</div>
+
+<div *ngIf="isSuper && !adminSeleccionadoId" class="empty-container">
+  <div class="d-flex align-items-center justify-content-center flex-column">
+    <img class="icono" src="../../../assets/img/administrador.png"/>
+    <span class="pt-2">Seleccione un administrador.</span>
   </div>
 </div>
