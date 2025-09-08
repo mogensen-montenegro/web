@@ -293,8 +293,8 @@ export class ArchivosComponent implements OnInit {
     <div class="mb-3 p-2 border rounded">
       <label for="filePicker" class="form-label mb-1">Agregar Archivo</label>
       <input id="filePicker" class="form-control" type="file" multiple />
-      <div class="d-flex justify-content-end mt-2">
-        <button id="btnUpload" class="btn btn-primary btn-sm">Subir</button>
+      <div class="text-muted mt-1" style="font-size:.9rem">
+        Seleccioná uno o más archivos para subirlos automáticamente.
       </div>
     </div>
 
@@ -322,7 +322,7 @@ export class ArchivosComponent implements OnInit {
                 <td class="text-left">${this.escape(this.prettySize(a.size))}</td>
                 <td class="text-left">${new Date(a.createdAt).toLocaleString()}</td>
                 <td class="text-end">
-                  <a class="btn btn-outline-secondary btn-sm me-2" href="${this.archivosSrv.archivoUrl(a.path)}" target="_blank" rel="noopener">Descargar</a>
+                  <button class="btn btn-outline-secondary btn-sm me-2 js-open" data-id="${a._id}" data-path="${this.escape(a.path)}">Abrir</button>
                   <button class="btn btn-danger btn-sm js-del" data-id="${a._id}">Eliminar</button>
                 </td>
               </tr>
@@ -345,20 +345,10 @@ export class ArchivosComponent implements OnInit {
       confirmButtonText: 'Cerrar',
       didOpen: () => {
         const fileInput = document.getElementById('filePicker') as HTMLInputElement | null;
-        const btnUpload = document.getElementById('btnUpload') as HTMLButtonElement | null;
-
-        const doUpload = () => {
+        const autoUpload = () => {
           if (!fileInput) return;
           const files = Array.from(fileInput.files ?? []);
-          if (!files.length) {
-            Swal.fire({
-              icon: 'info',
-              title: 'Seleccioná archivos',
-              timer: 1400,
-              showConfirmButton: false
-            }).then();
-            return;
-          }
+          if (!files.length) return;
 
           Swal.fire({
             title: 'Subiendo...',
@@ -383,32 +373,51 @@ export class ArchivosComponent implements OnInit {
                     timer: 1200,
                     showConfirmButton: false
                   }).then();
+
+                  if (fileInput) fileInput.value = '';
                 },
                 error: () => {
-                  Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Subió, pero no se pudo refrescar la lista'
-                  }).then();
+                  Swal.fire({icon: 'error', title: 'Error', text: 'Subió, pero no se pudo refrescar la lista'}).then();
+                  if (fileInput) fileInput.value = '';
                 }
               });
             },
             error: () => {
-              Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'No se pudieron subir los archivos'
-              }).then();
+              Swal.fire({icon: 'error', title: 'Error', text: 'No se pudieron subir los archivos'}).then();
+              if (fileInput) fileInput.value = '';
             }
           });
         };
 
-        btnUpload?.addEventListener('click', doUpload);
+        fileInput?.addEventListener('change', autoUpload);
+
+        document.addEventListener('paste', (evt: ClipboardEvent) => {
+          const items = evt.clipboardData?.files;
+          if (!items || !items.length) return;
+          const dt = new DataTransfer();
+          Array.from(items).forEach(f => dt.items.add(f));
+          if (fileInput) {
+            fileInput.files = dt.files;
+            fileInput.dispatchEvent(new Event('change'));
+          }
+        }, {once: true});
+
         const btnsDel = Array.from(document.querySelectorAll<HTMLButtonElement>('.js-del'));
         btnsDel.forEach(btn => {
           btn.addEventListener('click', () => {
             const id = btn.getAttribute('data-id')!;
             this.confirmarYEliminarArchivo(carpeta, id);
+          });
+        });
+
+        const btnsOpen = Array.from(document.querySelectorAll<HTMLButtonElement>('.js-open'));
+        btnsOpen.forEach(btn => {
+          btn.addEventListener('click', () => {
+            const id = btn.getAttribute('data-id')!;
+            const file = archivos.find(x => x._id === id);
+            if (!file) return;
+            const url = this.archivosSrv.archivoUrl(file.path);
+            window.open(url, '_blank', 'noopener');
           });
         });
       }
@@ -420,7 +429,7 @@ export class ArchivosComponent implements OnInit {
       title: '¿Eliminar archivo?',
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonText: 'Sí, eliminar',
+      confirmButtonText: 'Eliminar',
       cancelButtonText: 'Cancelar',
       confirmButtonColor: '#d33'
     }).then(res => {

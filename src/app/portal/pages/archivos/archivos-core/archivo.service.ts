@@ -61,8 +61,10 @@ export class ArchivosService {
   }
 
   archivoUrl(path: string): string {
-    const base = (environment.filesBaseUrl ?? 'http://localhost:3000').replace(/\/$/, '');
-    const clean = path.startsWith('/') ? path : `/${path}`;
-    return `${base}${clean}`;
+    const base = (environment.filesBaseUrl ?? 'http://localhost:3000').replace(/\/+$/, '');
+    const withSlashes = String(path || '').replace(/\\/g, '/');
+    const prefixed = withSlashes.startsWith('/') ? withSlashes : `/${withSlashes}`;
+    const encoded = prefixed.split('/').map((seg, i) => i === 0 ? seg : encodeURIComponent(seg)).join('/');
+    return `${base}${encoded}`;
   }
 }
