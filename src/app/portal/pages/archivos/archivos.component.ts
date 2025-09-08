@@ -290,13 +290,14 @@ export class ArchivosComponent implements OnInit {
 
   private mostrarDialogArchivos(carpeta: Carpeta, archivos: Archivo[]): void {
     const html = `
+    ${!this.isAdmin ? `
     <div class="mb-3 p-2 border rounded">
       <label for="filePicker" class="form-label mb-1">Agregar Archivo</label>
       <input id="filePicker" class="form-control" type="file" multiple />
       <div class="text-muted mt-1" style="font-size:.9rem">
         Seleccioná uno o más archivos para subirlos automáticamente.
       </div>
-    </div>
+    </div>` : ``}
 
     ${archivos.length ? `
       <div style="max-height: 60vh; overflow:auto;">
@@ -322,8 +323,8 @@ export class ArchivosComponent implements OnInit {
                 <td class="text-left">${this.escape(this.prettySize(a.size))}</td>
                 <td class="text-left">${new Date(a.createdAt).toLocaleString()}</td>
                 <td class="text-end">
-                  <button class="btn btn-outline-secondary btn-sm me-2 js-open" data-id="${a._id}" data-path="${this.escape(a.path)}">Abrir</button>
-                  <button class="btn btn-danger btn-sm js-del" data-id="${a._id}">Eliminar</button>
+                  <button class="btn btn-outline-secondary btn-sm me-2 js-open" data-id="${a._id}" data-path="${this.escape(a.path)}">Descargar</button>
+                  ${!this.isAdmin ? `<button class="btn btn-danger btn-sm js-del" data-id="${a._id}">Eliminar</button>` : ``}
                 </td>
               </tr>
             `).join('')}
@@ -345,6 +346,7 @@ export class ArchivosComponent implements OnInit {
       confirmButtonText: 'Cerrar',
       didOpen: () => {
         const fileInput = document.getElementById('filePicker') as HTMLInputElement | null;
+
         const autoUpload = () => {
           if (!fileInput) return;
           const files = Array.from(fileInput.files ?? []);
@@ -390,7 +392,6 @@ export class ArchivosComponent implements OnInit {
         };
 
         fileInput?.addEventListener('change', autoUpload);
-
         document.addEventListener('paste', (evt: ClipboardEvent) => {
           const items = evt.clipboardData?.files;
           if (!items || !items.length) return;
@@ -402,24 +403,41 @@ export class ArchivosComponent implements OnInit {
           }
         }, {once: true});
 
-        const btnsDel = Array.from(document.querySelectorAll<HTMLButtonElement>('.js-del'));
-        btnsDel.forEach(btn => {
-          btn.addEventListener('click', () => {
-            const id = btn.getAttribute('data-id')!;
-            this.confirmarYEliminarArchivo(carpeta, id);
-          });
-        });
-
         const btnsOpen = Array.from(document.querySelectorAll<HTMLButtonElement>('.js-open'));
         btnsOpen.forEach(btn => {
           btn.addEventListener('click', () => {
             const id = btn.getAttribute('data-id')!;
             const file = archivos.find(x => x._id === id);
             if (!file) return;
-            const url = this.archivosSrv.archivoUrl(file.path);
-            window.open(url, '_blank', 'noopener');
+
+            this.archivosSrv.getArchivoBlob(file.path).subscribe({
+              next: (blob) => {
+                const nombre = file.nombreOriginal || 'archivo';
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = nombre;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+              },
+              error: () => {
+                Swal.fire({icon: 'error', title: 'No se pudo descargar el archivo'}).then();
+              }
+            });
           });
         });
+
+        if (!this.isAdmin) {
+          const btnsDel = Array.from(document.querySelectorAll<HTMLButtonElement>('.js-del'));
+          btnsDel.forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id')!;
+              this.confirmarYEliminarArchivo(carpeta, id);
+            });
+          });
+        }
       }
     }).then();
   }
@@ -448,7 +466,7 @@ export class ArchivosComponent implements OnInit {
           this.archivosSrv.getArchivos(carpeta._id).subscribe({
             next: (archivos) => {
               Swal.close();
-              this.mostrarDialogArchivos(carpeta, archivos); // re-render modal
+              this.mostrarDialogArchivos(carpeta, archivos);
               if (this.carpetaSeleccionada?._id === carpeta._id) this.cargarArchivos(carpeta._id);
               this.cargarCarpetas();
               Swal.fire({

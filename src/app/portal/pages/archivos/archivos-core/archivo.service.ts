@@ -67,4 +67,9 @@ export class ArchivosService {
     const encoded = prefixed.split('/').map((seg, i) => i === 0 ? seg : encodeURIComponent(seg)).join('/');
     return `${base}${encoded}`;
   }
+
+  getArchivoBlob(path: string): Observable<Blob> {
+    const url = this.archivoUrl(path);
+    return this.http.get(url, { responseType: 'blob' });
+  }
 }

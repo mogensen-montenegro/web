@@ -30,7 +30,7 @@
         </option>
       </select>
     </div>
-    <div class="pl-3">
+    <div *ngIf="isSuper" class="pl-3">
       <button class="btn btn-primary h-button btn-color" [disabled]="!consorcioSeleccionadoId" (click)="crearNuevaCarpeta()">
         Nueva Carpeta
       </button>
@@ -52,7 +52,7 @@
       </div>
       <div class="bottom-section">
         <span class="title">{{ carpeta.titulo }}</span>
-        <div class="row row1">
+        <div *ngIf="isSuper" class="row row1">
           <button class="btn btn-light" (click)="$event.stopPropagation(); renombrarCarpeta(carpeta)">Editar</button>
           <button class="btn btn-danger" (click)="$event.stopPropagation(); eliminarCarpeta(carpeta)">Eliminar</button>
         </div>
