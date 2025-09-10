@@ -19,10 +19,8 @@ export interface Archivo {
   consorcioId: string;
   carpetaId: string;
   nombreOriginal: string;
-  nombreGuardado: string;
   mimetype: string;
   size: number;
-  path: string;
   createdAt: string;
   updatedAt: string;
 }

@@ -86,7 +86,11 @@ export class ArchivosComponent implements OnInit {
           this.loading = false;
           this.consorcios = [];
           this.showEmpty = true;
-          Swal.fire({icon: 'error', title: 'Error', text: 'No se pudieron cargar los consorcios'}).then();
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No se pudieron cargar los consorcios'
+          }).then();
           console.error(err);
         },
       });
@@ -143,7 +147,7 @@ export class ArchivosComponent implements OnInit {
             this.cargarCarpetas();
             Swal.fire({
               icon: 'success',
-              title: 'Carpeta creada',
+              title: 'Carpeta creada exitosamente',
               showConfirmButton: false,
               timer: 1500
             }).then();
@@ -194,7 +198,7 @@ export class ArchivosComponent implements OnInit {
 
             Swal.fire({
               icon: 'success',
-              title: 'Carpeta eliminada',
+              title: 'Carpeta eliminada exitosamente',
               showConfirmButton: false,
               timer: 1500
             }).then();
@@ -246,7 +250,7 @@ export class ArchivosComponent implements OnInit {
 
             Swal.fire({
               icon: 'success',
-              title: 'Carpeta renombrada',
+              title: 'Carpeta renombrada exitosamente',
               showConfirmButton: false,
               timer: 1500
             }).then();
@@ -323,7 +327,7 @@ export class ArchivosComponent implements OnInit {
                 <td class="text-left">${this.escape(this.prettySize(a.size))}</td>
                 <td class="text-left">${new Date(a.createdAt).toLocaleString()}</td>
                 <td class="text-end">
-                  <button class="btn btn-outline-secondary btn-sm me-2 js-open" data-id="${a._id}" data-path="${this.escape(a.path)}">Descargar</button>
+                  <button class="btn btn-outline-secondary btn-sm me-2 js-open" data-id="${a._id}">Descargar</button>
                   ${!this.isAdmin ? `<button class="btn btn-danger btn-sm js-del" data-id="${a._id}">Eliminar</button>` : ``}
                 </td>
               </tr>
@@ -352,6 +356,18 @@ export class ArchivosComponent implements OnInit {
           const files = Array.from(fileInput.files ?? []);
           if (!files.length) return;
 
+          const MAX_SIZE = 2 * 1024 * 1024;
+          const invalid = files.filter(f => f.size > MAX_SIZE);
+          if (invalid.length) {
+            Swal.fire({
+              icon: 'error',
+              title: 'Archivo demasiado grande',
+              text: `Cada archivo debe pesar como máximo 2 MB.`
+            }).then();
+            fileInput.value = '';
+            return;
+          }
+
           Swal.fire({
             title: 'Subiendo...',
             allowOutsideClick: false,
@@ -368,25 +384,32 @@ export class ArchivosComponent implements OnInit {
                     this.cargarArchivos(carpeta._id);
                   }
                   this.cargarCarpetas();
-
                   Swal.fire({
                     icon: 'success',
-                    title: 'Archivos subidos',
+                    title: 'Archivos subidos exitosamente',
                     timer: 1200,
                     showConfirmButton: false
                   }).then();
-
-                  if (fileInput) fileInput.value = '';
+                  fileInput.value = '';
                 },
                 error: () => {
-                  Swal.fire({icon: 'error', title: 'Error', text: 'Subió, pero no se pudo refrescar la lista'}).then();
-                  if (fileInput) fileInput.value = '';
+                  Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Subió, pero no se pudo refrescar la lista'
+                  }).then();
+                  fileInput.value = '';
                 }
               });
             },
-            error: () => {
-              Swal.fire({icon: 'error', title: 'Error', text: 'No se pudieron subir los archivos'}).then();
-              if (fileInput) fileInput.value = '';
+            error: (err) => {
+              const msj = err?.status === 413 ? 'Uno o más archivos superan 2 MB.' : 'No se pudieron subir los archivos';
+              Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: msj
+              }).then();
+              fileInput.value = '';
             }
           });
         };
@@ -410,20 +433,35 @@ export class ArchivosComponent implements OnInit {
             const file = archivos.find(x => x._id === id);
             if (!file) return;
 
-            this.archivosSrv.getArchivoBlob(file.path).subscribe({
-              next: (blob) => {
-                const nombre = file.nombreOriginal || 'archivo';
+            this.archivosSrv.downloadArchivo(id).subscribe({
+              next: (resp) => {
+                const blob = resp.body!;
+                const cd = resp.headers.get('content-disposition') || '';
+                const match = /filename\*?=(?:UTF-8'')?"?([^"]+)"?/.exec(cd) || /filename="?([^"]+)"?/.exec(cd);
+                const filenameHeader = match?.[1] ? decodeURIComponent(match[1]) : file.nombreOriginal || 'archivo';
+
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = nombre;
+                a.download = filenameHeader;
                 document.body.appendChild(a);
+
+                const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+                if (isSafari) {
+                  a.setAttribute('target', '_blank');
+                }
+
                 a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
+                a.remove();
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
               },
-              error: () => {
-                Swal.fire({icon: 'error', title: 'No se pudo descargar el archivo'}).then();
+              error: (err) => {
+                const msj = err?.status === 413 ? 'El archivo supera el límite de 2 MB.' : 'No se pudo descargar el archivo';
+                Swal.fire({
+                  icon: 'error',
+                  title: 'Error',
+                  text: msj
+                }).then();
               }
             });
           });
@@ -444,7 +482,7 @@ export class ArchivosComponent implements OnInit {
 
   private confirmarYEliminarArchivo(carpeta: Carpeta, archivoId: string): void {
     Swal.fire({
-      title: '¿Eliminar archivo?',
+      title: '¿Eliminar Archivo?',
       icon: 'warning',
       showCancelButton: true,
       confirmButtonText: 'Eliminar',
@@ -471,15 +509,23 @@ export class ArchivosComponent implements OnInit {
               this.cargarCarpetas();
               Swal.fire({
                 icon: 'success',
-                title: 'Archivo eliminado',
+                title: 'Archivo eliminado exitosamente',
                 timer: 1200,
                 showConfirmButton: false
               }).then();
             },
-            error: () => Swal.fire({icon: 'error', title: 'Error', text: 'No se pudo refrescar el listado'})
+            error: () => Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: 'No se pudo refrescar el listado'
+            })
           });
         },
-        error: () => Swal.fire({icon: 'error', title: 'Error', text: 'No se pudo eliminar el archivo'})
+        error: () => Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudo eliminar el archivo'
+        })
       });
     });
   }
@@ -516,7 +562,11 @@ export class ArchivosComponent implements OnInit {
         },
         error: (err) => {
           this.loading = false;
-          Swal.fire({icon: 'error', title: 'Error', text: 'No se pudieron cargar los administradores'}).then();
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No se pudieron cargar los administradores'
+          }).then();
           console.error(err);
         },
       });

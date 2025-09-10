@@ -47,7 +47,7 @@ export class ArchivosService {
     const headers = this.buildAuthHeaders();
     const form = new FormData();
     files.forEach(f => form.append('files', f));
-    return this.http.post<ApiResponse<Archivo[]>>(`${this.base_url}/archivos/consorcios/${consorcioId}/carpetas/${carpetaId}/archivos`, form, {headers}).pipe(map(r => r['docs'] as Archivo[]));
+    return this.http.post<ApiResponse<Archivo[]>>(`${this.base_url}/archivos/consorcios/${consorcioId}/carpetas/${carpetaId}/archivos`, form, {headers}).pipe(map(r => (r['archivos'] ?? r['docs']) as Archivo[]));
   }
 
   eliminarArchivo(archivoId: string): Observable<void> {
@@ -55,21 +55,9 @@ export class ArchivosService {
     return this.http.delete<ApiResponse<unknown>>(`${this.base_url}/archivos/archivos/${archivoId}`, {headers}).pipe(map(() => void 0));
   }
 
-  actualizarArchivo(archivoId: string, payload: Partial<Pick<Archivo, 'nombreOriginal'>>): Observable<Archivo> {
+  downloadArchivo(id: string) {
     const headers = this.buildAuthHeaders();
-    return this.http.put<ApiResponse<Archivo>>(`${this.base_url}/archivos/archivos/${archivoId}`, payload, {headers}).pipe(map(r => (r['archivo'] ?? r['data']) as Archivo));
-  }
-
-  archivoUrl(path: string): string {
-    const base = (environment.filesBaseUrl ?? 'http://localhost:3000').replace(/\/+$/, '');
-    const withSlashes = String(path || '').replace(/\\/g, '/');
-    const prefixed = withSlashes.startsWith('/') ? withSlashes : `/${withSlashes}`;
-    const encoded = prefixed.split('/').map((seg, i) => i === 0 ? seg : encodeURIComponent(seg)).join('/');
-    return `${base}${encoded}`;
-  }
-
-  getArchivoBlob(path: string): Observable<Blob> {
-    const url = this.archivoUrl(path);
-    return this.http.get(url, { responseType: 'blob' });
+    const url = `${this.base_url}/archivos/archivos/${id}/download`;
+    return this.http.get(url, {headers, responseType: 'blob', observe: 'response'});
   }
 }
