@@ -61,6 +61,10 @@ export class LoginService {
     return localStorage.getItem(this.ACCESS_TOKEN);
   }
 
+  getUserId(): string | null {
+    return localStorage.getItem(this.USER_ID);
+  }
+
   get token(): string | null {
     return localStorage.getItem(this.TOKEN);
   }
