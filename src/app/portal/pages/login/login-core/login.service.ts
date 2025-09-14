@@ -11,7 +11,7 @@ export class LoginService {
 
   private readonly TOKEN = 'token';
   private readonly REFRESH_TOKEN = 'refreshToken';
-  private readonly ACCCESS_TOKEN = 'accessToken';
+  private readonly ACCESS_TOKEN = 'accessToken';
   private readonly SESSION_ID = 'sessionID';
   private readonly USER_ID = 'userId';
 
@@ -29,7 +29,7 @@ export class LoginService {
             localStorage.setItem(this.REFRESH_TOKEN, response.auth.refreshToken);
           }
           if (response?.auth?.accessToken) {
-            localStorage.setItem(this.SESSION_ID, response.sessionId);
+            localStorage.setItem(this.ACCESS_TOKEN, response.auth.accessToken);
           }
           if (response?.sessionId) {
             localStorage.setItem(this.SESSION_ID, response.sessionId);
@@ -45,11 +45,24 @@ export class LoginService {
     localStorage.removeItem(this.TOKEN);
     localStorage.removeItem(this.REFRESH_TOKEN);
     localStorage.removeItem(this.SESSION_ID);
+    localStorage.removeItem(this.USER_ID);
     this.router.navigateByUrl('/login').then();
   }
 
   isLoggedIn(): boolean {
     return !!localStorage.getItem(this.TOKEN);
+  }
+
+  getToken(): string | null {
+    return localStorage.getItem(this.TOKEN);
+  }
+
+  getAccess(): string | null {
+    return localStorage.getItem(this.ACCESS_TOKEN);
+  }
+
+  getUserId(): string | null {
+    return localStorage.getItem(this.USER_ID);
   }
 
   get token(): string | null {
@@ -61,10 +74,26 @@ export class LoginService {
   }
 
   get accessToken(): string | null {
-    return localStorage.getItem(this.ACCCESS_TOKEN);
+    return localStorage.getItem(this.ACCESS_TOKEN);
   }
 
   get sessionID(): string | null {
     return localStorage.getItem(this.SESSION_ID);
+  }
+
+  getRole(): 'admin' | 'superuser' | null {
+    const token = this.getToken();
+    if (!token) return null;
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1] || ''));
+      return payload?.role ?? null;
+    } catch {
+      return null;
+    }
+  }
+
+  hasRole(roles: string[]): boolean {
+    const r = this.getRole();
+    return !!r && roles.includes(r);
   }
 }

@@ -9,6 +9,7 @@
         </svg>
         <span class="text-salir">Salir</span>
       </div>
+      <i *ngIf="isSuper" class="fa-solid fa-unlock-keyhole icon-user" (click)="updatePassword()"></i>
 
       <div #menuBtn class="col-4 menu_btn" (click)="abrirMenu()">
         <div class="menu_btn_burger"></div>

@@ -1,5 +1,5 @@
 import {Component, HostBinding, OnDestroy} from '@angular/core';
-import {AbstractControl, FormBuilder, Validators} from '@angular/forms';
+import {FormBuilder, Validators} from '@angular/forms';
 import {Router} from '@angular/router';
 import {Subject} from 'rxjs';
 import {LoginService} from "./login-core/login.service";
@@ -25,23 +25,11 @@ export class LoginComponent implements OnDestroy {
     if (value) this._themeColor = value;
   }
 
-  public get themeColor(): string {
-    return this._themeColor;
-  }
-
   public loginForm = this.fb.group({
     nombre: [localStorage.getItem('nombre'), [Validators.required, Validators.minLength(2)]],
     password: ['', [Validators.required]],
     role: ['']
   });
-
-  public recordarUsuario(remember: boolean): void {
-    if (remember) {
-      localStorage.setItem('nombre', this.loginForm.value.nombre || '');
-    } else {
-      localStorage.removeItem('nombre');
-    }
-  }
 
   public login(): void {
     localStorage.clear();
@@ -78,10 +66,6 @@ export class LoginComponent implements OnDestroy {
       nombre,
       password
     })
-  }
-
-  private get roleControl(): AbstractControl {
-    return this.loginForm.controls['role'];
   }
 
   public get isValid(): boolean {
