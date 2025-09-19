@@ -22,10 +22,22 @@ export class AddAdministradorComponent implements OnDestroy, OnChanges {
   private destroy$ = new Subject<void>();
   public isLoading = false;
   public administradorForm!: FormGroup;
+  public arrayDia: Array<number> = [];
+  public arrayMes: Array<number> = [];
+  public arrayAnio: Array<number> = [];
 
   constructor(private fb: FormBuilder) {
     this.createForm();
     this.applyModeValidators();
+    this.inicializacionDias();
+  }
+
+    private inicializacionDias(): void {
+    const currentYear = new Date().getFullYear();
+    this.arrayDia = Array.from({ length: 31 }, (_, i) => i + 1);
+    this.arrayMes = Array.from({ length: 12 }, (_, i) => i + 1);
+    this.arrayAnio = Array.from({ length: currentYear - 1950 + 1 }, (_, i) => currentYear - i);
+
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -46,7 +58,12 @@ export class AddAdministradorComponent implements OnDestroy, OnChanges {
         cantConsorcios: [0],
         user: ['', [Validators.required]],
         password: [''],
-        passwordConfirm: ['']
+        passwordConfirm: [''],
+        cuil: [''],
+        dia: [''],
+        mes: [''],
+        anio: [''],
+        observaciones: [''],
       },
       {
         validators: this.passwordsMatchValidator
@@ -120,6 +137,9 @@ export class AddAdministradorComponent implements OnDestroy, OnChanges {
       email: value.email,
       telefono: value.telefono,
       direccion: value.direccion,
+      cuit: value.direccion,
+      fechaNacimiento: value.direccion,
+      observaciones: value.direccion,
       consorciosCount: Number(value.cantConsorcios) || 0,
       user: value.user,
       password: value.password
@@ -141,6 +161,9 @@ export class AddAdministradorComponent implements OnDestroy, OnChanges {
       email: value.email,
       telefono: value.telefono,
       direccion: value.direccion,
+      cuit: value.cuit,
+      fechaNacimiento: value.fechaNacimiento,
+      observaciones: value.observaciones,
       consorciosCount: Number(value.cantConsorcios) || 0,
       user: value.user,
       password: value.password ? value.password : (this.initialData?.password ?? '')

@@ -27,6 +27,9 @@
         <th>Email</th>
         <th>Teléfono</th>
         <th>Dirección</th>
+        <th>Cuil/Cuit</th>
+        <th>Fecha de Nacimiento</th>
+        <th>Observación</th>
         <th>Consorcios</th>
         <th>Acciones</th>
       </tr>
@@ -37,6 +40,9 @@
         <td>{{ usuario.email || '-' }}</td>
         <td>{{ usuario.telefono || '-' }}</td>
         <td>{{ usuario.direccion || '-' }}</td>
+        <td>{{ usuario.cuit || '-' }}</td>
+        <td>{{ usuario.fechaNacimiento || '-' }}</td>
+        <td>{{ usuario.observaciones || '-' }}</td>
         <td>{{ usuario.consorciosCount || 0 }}</td>
         <td class="min-width d-flex">
           <div class="pointer icon-box mr-3" (click)="eliminarAdministrador(usuario)">

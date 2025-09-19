@@ -39,6 +39,8 @@
         <th>Encargado</th>
         <th>Teléfono</th>
         <th>Dirección</th>
+        <th>Cuit</th>
+        <th>Observación</th>
         <th>Cantidad de Carpetas</th>
         <th>Cantidad de Archivos</th>
         <th>Acciones</th>
@@ -57,6 +59,12 @@
         </td>
         <td>
           {{ consorcio.direccion ? consorcio.direccion : "-" }}
+        </td>
+        <td>
+          {{ consorcio.cuit ? consorcio.cuit : "-" }}
+        </td>
+        <td>
+          {{ consorcio.observaciones ? consorcio.observaciones : "-" }}
         </td>
         <td>
           {{ consorcio.cantidadCarpetas ? consorcio.cantidadCarpetas : "-" }}

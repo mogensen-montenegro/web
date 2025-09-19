@@ -26,7 +26,7 @@
             <input type="text" class="form-control" formControlName="email">
           </div>
         </div>
-        <div class="row g-3">
+        <div class="row g-3 padding-bottom-1">
           <div class="col-12 col-md-6">
             <label class="form-label">
               <i class="fa fa-phone me-2 color-principal"></i> Teléfono
@@ -40,7 +40,50 @@
             <input type="text" class="form-control" formControlName="direccion">
           </div>
         </div>
-        <hr/>
+        <div class="row g-3 padding-bottom-1">
+          <div class="col-12 col-md-6">
+            <label class="form-label">
+              <i class="fa fa-address-card me-2 color-principal"></i> Cuil
+            </label>
+            <input type="text" class="form-control" formControlName="cuil">
+          </div>
+          <div class="col-12 col-md-6">
+            <div id="cumpleanios">
+              <label class="form-label">
+                <i class="fa fa-cake-candles me-2 color-principal"></i> Fecha de Nacimiento
+              </label>
+              <div class="d-flex">
+                <select formControlName="dia" class="form-select select-max" placeholder="Día">
+                  <option value="" disabled selected hidden> Día</option>
+                  <option *ngFor="let day of arrayDia" [value]="day">
+                    {{ day }}
+                  </option>
+                </select>
+                <select formControlName="mes" class="form-select mx-1 select-max" placeholder="Mes">
+                  <option value="" disabled selected hidden> Mes</option>
+                  <option *ngFor="let month of arrayMes" [value]="month">
+                    {{ month }}
+                  </option>
+                </select>
+                <select formControlName="anio" class="form-select" placeholder="Año">
+                  <option value="" disabled selected hidden> Año</option>
+                  <option *ngFor="let year of arrayAnio" [value]="year">
+                    {{ year }}
+                  </option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+           <div class="col-12">
+            <div id="observaciones">
+              <label class="form-label">
+                <i class="fa-solid fa-clipboard me-2 color-principal"></i> Observaciones
+              </label>
+                <textarea type="text" class="form-control" formControlName="observaciones"></textarea>
+            </div>
+          </div>
+        <hr />
         <div class="row">
           <div class="col"><span class="subtitle color-principal">Credenciales de Administrador</span></div>
         </div>
@@ -48,12 +91,12 @@
           <div id="nombreUsuario" class="col-12 col-sm-4 mt-3">
             <i class="fa fa-user pr-2 color-principal"></i>
             <span>Usuario</span>
-            <input type="text" formControlName="user" class="observaciones"/>
+            <input type="text" formControlName="user" class="observaciones" />
           </div>
           <div class="col-6 col-sm-4 mt-3">
             <i class="fa fa-key pr-2 color-principal"></i>
             <span>Contraseña</span>
-            <input type="password" formControlName="password" class="password"/>
+            <input type="password" formControlName="password" class="password" />
             <div *ngIf="f['password'].touched && f['password'].errors?.['minlength']">
               <small class="text-danger">
                 Debe tener mínimo 6 caracteres.
@@ -63,7 +106,7 @@
           <div class="col-12 col-sm-4 mt-3">
             <i class="fa fa-key pr-2 color-principal"></i>
             <span>Repetir Contraseña</span>
-            <input type="password" formControlName="passwordConfirm" class="observaciones"/>
+            <input type="password" formControlName="passwordConfirm" class="observaciones" />
             <small class="text-danger" *ngIf="showPwdMismatch">
               Las contraseñas no coinciden.
             </small>
@@ -72,10 +115,12 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" (click)="closeModal()">Cancelar</button>
-        <button *ngIf="editUser" [disabled]="isLoading || administradorForm.invalid" type="button" class="btn btn-warning" (click)="modificarAdministrador()">
+        <button *ngIf="editUser" [disabled]="isLoading || administradorForm.invalid" type="button"
+          class="btn btn-warning" (click)="modificarAdministrador()">
           Modificar
         </button>
-        <button *ngIf="!editUser" [disabled]="isLoading || administradorForm.invalid" type="button" class="btn btn-warning" (click)="agregarAdministrador()">
+        <button *ngIf="!editUser" [disabled]="isLoading || administradorForm.invalid" type="button"
+          class="btn btn-warning" (click)="agregarAdministrador()">
           Agregar
         </button>
       </div>

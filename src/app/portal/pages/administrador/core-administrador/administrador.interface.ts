@@ -6,6 +6,9 @@ export interface Administrador {
   direccion: string,
   consorciosCount: number,
   user: string,
+  cuit: string,
+  fechaNacimiento: string,
+  observaciones: string,
   password: string
 }
 
