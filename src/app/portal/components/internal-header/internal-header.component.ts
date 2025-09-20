@@ -28,7 +28,6 @@ export class InternalHeaderComponent implements OnInit {
     Swal.fire({
       title: 'Cambiar Contraseña',
       html: `
-        <b style="display:block;text-align:left;font-size:18px;margin:5px 0 2px;">Actualizar la contraseña</b>
         <div style="padding-top: 20px"><input id="swal-pass1" type="password" class="swal2-input" placeholder="Nueva Contraseña" style="width:100%; margin: 0;"></div>
         <div style="padding-top: 20px"><input id="swal-pass2" type="password" class="swal2-input" placeholder="Confirmar Contraseña" style="width:100%; margin: 0;"></div>
       `,

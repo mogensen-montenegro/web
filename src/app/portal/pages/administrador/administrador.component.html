@@ -29,8 +29,8 @@
         <th>Dirección</th>
         <th>Cuil/Cuit</th>
         <th>Fecha de Nacimiento</th>
-        <th>Observación</th>
         <th>Consorcios</th>
+        <th>Observación</th>
         <th>Acciones</th>
       </tr>
       </thead>
@@ -41,9 +41,16 @@
         <td>{{ usuario.telefono || '-' }}</td>
         <td>{{ usuario.direccion || '-' }}</td>
         <td>{{ usuario.cuit || '-' }}</td>
-        <td>{{ usuario.fechaNacimiento || '-' }}</td>
-        <td>{{ usuario.observaciones || '-' }}</td>
+        <td>{{ fmtFecha(usuario.fechaNacimiento) || '-' }}</td>
         <td>{{ usuario.consorciosCount || 0 }}</td>
+        <td class="text-center">
+          <ng-container *ngIf="(usuario.observacion || '').trim().length; else sinObs">
+            <button type="button" class="btn btn-link p-0" (click)="verObs(usuario)" title="Ver observación" aria-label="Ver observación">
+              <i class="fa fa-eye"></i>
+            </button>
+          </ng-container>
+          <ng-template #sinObs> -</ng-template>
+        </td>
         <td class="min-width d-flex">
           <div class="pointer icon-box mr-3" (click)="eliminarAdministrador(usuario)">
             <i class="fa fa-trash color-principal"></i>

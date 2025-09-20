@@ -2,7 +2,7 @@ import {CommonModule} from '@angular/common';
 import {Component, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges} from '@angular/core';
 import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 import {Subject, takeUntil} from 'rxjs';
-import {Consorcio, ConsorcioResponse, CrearConsorcioResponse} from '../core-consorcio/consorcio.interface';
+import {Consorcio, CrearConsorcioResponse} from '../core-consorcio/consorcio.interface';
 import {ConsorcioService} from '../core-consorcio/consorcio.service';
 import Swal from 'sweetalert2';
 
@@ -32,7 +32,9 @@ export class AddConsorcioComponent implements OnChanges, OnDestroy {
       nombre: ['', [Validators.required, Validators.minLength(2)]],
       encargado: [''],
       telefono: [''],
-      direccion: ['']
+      direccion: [''],
+      cuit: [''],
+      observacion: ['']
     });
   }
 
@@ -44,7 +46,9 @@ export class AddConsorcioComponent implements OnChanges, OnDestroy {
           nombre: this.consorcio.nombre ?? '',
           encargado: this.consorcio.encargado ?? '',
           telefono: this.consorcio.telefono ?? '',
-          direccion: this.consorcio.direccion ?? ''
+          direccion: this.consorcio.direccion ?? '',
+          cuit: this.consorcio.cuit ?? '',
+          observacion: this.consorcio.observacion ?? ''
         });
       } else {
         this.form.reset();
@@ -62,7 +66,9 @@ export class AddConsorcioComponent implements OnChanges, OnDestroy {
         nombre: value.nombre ?? '',
         encargado: value.encargado ?? '',
         telefono: value.telefono ?? '',
-        direccion: value.direccion ?? ''
+        direccion: value.direccion ?? '',
+        cuit: value.cuit ?? '',
+        observacion: value.observacion ?? ''
       });
     } else {
       this.form.reset();
@@ -83,6 +89,8 @@ export class AddConsorcioComponent implements OnChanges, OnDestroy {
       encargado: this.form.value.encargado?.trim(),
       telefono: this.form.value.telefono?.trim(),
       direccion: this.form.value.direccion?.trim(),
+      cuit: this.form.value.cuit?.trim(),
+      observacion: this.form.value.observacion?.trim(),
       idAdmin: this.adminId.trim()
     };
 
@@ -133,6 +141,8 @@ export class AddConsorcioComponent implements OnChanges, OnDestroy {
               encargado: payload.encargado,
               telefono: payload.telefono,
               direccion: payload.direccion,
+              cuit: payload.cuit,
+              observacion: payload.observacion,
               idAdmin: this.adminId,
               cantidadCarpetas: 0,
               cantidadArchivos: 0

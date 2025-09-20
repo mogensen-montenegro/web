@@ -39,10 +39,10 @@
         <th>Encargado</th>
         <th>Teléfono</th>
         <th>Dirección</th>
-        <th>Cuit</th>
-        <th>Observación</th>
+        <th>Cuil/Cuit</th>
         <th>Cantidad de Carpetas</th>
         <th>Cantidad de Archivos</th>
+        <th class="text-center">Observación</th>
         <th>Acciones</th>
       </tr>
       </thead>
@@ -64,13 +64,18 @@
           {{ consorcio.cuit ? consorcio.cuit : "-" }}
         </td>
         <td>
-          {{ consorcio.observaciones ? consorcio.observaciones : "-" }}
-        </td>
-        <td>
           {{ consorcio.cantidadCarpetas ? consorcio.cantidadCarpetas : "-" }}
         </td>
         <td>
           {{ consorcio.cantidadArchivos ? consorcio.cantidadArchivos : "-" }}
+        </td>
+        <td class="text-center">
+          <ng-container *ngIf="(consorcio.observacion || '').trim().length; else sinObs">
+            <button type="button" class="btn btn-link p-0 pointer" (click)="verObs(consorcio)" title="Ver observación" aria-label="Ver observación">
+              <i class="fa fa-eye"></i>
+            </button>
+          </ng-container>
+          <ng-template #sinObs> -</ng-template>
         </td>
         <td class="min-width d-flex">
           <div class="icon-box mr-3" (click)="eliminarConsorcio(consorcio)">

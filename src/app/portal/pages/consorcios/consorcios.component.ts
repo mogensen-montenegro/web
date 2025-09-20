@@ -164,7 +164,7 @@ export class ConsorciosComponent implements OnInit, AfterViewInit {
     if (idx >= 0) {
       this.consorcios = [
         ...this.consorcios.slice(0, idx),
-        { ...this.consorcios[idx], ...cambio },
+        {...this.consorcios[idx], ...cambio},
         ...this.consorcios.slice(idx + 1),
       ];
     } else {
@@ -185,5 +185,28 @@ export class ConsorciosComponent implements OnInit, AfterViewInit {
       document.body.classList.remove('modal-open');
       document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
     });
+  }
+
+  verObs(c: Consorcio): void {
+    const obs = (c?.observacion ?? '').trim();
+    if (!obs) return;
+    Swal.fire({
+      title: 'Observación',
+      html: `
+      <div style="border:1px solid #ccc; border-radius:6px; padding:10px; background:#f8f9fa; text-align:left; white-space: normal; margin:0;">
+        ${this.escapeHtml(obs)}
+      </div>
+      `,
+      confirmButtonText: 'Cerrar'
+    }).then();
+  }
+
+  private escapeHtml(str: string): string {
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
   }
 }

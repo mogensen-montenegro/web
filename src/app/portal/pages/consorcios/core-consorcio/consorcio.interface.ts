@@ -5,7 +5,7 @@ export interface Consorcio {
   telefono: string;
   direccion: string;
   cuit?: string;
-  observaciones?: string;
+  observacion?: string;
   cantidadCarpetas?: number;
   cantidadArchivos?: number;
   idAdmin?: string;

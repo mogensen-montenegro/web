@@ -8,7 +8,7 @@ export interface Administrador {
   user: string,
   cuit: string,
   fechaNacimiento: string,
-  observaciones: string,
+  observacion: string,
   password: string
 }
 
@@ -17,3 +17,5 @@ export interface AdministradorResponse {
   msj: string;
   body: Administrador[]
 }
+
+export type SubmitEvent = { mode: 'create' | 'edit', payload: Administrador, id?: string };
