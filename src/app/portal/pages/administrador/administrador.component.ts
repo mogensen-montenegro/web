@@ -105,7 +105,12 @@ export class AdministradorComponent implements OnInit, OnDestroy {
             this.cerrarModal();
           },
           error: (err) => {
-            Swal.fire({icon: 'error', title: 'Error', text: 'No se pudo crear el administrador'}).then();
+            const mensaje = err.error?.msj || 'No se pudo crear el administrador';
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: mensaje
+            }).then();
             console.error(err);
           }
         });
@@ -131,7 +136,12 @@ export class AdministradorComponent implements OnInit, OnDestroy {
             this.cerrarModal();
           },
           error: (err) => {
-            Swal.fire({icon: 'error', title: 'Error', text: 'No se pudo modificar el administrador'}).then();
+            const mensaje = err.error?.msj || 'No se pudo modificar el administrador';
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: mensaje
+            }).then();
             console.error(err);
           }
         });
@@ -149,7 +159,6 @@ export class AdministradorComponent implements OnInit, OnDestroy {
 
   public buscarData(): void {
     const term = this.norm(this.busqueda);
-
     if (!term) {
       this.administradores = [...this.administradoresAll];
       this.showEmpty = this.administradores.length === 0;
@@ -165,8 +174,10 @@ export class AdministradorComponent implements OnInit, OnDestroy {
         this.norm(a.email),
         this.norm(a.telefono),
         this.norm(a.direccion),
+        this.norm(a.cuit),
+        this.norm(a.observacion),
+        this.norm(this.fmtFecha(a.fechaNacimiento))
       ].join(' ');
-
       return words.every(w => blob.includes(w));
     };
 
@@ -220,5 +231,70 @@ export class AdministradorComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.unsubscribe();
+  }
+
+  fmtFecha(v: string | Date | null | undefined): string {
+    if (!v) return '';
+    if (v instanceof Date) {
+      const dd = String(v.getDate()).padStart(2, '0');
+      const mm = String(v.getMonth() + 1).padStart(2, '0');
+      const yy = v.getFullYear();
+      return `${dd}-${mm}-${yy}`;
+    }
+
+    const s = String(v).trim();
+    if (!s) return '';
+
+    let m = s.match(/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})$/);
+    if (m) {
+      const dd = m[1].padStart(2, '0');
+      const mm = m[2].padStart(2, '0');
+      return `${dd}-${mm}-${m[3]}`;
+    }
+
+    m = s.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/);
+    if (m) {
+      const dd = m[3].padStart(2, '0');
+      const mm = m[2].padStart(2, '0');
+      return `${dd}-${mm}-${m[1]}`;
+    }
+
+    try {
+      const d = new Date(s);
+      if (!isNaN(d.getTime())) {
+        const dd = String(d.getDate()).padStart(2, '0');
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const yy = d.getFullYear();
+        return `${dd}-${mm}-${yy}`;
+      }
+    } catch {
+      console.log('Error al intentar parsear la fecha');
+    }
+    return s;
+  }
+
+  verObs(a: Administrador): void {
+    const obs = (a?.observacion ?? '').trim();
+    if (!obs) return;
+    Swal.fire({
+      title: 'Observación',
+      html: `
+      <div style="
+        border:1px solid #ccc;
+        border-radius:6px;
+        padding:10px;
+        background:#f8f9fa;
+        text-align:left;
+        white-space: normal;
+        margin:0;">
+        ${this.escapeHtml(obs)}
+      </div>`,
+      confirmButtonText: 'Cerrar'
+    }).then();
+  }
+
+  private escapeHtml(str: string): string {
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
   }
 }

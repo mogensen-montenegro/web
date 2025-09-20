@@ -1,7 +1,7 @@
 import {Component, HostBinding, OnDestroy} from '@angular/core';
 import {FormBuilder, Validators} from '@angular/forms';
 import {Router} from '@angular/router';
-import {Subject} from 'rxjs';
+import {finalize, Subject} from 'rxjs';
 import {LoginService} from "./login-core/login.service";
 import Swal from "sweetalert2";
 import {LoginDataRequest} from "./login-core/auth.interface";
@@ -15,6 +15,7 @@ export class LoginComponent implements OnDestroy {
   public items = Array(10).fill(0);
   private _themeColor: string = '';
   private destroy$: Subject<void> = new Subject();
+  public loading = false;
 
   constructor(private fb: FormBuilder, private loginService: LoginService, private router: Router) {
     sessionStorage.removeItem('token');
@@ -32,6 +33,7 @@ export class LoginComponent implements OnDestroy {
   });
 
   public login(): void {
+    this.loading = true;
     localStorage.clear();
     sessionStorage.removeItem("token");
     this.limpiarEspaciosForm();
@@ -40,7 +42,9 @@ export class LoginComponent implements OnDestroy {
       user: nombre,
       password: password,
     };
-    this.loginService.login(loginDataRequest).subscribe({
+    this.loginService.login(loginDataRequest)
+    .pipe(finalize(() => { this.loading = false; }))
+    .subscribe({
       next: () => {
         this.router.navigate(['/panel']).then();
       },

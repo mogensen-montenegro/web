@@ -5,6 +5,7 @@ import {ReactiveFormsModule} from '@angular/forms';
 import {LoginComponent} from './login.component';
 import {LoginService} from './login-core/login.service';
 import {RouterLinkActive} from "@angular/router";
+import { LoaderComponent } from 'src/app/components/loader/loader.component';
 
 @NgModule({
   declarations: [LoginComponent],
@@ -12,7 +13,8 @@ import {RouterLinkActive} from "@angular/router";
     CommonModule,
     ReactiveFormsModule,
     HttpClientModule,
-    RouterLinkActive
+    RouterLinkActive,
+    LoaderComponent
   ],
   exports: [LoginComponent],
   providers: [LoginService]
