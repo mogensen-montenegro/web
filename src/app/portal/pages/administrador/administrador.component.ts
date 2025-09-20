@@ -105,7 +105,12 @@ export class AdministradorComponent implements OnInit, OnDestroy {
             this.cerrarModal();
           },
           error: (err) => {
-            Swal.fire({icon: 'error', title: 'Error', text: 'No se pudo crear el administrador'}).then();
+            const mensaje = err.error?.msj || 'No se pudo crear el administrador';
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: mensaje
+            }).then();
             console.error(err);
           }
         });
@@ -131,7 +136,12 @@ export class AdministradorComponent implements OnInit, OnDestroy {
             this.cerrarModal();
           },
           error: (err) => {
-            Swal.fire({icon: 'error', title: 'Error', text: 'No se pudo modificar el administrador'}).then();
+            const mensaje = err.error?.msj || 'No se pudo modificar el administrador';
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: mensaje
+            }).then();
             console.error(err);
           }
         });
