@@ -142,6 +142,7 @@ export class ConsorciosComponent implements OnInit, AfterViewInit {
       .subscribe({
         next: (resp: ConsorcioResponse) => {
           this.consorcios = resp.body ?? [];
+          this.sortConsorciosAsc();
           this.showEmpty = this.consorcios.length === 0;
           this.loading = false;
         },
@@ -170,6 +171,7 @@ export class ConsorciosComponent implements OnInit, AfterViewInit {
     } else {
       this.consorcios = [cambio, ...this.consorcios];
     }
+    this.sortConsorciosAsc();
   }
 
   openModal() {
@@ -208,5 +210,15 @@ export class ConsorciosComponent implements OnInit, AfterViewInit {
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#039;');
+  }
+
+  private compareByNombre(a: Consorcio, b: Consorcio): number {
+    const an = (a?.nombre ?? '').trim();
+    const bn = (b?.nombre ?? '').trim();
+    return an.localeCompare(bn, 'es', {sensitivity: 'base', numeric: true, ignorePunctuation: true});
+  }
+
+  private sortConsorciosAsc(): void {
+    this.consorcios = [...this.consorcios].sort(this.compareByNombre.bind(this));
   }
 }
