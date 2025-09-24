@@ -1,6 +1,14 @@
 import {CommonModule} from '@angular/common';
 import {Component, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges} from '@angular/core';
-import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors} from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+  AbstractControl,
+  ValidationErrors
+} from '@angular/forms';
 import {Subject} from 'rxjs';
 import {Administrador, SubmitEvent} from '../core-administrador/administrador.interface';
 
@@ -34,16 +42,25 @@ export class AddAdministradorComponent implements OnDestroy, OnChanges {
     const currentYear = new Date().getFullYear();
     this.arrayDia = Array.from({length: 31}, (_, i) => i + 1);
     this.arrayMes = Array.from({length: 12}, (_, i) => i + 1);
-    this.arrayAnio = Array.from({length: currentYear - 1950 + 1}, (_, i) => currentYear - i);
+    this.arrayAnio = Array.from({length: currentYear - 1900 + 1}, (_, i) => currentYear - i);
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['editUser']) {
       this.applyModeValidators();
+      if (!this.editUser) this.resetToEmpty();
     }
     if (changes['initialData']) {
       this.patchFormWithInitialData();
     }
+  }
+
+  private resetToEmpty(): void {
+    this.administradorForm.reset({
+      nombre: '', email: '', telefono: '', direccion: '',
+      cantConsorcios: 0, user: '', password: '', passwordConfirm: '',
+      cuit: '', dia: '', mes: '', anio: '', observacion: ''
+    });
   }
 
   private createForm(): void {
@@ -98,11 +115,7 @@ export class AddAdministradorComponent implements OnDestroy, OnChanges {
 
   private patchFormWithInitialData(): void {
     if (!this.initialData) {
-      this.administradorForm.reset({
-        nombre: '', email: '', telefono: '', direccion: '',
-        cantConsorcios: 0, user: '', password: '', passwordConfirm: '',
-        cuit: '', dia: '', mes: '', anio: '', observacion: ''
-      });
+      this.resetToEmpty();
       return;
     }
     const {dia, mes, anio} = this.parseFechaToParts(this.initialData.fechaNacimiento);
@@ -126,10 +139,8 @@ export class AddAdministradorComponent implements OnDestroy, OnChanges {
       this.administradorForm.markAllAsTouched();
       return;
     }
-
     const v = this.administradorForm.getRawValue();
     const fechaDDMM = this.buildFechaNacimiento();
-
     const payload: Administrador = {
       nombre: v.nombre,
       email: v.email,
@@ -142,8 +153,8 @@ export class AddAdministradorComponent implements OnDestroy, OnChanges {
       user: v.user,
       password: v.password
     };
-
     this.submit.emit({mode: 'create', payload});
+    this.resetToEmpty();
   }
 
   public modificarAdministrador(): void {

@@ -14,5 +14,4 @@ export class Seccion1Component implements OnInit {
 
   ngOnInit(): void {
   }
-
 }

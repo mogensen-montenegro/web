@@ -55,6 +55,9 @@ export class AdministradorComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (resp: AdministradorResponse) => {
           this.administradoresAll = resp.body ?? [];
+          this.administradoresAll.sort((a, b) =>
+            a.nombre.localeCompare(b.nombre, undefined, {sensitivity: 'base'})
+          );
           this.administradores = [...this.administradoresAll];
           this.showEmpty = this.administradores.length === 0;
           this.loading = false;
