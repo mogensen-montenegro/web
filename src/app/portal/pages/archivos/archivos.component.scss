@@ -1,3 +1,6 @@
+/* ============================
+ *  TUS ESTILOS ORIGINALES
+ * ============================ */
 input, textarea {
   width: 700px;
   text-align: left;
@@ -62,9 +65,7 @@ input[type=number]::-webkit-outer-spin-button {
   align-items: center;
 }
 
-.btn-color {
-  height: 55px;
-}
+.btn-color { height: 55px; }
 
 .card {
   width: 230px;
@@ -75,10 +76,7 @@ input[type=number]::-webkit-outer-spin-button {
   box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 20px 0px;
   transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
-
-.card:hover {
-  transform: scale(1.05);
-}
+.card:hover { transform: scale(1.05); }
 
 .card .top-section {
   height: 150px;
@@ -88,7 +86,6 @@ input[type=number]::-webkit-outer-spin-button {
   background: linear-gradient(45deg, rgb(4, 159, 187) 0%, rgb(80, 246, 255) 100%);
   position: relative;
 }
-
 .card .top-section .border {
   border-bottom-right-radius: 10px;
   height: 30px;
@@ -98,7 +95,6 @@ input[type=number]::-webkit-outer-spin-button {
   transform: skew(-40deg);
   box-shadow: -10px -10px 0 0 #1b233d;
 }
-
 .card .top-section .border::before {
   content: "";
   position: absolute;
@@ -110,7 +106,6 @@ input[type=number]::-webkit-outer-spin-button {
   border-top-left-radius: 10px;
   box-shadow: -5px -5px 0 2px #1b233d;
 }
-
 .card .top-section::before {
   content: "";
   position: absolute;
@@ -122,89 +117,23 @@ input[type=number]::-webkit-outer-spin-button {
   border-top-left-radius: 15px;
   box-shadow: -5px -5px 0 2px #1b233d;
 }
+.card .top-section .icons { position: absolute; top: 0; width: 100%; height: 30px; display: flex; justify-content: space-between; }
+.card .top-section .icons .logo { height: 100%; padding: 7px 0 7px 15px; }
+.card .top-section .icons .logo .top-section { height: 100%; }
+.card .top-section .icons .social-media { height: 100%; padding: 8px 15px; display: flex; gap: 7px; }
+.card .top-section .icons .social-media .svg { height: 100%; fill: #1b233d; }
+.card .top-section .icons .social-media .svg:hover { fill: white; }
 
-.card .top-section .icons {
-  position: absolute;
-  top: 0;
-  width: 100%;
-  height: 30px;
-  display: flex;
-  justify-content: space-between;
-}
+.card .bottom-section { margin-top: 15px; padding: 10px 5px; }
+.card .bottom-section .title { display: block; font-size: 17px; font-weight: bolder; color: white; text-align: center; letter-spacing: 2px; }
+.card .bottom-section .row { display: flex; justify-content: space-between; margin-top: 20px; }
+.card .bottom-section .row .item { flex: 30%; text-align: center; padding: 5px; color: rgba(170, 222, 243, 0.721); }
+.card .bottom-section .row .item .big-text { font-size: 12px; display: block; }
+.card .bottom-section .row .item .regular-text { font-size: 9px; }
+.card .bottom-section .row .item:nth-child(2) { border-left: 1px solid rgba(255, 255, 255, 0.126); border-right: 1px solid rgba(255, 255, 255, 0.126); }
 
-.card .top-section .icons .logo {
-  height: 100%;
-  padding: 7px 0 7px 15px;
-}
-
-.card .top-section .icons .logo .top-section {
-  height: 100%;
-}
-
-.card .top-section .icons .social-media {
-  height: 100%;
-  padding: 8px 15px;
-  display: flex;
-  gap: 7px;
-}
-
-.card .top-section .icons .social-media .svg {
-  height: 100%;
-  fill: #1b233d;
-}
-
-.card .top-section .icons .social-media .svg:hover {
-  fill: white;
-}
-
-.card .bottom-section {
-  margin-top: 15px;
-  padding: 10px 5px;
-}
-
-.card .bottom-section .title {
-  display: block;
-  font-size: 17px;
-  font-weight: bolder;
-  color: white;
-  text-align: center;
-  letter-spacing: 2px;
-}
-
-.card .bottom-section .row {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 20px;
-}
-
-.card .bottom-section .row .item {
-  flex: 30%;
-  text-align: center;
-  padding: 5px;
-  color: rgba(170, 222, 243, 0.721);
-}
-
-.card .bottom-section .row .item .big-text {
-  font-size: 12px;
-  display: block;
-}
-
-.card .bottom-section .row .item .regular-text {
-  font-size: 9px;
-}
-
-.card .bottom-section .row .item:nth-child(2) {
-  border-left: 1px solid rgba(255, 255, 255, 0.126);
-  border-right: 1px solid rgba(255, 255, 255, 0.126);
-}
-
-.text-file {
-  color: white;
-}
-
-.icono {
-  width: 60px;
-}
+.text-file { color: white; }
+.icono { width: 60px; }
 
 .empty-container {
   display: flex;
@@ -214,4 +143,81 @@ input[type=number]::-webkit-outer-spin-button {
   font-size: 1.4rem;
   font-weight: 500;
   color: #555;
+}
+
+
+/* ==========================================
+ *  SweetAlert2 (modal) dentro del popup
+ * ========================================== */
+:host ::ng-deep .swal2-title { text-align: center; }
+
+:host ::ng-deep .swal-new-folder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* inputs del modal alineados y centrados */
+:host ::ng-deep .swal-new-folder .swal2-input,
+:host ::ng-deep .swal-new-folder .sw-textarea {
+  width: 700px;
+  display: block;
+  margin: .5em auto 0; /* centra horizontalmente */
+  text-align: left;
+  box-sizing: border-box;
+}
+
+/* label “Título de la carpeta” centrado */
+:host ::ng-deep .swal-new-folder .swal2-label {
+  display: block;
+  text-align: center;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+/* fila del switch con el mismo look & feel del input */
+:host ::ng-deep .sw-row {
+  width: 700px;
+  margin: .5em auto 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-sizing: border-box;
+}
+:host ::ng-deep .sw-row-input {
+  background: #e1dfdf;
+  border-radius: 6px;
+  padding: 10px; /* mismo padding del input */
+}
+
+/* checkbox grande y coloreado */
+:host ::ng-deep .sw-check {
+  width: 22px;
+  height: 22px;
+  accent-color: #5865f2; /* color del check (moderno) */
+  transform: translateY(1px); /* alinear visualmente con el texto */
+}
+/* fallback si algún navegador no soporta accent-color */
+@supports not (accent-color: #000) {
+  :host ::ng-deep .sw-check {
+    transform: scale(1.35);
+  }
+}
+
+:host ::ng-deep .sw-label {
+  font-size: 14px;
+  color: #444;
+  user-select: none;
+  cursor: pointer;
+}
+
+/* textarea del mensaje (cuando aparece) */
+:host ::ng-deep .sw-textarea {
+  min-height: 110px;
+  resize: vertical;
+  background-color: #e1dfdf;
+  color: #656464;
+  border-radius: 6px;
+  border: 0;
+  outline: 0;
 }

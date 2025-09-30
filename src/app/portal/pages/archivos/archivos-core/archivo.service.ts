@@ -23,20 +23,44 @@ export class ArchivosService {
     return this.http.get<ApiResponse<Carpeta[]>>(`${this.base_url}/archivos/consorcios/${consorcioId}/carpetas`, {headers}).pipe(map(r => r['agg'] as Carpeta[]));
   }
 
-  crearCarpeta(consorcioId: string, titulo: string): Observable<Carpeta> {
-    const headers = this.buildAuthHeaders();
-    return this.http.post<ApiResponse<Carpeta>>(`${this.base_url}/archivos/consorcios/${consorcioId}/carpetas`, {titulo}, {headers}).pipe(map(r => r['carpeta'] as Carpeta));
+ crearCarpeta(consorcioId: string, titulo: string, mensaje?: string): Observable<Carpeta> {
+  const headers = this.buildAuthHeaders();
+  const payload: any = { titulo, mensaje };
+  if (typeof mensaje === 'string' && mensaje.trim() !== '') {
+    payload.mensaje = mensaje.trim();
   }
+  return this.http.post<ApiResponse<Carpeta>>(
+    `${this.base_url}/archivos/consorcios/${consorcioId}/carpetas`,
+    payload,
+    { headers }
+  ).pipe(map(r => r['carpeta'] as Carpeta));
+}
 
   eliminarCarpeta(consorcioId: string, carpetaId: string): Observable<void> {
     const headers = this.buildAuthHeaders();
     return this.http.delete<ApiResponse<unknown>>(`${this.base_url}/archivos/consorcios/${consorcioId}/carpetas/${carpetaId}`, {headers}).pipe(map(() => void 0));
   }
 
-  actualizarCarpeta(consorcioId: string, carpetaId: string, titulo: string): Observable<Carpeta> {
-    const headers = this.buildAuthHeaders();
-    return this.http.put<ApiResponse<Carpeta>>(`${this.base_url}/archivos/consorcios/${consorcioId}/carpetas/${carpetaId}`, {titulo}, {headers}).pipe(map(r => (r['carpeta'] ?? r['data']) as Carpeta));
+// archivos.service.ts
+actualizarCarpeta(consorcioId: string, carpetaId: string, titulo: string, mensaje?: string) {
+  const headers = this.buildAuthHeaders();
+
+  const body: any = { titulo: titulo?.trim() };
+  if (typeof mensaje === 'string') {
+    const m = mensaje.trim();
+    if (m) body.mensaje = m;
+    else body.mensaje = ''; // si querés borrar mensaje, podés mandar '' y que el backend lo interprete como null
   }
+
+  return this.http
+    .put<ApiResponse<Carpeta>>(
+      `${this.base_url}/archivos/consorcios/${consorcioId}/carpetas/${carpetaId}`,
+      body,
+      { headers }
+    )
+    .pipe(map(r => r['carpeta'] as Carpeta));
+}
+
 
   getArchivos(carpetaId: string): Observable<Archivo[]> {
     const headers = this.buildAuthHeaders();

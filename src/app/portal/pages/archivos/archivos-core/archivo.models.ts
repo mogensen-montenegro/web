@@ -12,6 +12,7 @@ export interface Carpeta {
   createdAt: string;
   updatedAt: string;
   cantidadArchivos?: number;
+  mensaje?: string;
 }
 
 export interface Archivo {
