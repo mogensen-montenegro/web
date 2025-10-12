@@ -52,6 +52,12 @@
           <ng-template #sinObs> -</ng-template>
         </td>
         <td class="min-width d-flex">
+            <div class="pointer icon-box mr-3"
+       [class.disabled]="!usuario.email"
+       (click)="usuario.email && openEmailModal(usuario)"
+       [title]="usuario.email ? 'Enviar email' : 'No tiene email'">
+    <i class="fa fa-envelope color-principal"></i>
+  </div>
           <div class="pointer icon-box mr-3" (click)="eliminarAdministrador(usuario)">
             <i class="fa fa-trash color-principal"></i>
           </div>
@@ -87,5 +93,15 @@
   <div class="d-flex align-items-center justify-content-center flex-column">
     <img class="icono" src="../../../assets/img/default.png"/>
     <span class="pt-2">No se encontraron resultados.</span>
+  </div>
+</div>
+
+<div class="modal fade" id="sendAdminEmail" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <app-send-admin-email
+      [admin]="selectedAdmin"
+      (sent)="onEmailSent()"
+      (closed)="cerrarEmailModal()">
+    </app-send-admin-email>
   </div>
 </div>

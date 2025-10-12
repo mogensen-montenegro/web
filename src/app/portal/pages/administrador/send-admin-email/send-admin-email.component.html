@@ -1,0 +1,82 @@
+<!-- Contenido del modal Bootstrap -->
+<div class="modal-content">
+  <!-- Usamos un <form> con formGroup para que todo compile contra el TS -->
+  <form [formGroup]="form" (ngSubmit)="send()">
+    <div class="modal-header">
+      <h5 class="modal-title">
+        Enviar email a {{ admin?.nombre || '-' }}
+      </h5>
+      <button
+        type="button"
+        class="btn-close"
+        aria-label="Close"
+        (click)="close()"
+      ></button>
+    </div>
+
+    <div class="modal-body">
+      <!-- Asunto -->
+      <div class="mb-3">
+        <label class="form-label">Asunto</label>
+        <input
+          class="form-control"
+          placeholder="Asunto"
+          formControlName="subject"
+        />
+        <div
+          class="text-danger small"
+          *ngIf="subjectCtrl.invalid && subjectCtrl.touched"
+        >
+          El asunto es requerido (máx. 150).
+        </div>
+      </div>
+
+      <!-- Mensaje -->
+      <div class="mb-2">
+        <label class="form-label">Mensaje</label>
+        <textarea
+          class="form-control"
+          rows="7"
+          formControlName="body"
+        ></textarea>
+        <div class="text-muted mt-2">
+          Variables disponibles:
+          <span
+            class="badge bg-light text-dark me-1"
+            *ngFor="let p of placeholders"
+            >{{ p }}</span
+          >
+        </div>
+      </div>
+
+      <hr />
+
+      <!-- Vista previa -->
+      <div>
+        <div class="fw-semibold mb-2">Vista previa</div>
+        <div class="border rounded p-3" [innerHTML]="previewHtml"></div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button
+        type="button"
+        class="btn btn-secondary"
+        (click)="close()"
+        [disabled]="isSending"
+      >
+        Cancelar
+      </button>
+      <button
+        type="submit"
+        class="btn btn-primary"
+        [disabled]="isSending || form.invalid || !admin?.email"
+        title="{{ !admin?.email ? 'El administrador no tiene email' : '' }}"
+      >
+        <i class="fa fa-paper-plane" *ngIf="!isSending"></i>
+        <span *ngIf="!isSending">Enviar</span>
+        <span *ngIf="isSending">Enviando…</span>
+      </button>
+    </div>
+  </form>
+</div>

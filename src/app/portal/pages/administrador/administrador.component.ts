@@ -8,6 +8,7 @@ import {HttpClientModule} from '@angular/common/http';
 import {Administrador, AdministradorResponse} from "./core-administrador/administrador.interface";
 import {AdministradorService} from "./core-administrador/administrador.service";
 import {NavigationEnd, Router} from "@angular/router";
+import { SendAdminEmailComponent } from './send-admin-email/send-admin-email.component';
 
 declare const bootstrap: any;
 
@@ -16,7 +17,7 @@ declare const bootstrap: any;
   templateUrl: './administrador.component.html',
   styleUrls: ['./administrador.component.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, HttpClientModule, AddAdministradorComponent]
+  imports: [CommonModule, FormsModule, HttpClientModule, AddAdministradorComponent, SendAdminEmailComponent]
 })
 export class AdministradorComponent implements OnInit, OnDestroy {
   public busqueda = '';
@@ -300,4 +301,25 @@ export class AdministradorComponent implements OnInit, OnDestroy {
     return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
   }
+
+  // dentro de la clase:
+public openEmailModal(usuario: Administrador): void {
+  this.selectedAdmin = { ...usuario };
+  const el = document.getElementById('sendAdminEmail');
+  if (!el) return;
+  const modal = new (window as any).bootstrap.Modal(el);
+  modal.show();
+}
+
+public cerrarEmailModal(): void {
+  const el = document.getElementById('sendAdminEmail');
+  if (!el) return;
+  const modal = (window as any).bootstrap.Modal.getInstance(el);
+  modal?.hide();
+}
+
+public onEmailSent(): void {
+  this.cerrarEmailModal();
+  // si querés, refrescás la lista, logs, etc.
+}
 }
