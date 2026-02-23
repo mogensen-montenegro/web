@@ -6,8 +6,10 @@
       <div class="imagenSocio">
         <div class="textoSocio">
           <p>Conocé todos nuestros canales de contacto.</p>
-          <h1>Para cualquier consulta podes comunicarte por cualquier de nuestros medios. Un asesor esta esperando tu
-            llamada.</h1>
+          <h1>
+            Para cualquier consulta podes comunicarte por cualquier de nuestros medios.
+            Un asesor esta esperando tu llamada.
+          </h1>
         </div>
       </div>
     </div>
@@ -15,8 +17,9 @@
 </ng-container>
 
 <div class="container py-5">
+  <!-- ROW 1: 3 WhatsApp -->
   <div class="row justify-content-center text-center">
-    <div class="col-12 col-md-3 mb-4">
+    <div class="col-12 col-md-4 mb-4">
       <a href="https://wa.me/5491164778878?text=Hola%20quiero%20información" target="_blank" class="text-decoration-none">
         <div class="card d-flex justify-content-center align-items-center py-4 h-100">
           <img class="w-icon mb-2" src="../../../assets/img/whatsappIcon.png" alt="WhatsApp Icon">
@@ -26,7 +29,7 @@
       </a>
     </div>
 
-    <div class="col-12 col-md-3 mb-4">
+    <div class="col-12 col-md-4 mb-4">
       <a href="https://wa.me/5491145280955?text=Hola%20quiero%20información" target="_blank" class="text-decoration-none">
         <div class="card d-flex justify-content-center align-items-center py-4 h-100">
           <img class="w-icon mb-2" src="../../../assets/img/whatsappIcon.png" alt="WhatsApp Icon">
@@ -36,11 +39,24 @@
       </a>
     </div>
 
-    <div class="col-12 col-md-4 mb-4 card-email">
-      <div class="card card-email d-flex justify-content-center align-items-center py-4 h-100">
+    <div class="col-12 col-md-4 mb-4">
+      <a href="https://wa.me/5491176549506?text=Hola%20quiero%20información" target="_blank" class="text-decoration-none">
+        <div class="card d-flex justify-content-center align-items-center py-4 h-100">
+          <img class="w-icon mb-2" src="../../../assets/img/whatsappIcon.png" alt="WhatsApp Icon">
+          <h5>Seguros Generales</h5>
+          <span class="number-tel">+549 (011)-7654-9506</span>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <!-- ROW 2: Email 100% -->
+  <div class="row justify-content-center text-center">
+    <div class="col-12">
+      <div class="card card-email d-flex justify-content-center align-items-center py-4">
         <img class="w-icon-email mb-2" src="../../../assets/img/email.png" alt="Email Icon">
         <h5>Email</h5>
-        <span class="number-tel">{{email}}</span>
+        <span class="number-tel">{{ email }}</span>
       </div>
     </div>
   </div>
