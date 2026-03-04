@@ -7,7 +7,7 @@ export function numeroAPalabras(valor: number): string {
   const centavos = Math.round((valor - entero) * 100);
   const parteEntera = enteroAPalabras(entero);
   const strCentavos = centavos.toString().padStart(2, '0');
-  return `${parteEntera} PESOS CON ${strCentavos}/100`;
+  return `${parteEntera.toUpperCase()} PESOS CON ${strCentavos}/100`;
 }
 
 const UNIDADES = ['', 'UNO', 'DOS', 'TRES', 'CUATRO', 'CINCO', 'SEIS', 'SIETE', 'OCHO', 'NUEVE'];
@@ -25,7 +25,7 @@ function enteroAPalabras(n: number): string {
     const d = Math.floor(n / 10);
     const u = n % 10;
     if (u === 0) return DECENAS[d];
-    if (d === 2) return 'VEINTI' + UNIDADES[u].toLowerCase();
+    if (d === 2) return 'VEINTI' + UNIDADES[u];
     return DECENAS[d] + ' Y ' + UNIDADES[u];
   }
   if (n === 100) return 'CIEN';
