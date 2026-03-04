@@ -305,6 +305,7 @@ export class GeneradorRecibosComponent {
 
   descargarExcelBase(): void {
     this.error = '';
+    const MIME_XLSX = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
     const baseHref = document.querySelector('base')?.getAttribute('href') || '/';
     const base = baseHref.replace(/\/$/, '');
     const origin = window.location.origin;
@@ -319,9 +320,14 @@ export class GeneradorRecibosComponent {
       fetch(url)
         .then((r) => {
           if (!r.ok) throw new Error('Not found');
-          return r.blob();
+          const contentType = (r.headers.get('Content-Type') || '').toLowerCase();
+          if (contentType.includes('text/html')) {
+            throw new Error('El servidor devolvió HTML en lugar del Excel (revisá la ruta del archivo).');
+          }
+          return r.arrayBuffer();
         })
-        .then((blob) => {
+        .then((buffer) => {
+          const blob = new Blob([buffer], { type: MIME_XLSX });
           const u = URL.createObjectURL(blob);
           const a = document.createElement('a');
           a.href = u;
