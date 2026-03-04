@@ -29,12 +29,30 @@ export interface ReciboAsegurado {
   total: number; // suma de efectivo + debito de todos los items
 }
 
-/** Parsea valor monetario argentino ej: "$88.665,38" o "4399,36" */
+/**
+ * Parsea valor monetario: número (Excel) o string en formato argentino.
+ * - Si ya es número (ej: 7023.79), se usa tal cual (los centavos se preservan).
+ * - Si es string "7023,79" o "$ 7.023,79": coma = decimal, punto = miles.
+ */
 export function parseImporteArgentino(val: unknown): number {
   if (val == null || val === '') return 0;
-  const s = String(val).trim().replace(/\$/g, '').replace(/\./g, '').replace(',', '.');
-  const n = parseFloat(s);
-  return isNaN(n) ? 0 : n;
+  if (typeof val === 'number' && !isNaN(val)) return Math.round(val * 100) / 100;
+  const s = String(val).trim().replace(/\$/g, '').trim();
+  if (!s) return 0;
+  const hasComma = s.includes(',');
+  const hasDot = s.includes('.');
+  let numStr: string;
+  if (hasComma && hasDot) {
+    numStr = s.replace(/\./g, '').replace(',', '.');
+  } else if (hasComma) {
+    numStr = s.replace(',', '.');
+  } else if (hasDot) {
+    numStr = s;
+  } else {
+    numStr = s;
+  }
+  const n = parseFloat(numStr);
+  return isNaN(n) ? 0 : Math.round(n * 100) / 100;
 }
 
 /** Normaliza nombre de columna para matchear con el Excel */
