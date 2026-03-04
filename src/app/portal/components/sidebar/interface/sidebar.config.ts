@@ -21,5 +21,12 @@ export const GYM_ROUTES_CONFIG: SidebarConfig[] = [
     url: '/panel/archivos',
     icon: 'fa-file',
     roles: ['superuser', 'admin']
+  },
+  {
+    id: 'generador-recibos',
+    name: 'Generador de recibos',
+    url: '/panel/generador-recibos',
+    icon: 'fa-receipt',
+    roles: ['superuser']
   }
 ]

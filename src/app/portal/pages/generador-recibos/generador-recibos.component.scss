@@ -1,0 +1,44 @@
+.title {
+  font-weight: 700;
+  color: #1b233d;
+}
+
+.sub-titulo {
+  display: block;
+  margin-top: 0.25rem;
+  color: #656464;
+  font-size: 0.95rem;
+}
+
+.content-placeholder {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 50vh;
+  font-size: 1.1rem;
+  color: #555;
+}
+
+.icono {
+  width: 60px;
+}
+
+.btn-upload input[type="file"] {
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+.btn-upload {
+  position: relative;
+  overflow: hidden;
+}
+
+.card-info {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+}

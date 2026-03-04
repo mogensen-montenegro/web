@@ -1,0 +1,81 @@
+<div class="row p-5 d-flex justify-content-between align-items-start">
+  <div class="col-10">
+    <h3 class="title">Generador de recibos</h3>
+    <span class="sub-titulo">Cargá un Excel con las columnas ASEGURADO, PÓLIZA, CUIT, COMPAÑÍA, RIESGO, CUOTA, EFECTIVO, DEBITO, VENCIMIENTO. Se genera un PDF por asegurado (todas las filas del mismo asegurado en una hoja con tabla).</span>
+  </div>
+  <div class="col-2 text-right">
+    <button
+      type="button"
+      class="btn btn-color"
+      (click)="descargarExcelBase()"
+    >
+      <i class="fa fa-download mr-2"></i>
+      Excel base
+    </button>
+  </div>
+</div>
+
+<div class="row px-5 pb-4">
+  <div class="col-12 col-md-8">
+    <label class="btn btn-color btn-upload">
+      <i class="fa fa-file-excel-o mr-2"></i>
+      {{ procesando ? 'Procesando...' : 'Seleccionar archivo Excel' }}
+      <input
+        type="file"
+        accept=".xlsx,.xls"
+        class="d-none"
+        [disabled]="procesando"
+        (change)="onArchivoSeleccionado($event)"
+      />
+    </label>
+    <span class="ml-3 text-muted" *ngIf="archivoNombre">{{ archivoNombre }}</span>
+  </div>
+  <div class="col-12 col-md-4 text-md-right mt-2 mt-md-0">
+    <button
+      *ngIf="pdfGenerado"
+      type="button"
+      class="btn btn-success btn-color"
+      (click)="descargarPdf()"
+    >
+      <i class="fa fa-download mr-2"></i>
+      Descargar PDF ({{ cantidadRecibos }} recibos)
+    </button>
+  </div>
+</div>
+
+<div class="row px-5" *ngIf="error">
+  <div class="col-12">
+    <div class="alert alert-danger" role="alert">
+      <i class="fa fa-exclamation-circle mr-2"></i>{{ error }}
+    </div>
+  </div>
+</div>
+
+<div class="row px-5 mb-4">
+  <div class="col-12">
+    <div class="card card-info">
+      <div class="card-body">
+        <h6 class="card-title">Columnas esperadas en el Excel</h6>
+        <p class="card-text mb-0 small">
+          <strong>ASEGURADO</strong>, <strong>PÓLIZA</strong>, <strong>CUIT</strong>, <strong>COMPAÑÍA</strong>, <strong>RIESGO</strong>, <strong>CUOTA</strong>, <strong>EFECTIVO</strong>, <strong>DEBITO</strong>, <strong>VENCIMIENTO</strong>. La primera fila debe ser el encabezado. Los importes en formato argentino. Se ignora la fila con "Total" en CUOTA. Un mismo asegurado puede tener varias filas; se agrupan en una sola hoja con tabla.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="content-placeholder" *ngIf="!archivoNombre && !error">
+  <div class="d-flex align-items-center justify-content-center flex-column">
+    <img class="icono" src="assets/img/default.png" alt="Generador de recibos" />
+    <span class="pt-2">Seleccioná un archivo Excel para generar los recibos en PDF.</span>
+  </div>
+</div>
+
+<div class="content-placeholder" *ngIf="procesando">
+  <div class="d-flex align-items-center justify-content-center flex-column">
+    <div class="spinner-border text-primary" role="status">
+      <span class="sr-only">Procesando...</span>
+    </div>
+    <span class="pt-2">Procesando Excel y generando PDF...</span>
+  </div>
+</div>

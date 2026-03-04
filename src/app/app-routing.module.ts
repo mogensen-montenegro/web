@@ -11,6 +11,7 @@ import {PanelControlComponent} from './portal/pages/panel-control/panel-control.
 import {AdministradorComponent} from './portal/pages/administrador/administrador.component';
 import {ConsorciosComponent} from './portal/pages/consorcios/consorcios.component';
 import {ArchivosComponent} from './portal/pages/archivos/archivos.component';
+import {GeneradorRecibosComponent} from './portal/pages/generador-recibos/generador-recibos.component';
 import {AuthGuard} from "./portal/pages/login/login-core/auth.guard";
 import {RoleGuard} from "./portal/pages/login/login-core/role.guard";
 import {RedirectGuard} from "./portal/pages/login/login-core/redirect.guard";
@@ -61,6 +62,12 @@ const routes: Routes = [
         component: ArchivosComponent,
         canActivate: [RoleGuard],
         data: {roles: ['admin', 'superuser']}
+      },
+      {
+        path: 'generador-recibos',
+        component: GeneradorRecibosComponent,
+        canActivate: [RoleGuard],
+        data: {roles: ['superuser']}
       }
     ]
   },
