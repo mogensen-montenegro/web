@@ -43,7 +43,7 @@ export class GeneradorRecibosComponent {
   private readonly iconoTelefonoPath = 'assets/img/telefono-movil.png';
   private readonly iconoSitioWebPath = 'assets/img/sitio-web.png';
   private readonly firmaPath = 'assets/img/firma.png';
-  private readonly excelBasePath = 'assets/xlsx/excelBase.xlsx';
+  private readonly excelBasePaths = ['assets/xlsx/excelBase.xlsx', 'assets/excelBase.xlsx'];
 
   onArchivoSeleccionado(event: Event): void {
     const input = event.target as HTMLInputElement;
@@ -304,24 +304,33 @@ export class GeneradorRecibosComponent {
   }
 
   descargarExcelBase(): void {
+    this.error = '';
     const baseHref = document.querySelector('base')?.getAttribute('href') || '/';
-    const path = baseHref.replace(/\/$/, '') + '/' + this.excelBasePath.replace(/^\//, '');
-    const url = path.startsWith('http') ? path : window.location.origin + path;
-    fetch(url)
-      .then((r) => {
-        if (!r.ok) throw new Error('No se pudo descargar el Excel base');
-        return r.blob();
-      })
-      .then((blob) => {
-        const u = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = u;
-        a.download = 'excelBase.xlsx';
-        a.click();
-        URL.revokeObjectURL(u);
-      })
-      .catch(() => {
-        this.error = 'No se encontró el archivo Excel base. Verificá que exista assets/xlsx/excelBase.xlsx.';
-      });
+    const base = baseHref.replace(/\/$/, '');
+    const origin = window.location.origin;
+    const tryFetch = (index: number): void => {
+      if (index >= this.excelBasePaths.length) {
+        this.error = 'No se encontró el archivo Excel base. Colocá excelBase.xlsx en src/assets/xlsx/ o en src/assets/ y reiniciá el servidor (ng serve) si hace falta.';
+        return;
+      }
+      const relPath = this.excelBasePaths[index].replace(/^\//, '');
+      const path = base ? base + '/' + relPath : '/' + relPath;
+      const url = (path.startsWith('http') ? path : origin + path) + '?t=' + Date.now();
+      fetch(url)
+        .then((r) => {
+          if (!r.ok) throw new Error('Not found');
+          return r.blob();
+        })
+        .then((blob) => {
+          const u = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = u;
+          a.download = 'excelBase.xlsx';
+          a.click();
+          URL.revokeObjectURL(u);
+        })
+        .catch(() => tryFetch(index + 1));
+    };
+    tryFetch(0);
   }
 }

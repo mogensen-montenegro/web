@@ -6,8 +6,9 @@ const RED_PRIMARY = '#c60f17';
 const GREY_DARK = '#4a4a4a';
 const GREY_LIGHT = '#e8e8e8';
 const PAGE_W = 210;
-const MARGIN = 15;
+const MARGIN = 10;
 const CONTENT_W = PAGE_W - 2 * MARGIN;
+const FONT_SERIF = 'times';
 
 const CONTACTO = {
   segurosGenerales: '+549 (011)-6477-8878',
@@ -92,7 +93,7 @@ function dibujarRecibo(
   }
 
   doc.setFontSize(8);
-  doc.setFont('helvetica', 'normal');
+  doc.setFont(FONT_SERIF, 'normal');
   doc.setTextColor(GREY_DARK);
 
   let contactY = y + 4;
@@ -103,7 +104,7 @@ function dibujarRecibo(
       // ignorar
     }
   }
-  doc.text(`Seg. generales: ${CONTACTO.segurosGenerales}`, contactX + textOffset, contactY);
+  doc.text(`Seg. Generales: ${CONTACTO.segurosGenerales}`, contactX + textOffset, contactY);
   contactY += lineH;
 
   if (iconoTelefonoBase64) {
@@ -134,13 +135,13 @@ function dibujarRecibo(
     }
   }
   doc.text(CONTACTO.email, contactX + textOffset, contactY);
-  y += 28;
+  y += 24;
 
   // Banda gris solo con N.º recibo y Fecha a la derecha
   const reciboW = 32;
   const fechaW = 38;
   const rightStart = PAGE_W - MARGIN - reciboW - fechaW - 4;
-  const bandH = 10;
+  const bandH = 8;
 
   doc.setFillColor(GREY_DARK);
   doc.rect(MARGIN, y, CONTENT_W, bandH, 'F');
@@ -148,7 +149,7 @@ function dibujarRecibo(
   doc.rect(rightStart, y, reciboW, bandH / 2, 'F');
   doc.rect(rightStart + reciboW + 2, y, fechaW, bandH / 2, 'F');
   doc.setTextColor(255, 255, 255);
-  doc.setFont('helvetica', 'bold');
+  doc.setFont(FONT_SERIF, 'bold');
   doc.setFontSize(8);
   doc.text('N.º recibo', rightStart + 2, y + 4);
   doc.text('Fecha Emisión', rightStart + reciboW + 4, y + 4);
@@ -156,14 +157,14 @@ function dibujarRecibo(
   doc.rect(rightStart, y + bandH / 2, reciboW, bandH / 2, 'F');
   doc.rect(rightStart + reciboW + 2, y + bandH / 2, fechaW, bandH / 2, 'F');
   doc.setTextColor(0, 0, 0);
-  doc.setFont('helvetica', 'normal');
+  doc.setFont(FONT_SERIF, 'normal');
   doc.setFontSize(9);
-  doc.text(nroRecibo, rightStart + 2, y + 8.5);
-  doc.text(fechaEmision, rightStart + reciboW + 4, y + 8.5);
-  y += bandH + 4;
+  doc.text(nroRecibo, rightStart + 2, y + 6.5);
+  doc.text(fechaEmision, rightStart + reciboW + 4, y + 6.5);
+  y += bandH + 2;
 
   // Tabla: Recibí de / CUIT / La suma de
-  const rowH = 10;
+  const rowH = 8;
   const labelW = 45;
   const valueW = CONTENT_W - labelW;
 
@@ -172,8 +173,8 @@ function dibujarRecibo(
   const total = recibo.total;
   const sumaPalabras = numeroAPalabras(total);
   const lineasSuma = doc.splitTextToSize(sumaPalabras, valueW - 4);
-  const lineHeightSuma = 5.5;
-  const rowHSuma = Math.max(16, 8 + lineasSuma.length * lineHeightSuma);
+  const lineHeightSuma = 5;
+  const rowHSuma = Math.max(14, 6 + lineasSuma.length * lineHeightSuma);
 
   doc.setFillColor(255, 255, 255);
   doc.rect(MARGIN, y, labelW, rowH, 'F');
@@ -182,10 +183,10 @@ function dibujarRecibo(
   doc.rect(MARGIN, y, CONTENT_W, rowH, 'S');
   doc.setTextColor(0, 0, 0);
   doc.setFontSize(9);
-  doc.text('Recibí de:', MARGIN + 3, y + 6.5);
+  doc.text('Recibí de:', MARGIN + 3, y + 5.5);
   doc.setFillColor(GREY_LIGHT);
   doc.rect(MARGIN + labelW, y, valueW, rowH, 'F');
-  doc.text(doc.splitTextToSize(recibidoDe, valueW - 4)[0] || recibidoDe, MARGIN + labelW + 3, y + 6.5);
+  doc.text(doc.splitTextToSize(recibidoDe, valueW - 4)[0] || recibidoDe, MARGIN + labelW + 3, y + 5.5);
   y += rowH;
 
   doc.setFillColor(RED_PRIMARY);
@@ -194,11 +195,11 @@ function dibujarRecibo(
   doc.rect(MARGIN + labelW, y, valueW, rowH, 'F');
   doc.rect(MARGIN, y, CONTENT_W, rowH, 'S');
   doc.setTextColor(255, 255, 255);
-  doc.setFont('helvetica', 'bold');
-  doc.text('DNI/NIF/CUIT/', MARGIN + 3, y + 6.5);
+  doc.setFont(FONT_SERIF, 'bold');
+  doc.text('DNI/NIF/CUIT/', MARGIN + 3, y + 5.5);
   doc.setTextColor(0, 0, 0);
-  doc.setFont('helvetica', 'normal');
-  doc.text(cuitStr, MARGIN + labelW + 3, y + 6.5);
+  doc.setFont(FONT_SERIF, 'normal');
+  doc.text(cuitStr, MARGIN + labelW + 3, y + 5.5);
   y += rowH;
 
   doc.setFillColor(255, 255, 255);
@@ -208,23 +209,23 @@ function dibujarRecibo(
   doc.setDrawColor(200, 200, 200);
   doc.rect(MARGIN, y, CONTENT_W, rowHSuma, 'S');
   doc.setTextColor(0, 0, 0);
-  doc.text('La suma de:', MARGIN + 3, y + 6.5);
-  let textY = y + 6;
+  doc.text('La suma de:', MARGIN + 3, y + 5.5);
+  let textY = y + 5;
   for (let i = 0; i < lineasSuma.length; i++) {
     doc.text(lineasSuma[i], MARGIN + labelW + 3, textY);
     textY += lineHeightSuma;
   }
-  y += rowHSuma + 4;
+  y += rowHSuma + 2;
 
   // Como pago por concepto de: tabla con Nº póliza, Riesgo, Cuota, Efectivo/Débito, Vencimiento
-  const conceptoH = 8;
+  const conceptoH = 7;
   doc.setFillColor(RED_PRIMARY);
   doc.rect(MARGIN, y, CONTENT_W, conceptoH, 'F');
   doc.setTextColor(255, 255, 255);
-  doc.setFont('helvetica', 'bold');
+  doc.setFont(FONT_SERIF, 'bold');
   doc.setFontSize(10);
-  doc.text('Como pago por concepto de:', MARGIN + CONTENT_W / 2, y + 5.5, { align: 'center' });
-  y += conceptoH + 2;
+  doc.text('Como pago por concepto de:', MARGIN + CONTENT_W / 2, y + 5, { align: 'center' });
+  y += conceptoH + 1;
 
   const colW = {
     poliza: 38,
@@ -241,7 +242,7 @@ function dibujarRecibo(
   doc.rect(MARGIN + colW.poliza + colW.riesgo + colW.cuota, y, colW.efectivoDebito, headerH, 'F');
   doc.rect(MARGIN + colW.poliza + colW.riesgo + colW.cuota + colW.efectivoDebito, y, colW.vencimiento, headerH, 'F');
   doc.setTextColor(255, 255, 255);
-  doc.setFont('helvetica', 'bold');
+  doc.setFont(FONT_SERIF, 'bold');
   doc.setFontSize(8);
   doc.text('Nº póliza', MARGIN + 2, y + 5.5);
   doc.text('Riesgo', MARGIN + colW.poliza + 2, y + 5.5);
@@ -250,8 +251,8 @@ function dibujarRecibo(
   doc.text('Vencimiento', MARGIN + colW.poliza + colW.riesgo + colW.cuota + colW.efectivoDebito + 2, y + 5.5);
   y += headerH;
 
-  const dataRowH = 7;
-  doc.setFont('helvetica', 'normal');
+  const dataRowH = 6;
+  doc.setFont(FONT_SERIF, 'normal');
   doc.setFontSize(8);
   doc.setTextColor(0, 0, 0);
   for (const item of recibo.items) {
@@ -268,36 +269,36 @@ function dibujarRecibo(
     doc.rect(MARGIN + colW.poliza + colW.riesgo + colW.cuota + 1, y + 1, colW.efectivoDebito - 2, dataRowH - 2, 'F');
     doc.rect(MARGIN + colW.poliza + colW.riesgo + colW.cuota + colW.efectivoDebito + 1, y + 1, colW.vencimiento - 2, dataRowH - 2, 'F');
     doc.setTextColor(0, 0, 0);
-    doc.text((item.poliza || '-').substring(0, 14), MARGIN + 2, y + 4.5);
-    doc.text((item.riesgo || '-').substring(0, 10), MARGIN + colW.poliza + 2, y + 4.5);
-    doc.text(formatCuota(item.cuota).substring(0, 8), MARGIN + colW.poliza + colW.riesgo + 2, y + 4.5);
+    doc.text((item.poliza || '-').substring(0, 14), MARGIN + 2, y + 3.5);
+    doc.text((item.riesgo || '-').substring(0, 10), MARGIN + colW.poliza + 2, y + 3.5);
+    doc.text(formatCuota(item.cuota).substring(0, 8), MARGIN + colW.poliza + colW.riesgo + 2, y + 3.5);
     const efDeb =
       item.efectivo > 0 && item.debito > 0
         ? `Efectivo ${formatMoneda(item.efectivo)} / Débito ${formatMoneda(item.debito)}`
         : item.efectivo > 0
           ? `Efectivo ${formatMoneda(item.efectivo)}`
           : `Débito ${formatMoneda(item.debito)}`;
-    doc.text(doc.splitTextToSize(efDeb, colW.efectivoDebito - 4)[0] || efDeb, MARGIN + colW.poliza + colW.riesgo + colW.cuota + 2, y + 4.5);
-    doc.text((item.vencimiento || '-').substring(0, 12), MARGIN + colW.poliza + colW.riesgo + colW.cuota + colW.efectivoDebito + 2, y + 4.5);
+    doc.text(doc.splitTextToSize(efDeb, colW.efectivoDebito - 4)[0] || efDeb, MARGIN + colW.poliza + colW.riesgo + colW.cuota + 2, y + 3.5);
+    doc.text((item.vencimiento || '-').substring(0, 12), MARGIN + colW.poliza + colW.riesgo + colW.cuota + colW.efectivoDebito + 2, y + 3.5);
     y += dataRowH;
   }
-  y += 6;
+  y += 4;
 
-  // Pie: firma (izq, sin recuadro gris) y total (der)
-  const footerY = 297 - MARGIN - 32;
+  // Pie: firma (izq, sin recuadro gris) y total (der) — más cerca del contenido
+  const footerY = y;
   const firmaW = 55;
   const firmaH = 28;
   if (firmaBase64) {
     try {
       doc.addImage(firmaBase64, 'PNG', MARGIN, footerY, firmaW, firmaH);
     } catch {
-      doc.setFont('helvetica', 'italic');
+      doc.setFont(FONT_SERIF, 'italic');
       doc.setFontSize(12);
       doc.setTextColor(80, 80, 80);
       doc.text('Mogensen Gabriela', MARGIN + 5, footerY + firmaH / 2);
     }
   } else {
-    doc.setFont('helvetica', 'italic');
+    doc.setFont(FONT_SERIF, 'italic');
     doc.setFontSize(12);
     doc.setTextColor(80, 80, 80);
     doc.text('Mogensen Gabriela', MARGIN + 5, footerY + firmaH / 2);
@@ -308,13 +309,13 @@ function dibujarRecibo(
   doc.setFillColor(RED_PRIMARY);
   doc.rect(totalBoxX, footerY, totalBoxW, 10, 'F');
   doc.setTextColor(255, 255, 255);
-  doc.setFont('helvetica', 'bold');
+  doc.setFont(FONT_SERIF, 'bold');
   doc.setFontSize(10);
   doc.text('TOTAL', totalBoxX + totalBoxW / 2, footerY + 7, { align: 'center' });
   doc.setFillColor(GREY_LIGHT);
   doc.rect(totalBoxX, footerY + 10, totalBoxW, 18, 'F');
   doc.setTextColor(0, 0, 0);
-  doc.setFont('helvetica', 'normal');
+  doc.setFont(FONT_SERIF, 'normal');
   doc.setFontSize(11);
   doc.text(formatMoneda(total), totalBoxX + totalBoxW / 2, footerY + 22, { align: 'center' });
 }
