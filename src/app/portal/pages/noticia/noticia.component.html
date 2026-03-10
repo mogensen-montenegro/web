@@ -66,7 +66,16 @@
             <th>Acciones</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody *ngIf="loading">
+          <tr *ngFor="let i of [1,2,3]" class="skeleton-row">
+            <td><div class="skeleton-cell skeleton-img-cell"></div></td>
+            <td><div class="skeleton-cell"></div></td>
+            <td><div class="skeleton-cell skeleton-text-cell"></div></td>
+            <td><div class="skeleton-cell skeleton-btn-cell"></div></td>
+            <td><div class="skeleton-cell skeleton-actions-cell"></div></td>
+          </tr>
+        </tbody>
+        <tbody *ngIf="!loading">
           <tr *ngFor="let n of noticias">
             <td>
               <div class="d-flex gap-1 flex-wrap">
@@ -89,7 +98,7 @@
         </tbody>
       </table>
     </div>
-    <div *ngIf="!noticias.length" class="empty-container py-4">
+    <div *ngIf="!loading && !noticias.length" class="empty-container py-4">
       <span class="text-muted">No hay noticias cargadas. Agregá una desde el formulario de arriba.</span>
     </div>
   </div>

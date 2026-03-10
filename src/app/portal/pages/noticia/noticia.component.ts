@@ -15,6 +15,7 @@ import { NoticiaService } from '../../../core/noticia/noticia.service';
 export class NoticiaComponent implements OnInit {
   private static readonly MAX_IMAGENES = 5;
   noticias: Noticia[] = [];
+  loading = true;
   editingId: string | null = null;
   form: { titulo: string; texto: string; imagenesBase64: string[] } = {
     titulo: '',
@@ -30,7 +31,16 @@ export class NoticiaComponent implements OnInit {
   }
 
   cargarLista(): void {
-    this.noticiaService.getAll().subscribe((list) => (this.noticias = list));
+    this.loading = true;
+    this.noticiaService.getAll().subscribe({
+      next: (list) => {
+        this.noticias = list;
+        this.loading = false;
+      },
+      error: () => {
+        this.loading = false;
+      }
+    });
   }
 
   onImagenSeleccionada(event: Event): void {
