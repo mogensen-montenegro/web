@@ -41,11 +41,17 @@ export class LoginService {
       );
   }
 
-  public logout(): void {
+  /** Borra solo los datos de sesión; no toca el resto del localStorage (ej. noticias). */
+  public clearAuthData(): void {
     localStorage.removeItem(this.TOKEN);
     localStorage.removeItem(this.REFRESH_TOKEN);
+    localStorage.removeItem(this.ACCESS_TOKEN);
     localStorage.removeItem(this.SESSION_ID);
     localStorage.removeItem(this.USER_ID);
+  }
+
+  public logout(): void {
+    this.clearAuthData();
     this.router.navigateByUrl('/login').then();
   }
 

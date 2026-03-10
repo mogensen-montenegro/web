@@ -6,12 +6,14 @@ import {ProductosComponent} from './pages/productos/productos.component';
 import {ContactoComponent} from './pages/contacto/contacto.component';
 import {NosotrosComponent} from './pages/nosotros/nosotros.component';
 import {ServiciosComponent} from './pages/servicios/servicios.component';
+import {NoticiasComponent} from './pages/noticias/noticias.component';
 import {LoginComponent} from './portal/pages/login/login.component';
 import {PanelControlComponent} from './portal/pages/panel-control/panel-control.component';
 import {AdministradorComponent} from './portal/pages/administrador/administrador.component';
 import {ConsorciosComponent} from './portal/pages/consorcios/consorcios.component';
 import {ArchivosComponent} from './portal/pages/archivos/archivos.component';
 import {GeneradorRecibosComponent} from './portal/pages/generador-recibos/generador-recibos.component';
+import {NoticiaComponent} from './portal/pages/noticia/noticia.component';
 import {AuthGuard} from "./portal/pages/login/login-core/auth.guard";
 import {RoleGuard} from "./portal/pages/login/login-core/role.guard";
 import {RedirectGuard} from "./portal/pages/login/login-core/redirect.guard";
@@ -28,7 +30,8 @@ const routes: Routes = [
       {path: 'productos', component: ProductosComponent},
       {path: 'contacto', component: ContactoComponent},
       {path: 'nosotros', component: NosotrosComponent},
-      {path: 'servicios', component: ServiciosComponent}
+      {path: 'servicios', component: ServiciosComponent},
+      {path: 'noticias', component: NoticiasComponent}
     ]
   },
   {
@@ -66,6 +69,12 @@ const routes: Routes = [
       {
         path: 'generador-recibos',
         component: GeneradorRecibosComponent,
+        canActivate: [RoleGuard],
+        data: {roles: ['superuser']}
+      },
+      {
+        path: 'noticia',
+        component: NoticiaComponent,
         canActivate: [RoleGuard],
         data: {roles: ['superuser']}
       }

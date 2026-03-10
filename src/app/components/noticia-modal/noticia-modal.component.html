@@ -1,0 +1,24 @@
+<div class="noticia-modal-backdrop" *ngIf="visible" (click)="cerrar()">
+  <div class="noticia-modal-caja" (click)="$event.stopPropagation()">
+    <button type="button" class="noticia-modal-cerrar" aria-label="Cerrar" (click)="cerrar()">&times;</button>
+    <div class="noticia-modal-contenido" *ngIf="noticia">
+      <div class="noticia-modal-carrusel" *ngIf="getImagenes(noticia).length">
+        <div class="noticia-modal-imagen-wrapper">
+          <button type="button" class="noticia-modal-flecha noticia-modal-flecha-izq" *ngIf="getImagenes(noticia).length > 1" (click)="anterior()" aria-label="Anterior">&lt;</button>
+          <div class="noticia-modal-imagen-grande">
+            <img [src]="getImagenes(noticia)[indiceImagenActual]" [alt]="noticia.titulo" class="noticia-modal-img-principal" />
+          </div>
+          <button type="button" class="noticia-modal-flecha noticia-modal-flecha-der" *ngIf="getImagenes(noticia).length > 1" (click)="siguiente()" aria-label="Siguiente">&gt;</button>
+        </div>
+        <div class="noticia-modal-thumbs" *ngIf="getImagenes(noticia).length > 1">
+          <button type="button" *ngFor="let img of getImagenes(noticia); let i = index" class="noticia-modal-thumb" [class.activa]="i === indiceImagenActual" (click)="seleccionarImagen(i)">
+            <img [src]="img" [alt]="noticia.titulo + ' ' + (i + 1)" />
+          </button>
+        </div>
+      </div>
+      <h3 class="noticia-modal-titulo">{{ noticia.titulo }}</h3>
+      <p class="noticia-modal-texto" *ngIf="noticia.texto">{{ noticia.texto }}</p>
+      <button type="button" class="btn noticia-modal-btn" (click)="cerrar()">Aceptar</button>
+    </div>
+  </div>
+</div>

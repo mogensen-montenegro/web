@@ -34,7 +34,7 @@ export class LoginComponent implements OnDestroy {
 
   public login(): void {
     this.loading = true;
-    localStorage.clear();
+    this.loginService.clearAuthData();
     sessionStorage.removeItem("token");
     this.limpiarEspaciosForm();
     const {nombre, password} = this.loginForm.getRawValue();

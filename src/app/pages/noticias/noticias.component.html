@@ -1,0 +1,42 @@
+<app-button-whatsapp></app-button-whatsapp>
+<app-header [isHeader]="false"></app-header>
+
+<div class="noticias-section py-5">
+  <div class="container">
+    <div class="row mb-4">
+      <div class="col-12 text-center">
+        <h1 class="titulo-noticias">Noticias</h1>
+        <p class="subtitulo-noticias">Novedades y publicidad de Mogensen Montenegro.</p>
+      </div>
+    </div>
+    <div class="row" *ngIf="loading">
+      <div class="col-12 col-md-6 col-lg-4 mb-4" *ngFor="let i of [1,2,3]">
+        <div class="card noticia-card noticia-skeleton h-100">
+          <div class="skeleton-img card-img-top"></div>
+          <div class="card-body">
+            <div class="skeleton-line skeleton-title"></div>
+            <div class="skeleton-line"></div>
+            <div class="skeleton-line"></div>
+            <div class="skeleton-line skeleton-line-short"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row" *ngIf="!loading && noticias.length">
+      <div class="col-12 col-md-6 col-lg-4 mb-4" *ngFor="let n of noticias">
+        <div class="card noticia-card h-100" (click)="verNoticia(n)" (keydown.enter)="verNoticia(n)" (keydown.space)="$event.preventDefault(); verNoticia(n)" role="button" tabindex="0">
+          <img *ngIf="n.imagenesBase64?.length" [src]="n.imagenesBase64[0]" class="card-img-top noticia-img" [alt]="n.titulo" />
+          <div class="card-body">
+            <h5 class="card-title">{{ n.titulo }}</h5>
+            <p class="card-text" *ngIf="n.texto">{{ n.texto }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row" *ngIf="!loading && !noticias.length">
+      <div class="col-12 text-center py-5">
+        <p class="text-muted">No hay noticias activas en este momento.</p>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,96 @@
+<div class="row p-5">
+  <div class="col-12">
+    <h3 class="title">Noticia</h3>
+    <span class="sub-titulo">Cargá publicidades con título y texto, y hasta 5 imágenes. Las nuevas se crean activas; podés pausarlas desde la lista.</span>
+  </div>
+</div>
+
+<div class="row px-5 pb-3">
+  <div class="col-12">
+    <div class="card card-info p-4">
+      <h5 class="mb-3">{{ editingId ? 'Editar noticia' : 'Nueva noticia' }}</h5>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label class="form-label">Título</label>
+            <input type="text" class="form-control" [(ngModel)]="form.titulo" placeholder="Título de la noticia" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Texto</label>
+            <textarea class="form-control" rows="3" [(ngModel)]="form.texto" placeholder="Texto que acompaña la imagen"></textarea>
+          </div>
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-color" (click)="guardar()">
+              {{ editingId ? 'Guardar cambios' : 'Agregar' }}
+            </button>
+            <button *ngIf="editingId" type="button" class="btn btn-outline-secondary" (click)="cancelar()">
+              Cancelar
+            </button>
+          </div>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Imágenes (hasta 5)</label>
+          <input
+            type="file"
+            class="form-control"
+            accept="image/*"
+            multiple
+            (change)="onImagenSeleccionada($event)"
+            [disabled]="form.imagenesBase64.length >= 5"
+          />
+          <small class="text-muted d-block mt-1">{{ form.imagenesBase64.length }} / 5 imágenes</small>
+          <div class="d-flex flex-wrap gap-2 mt-2">
+            <div *ngFor="let img of form.imagenesBase64; let i = index" class="img-preview-wrap">
+              <img [src]="img" alt="Vista previa" class="img-preview" />
+              <button type="button" class="btn btn-sm btn-danger img-quitar" (click)="quitarImagen(i)" title="Quitar">×</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p *ngIf="error" class="text-danger mb-0 mt-2">{{ error }}</p>
+    </div>
+  </div>
+</div>
+
+<div class="row px-5">
+  <div class="col-12">
+    <h5 class="mb-3">Lista de publicidades</h5>
+    <div class="table-responsive">
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th style="width: 80px">Imagen</th>
+            <th>Título</th>
+            <th>Texto</th>
+            <th>Activa</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let n of noticias">
+            <td>
+              <div class="d-flex gap-1 flex-wrap">
+                <img *ngFor="let img of n.imagenesBase64; let i = index" [src]="img" alt="" class="img-thumb" [title]="'Imagen ' + (i + 1)" />
+              </div>
+              <span *ngIf="!n.imagenesBase64?.length">—</span>
+            </td>
+            <td>{{ n.titulo || '—' }}</td>
+            <td class="texto-corto">{{ n.texto || '—' }}</td>
+            <td>
+              <button type="button" class="btn btn-sm" [class.btn-success]="n.activa" [class.btn-outline-secondary]="!n.activa" (click)="toggleActiva(n)">
+                {{ n.activa ? 'Activa' : 'Inactiva' }}
+              </button>
+            </td>
+            <td>
+              <button type="button" class="btn btn-sm btn-outline-primary me-1" (click)="editar(n)">Editar</button>
+              <button type="button" class="btn btn-sm btn-outline-danger" (click)="eliminar(n)">Eliminar</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div *ngIf="!noticias.length" class="empty-container py-4">
+      <span class="text-muted">No hay noticias cargadas. Agregá una desde el formulario de arriba.</span>
+    </div>
+  </div>
+</div>

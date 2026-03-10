@@ -5,6 +5,7 @@ import { RouterModule } from '@angular/router';
 import { AppRoutingModule } from '../app-routing.module';
 import { FooterComponent } from '../components/footer/footer.component';
 import { HomeModule } from './home/home.module';
+import { NoticiaModalComponent } from '../components/noticia-modal/noticia-modal.component';
 
 
 @NgModule({
@@ -16,7 +17,8 @@ import { HomeModule } from './home/home.module';
     RouterModule,
     AppRoutingModule,
     FooterComponent,
-    HomeModule
+    HomeModule,
+    NoticiaModalComponent
   ],
   exports:[PagesComponent]
 })
