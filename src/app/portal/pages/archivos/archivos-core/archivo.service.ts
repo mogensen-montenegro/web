@@ -84,4 +84,33 @@ actualizarCarpeta(consorcioId: string, carpetaId: string, titulo: string, mensaj
     const url = `${this.base_url}/archivos/archivos/${id}/download`;
     return this.http.get(url, {headers, responseType: 'blob', observe: 'response'});
   }
+
+  /**
+   * Obtiene desde la API los conteos de archivos nuevos (por carpeta/consorcio/total) para el usuario.
+   */
+  getNuevosCounts(consorcioIds: string[]): Observable<{
+    total: number;
+    byConsorcio: Record<string, number>;
+    byCarpeta: Record<string, number>;
+  }> {
+    const headers = this.buildAuthHeaders();
+    const ids = consorcioIds.filter(Boolean).join(',');
+    const url = `${this.base_url}/archivos/nuevos${ids ? `?consorcioIds=${encodeURIComponent(ids)}` : ''}`;
+    return this.http.get<{ ok: boolean; total?: number; byConsorcio?: Record<string, number>; byCarpeta?: Record<string, number> }>(url, {headers}).pipe(
+      map((r) => ({
+        total: r.total ?? 0,
+        byConsorcio: r.byConsorcio ?? {},
+        byCarpeta: r.byCarpeta ?? {},
+      }))
+    );
+  }
+
+  /**
+   * Marca una carpeta como vista en el servidor (para que deje de contar como "archivos nuevos").
+   */
+  markCarpetaVista(carpetaId: string, count: number, consorcioId: string): Observable<{ ok: boolean }> {
+    const headers = this.buildAuthHeaders();
+    const url = `${this.base_url}/archivos/carpetas/${carpetaId}/visto`;
+    return this.http.post<{ ok: boolean }>(url, {count, consorcioId}, {headers});
+  }
 }

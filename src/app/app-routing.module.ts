@@ -14,6 +14,7 @@ import {ConsorciosComponent} from './portal/pages/consorcios/consorcios.componen
 import {ArchivosComponent} from './portal/pages/archivos/archivos.component';
 import {GeneradorRecibosComponent} from './portal/pages/generador-recibos/generador-recibos.component';
 import {NoticiaComponent} from './portal/pages/noticia/noticia.component';
+import {PlantillasEmailComponent} from './portal/pages/plantillas-email/plantillas-email.component';
 import {AuthGuard} from "./portal/pages/login/login-core/auth.guard";
 import {RoleGuard} from "./portal/pages/login/login-core/role.guard";
 import {RedirectGuard} from "./portal/pages/login/login-core/redirect.guard";
@@ -75,6 +76,12 @@ const routes: Routes = [
       {
         path: 'noticia',
         component: NoticiaComponent,
+        canActivate: [RoleGuard],
+        data: {roles: ['superuser']}
+      },
+      {
+        path: 'plantillas-email',
+        component: PlantillasEmailComponent,
         canActivate: [RoleGuard],
         data: {roles: ['superuser']}
       }

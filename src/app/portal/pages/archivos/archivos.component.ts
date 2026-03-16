@@ -1,22 +1,24 @@
-import {Component, OnInit} from '@angular/core';
-import {CommonModule} from '@angular/common';
-import {FormsModule, ReactiveFormsModule} from '@angular/forms';
-import {Consorcio, ConsorcioResponse} from "../consorcios/core-consorcio/consorcio.interface";
-import {Archivo, Carpeta} from "./archivos-core/archivo.models";
-import {ArchivosService} from "./archivos-core/archivo.service";
-import {ConsorcioService} from "../consorcios/core-consorcio/consorcio.service";
-import {Subject, takeUntil} from "rxjs";
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { Consorcio, ConsorcioResponse } from "../consorcios/core-consorcio/consorcio.interface";
+import { Archivo, Carpeta } from "./archivos-core/archivo.models";
+import { ArchivosService } from "./archivos-core/archivo.service";
+import { ArchivosNuevosService } from "./archivos-core/archivos-nuevos.service";
+import { ConsorcioService } from "../consorcios/core-consorcio/consorcio.service";
+import { Subject, takeUntil } from "rxjs";
 import Swal from "sweetalert2";
-import {Administrador, AdministradorResponse} from "../administrador/core-administrador/administrador.interface";
-import {AdministradorService} from "../administrador/core-administrador/administrador.service";
-import {LoginService} from "../login/login-core/login.service";
+import { Administrador, AdministradorResponse } from "../administrador/core-administrador/administrador.interface";
+import { AdministradorService } from "../administrador/core-administrador/administrador.service";
+import { LoginService } from "../login/login-core/login.service";
+import { SendAdminEmailComponent } from "../administrador/send-admin-email/send-admin-email.component";
 
 @Component({
   selector: 'app-archivos',
   templateUrl: './archivos.component.html',
   styleUrls: ['./archivos.component.scss'],
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule]
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, SendAdminEmailComponent]
 })
 export class ArchivosComponent implements OnInit {
   public showEmpty = false;
@@ -34,8 +36,17 @@ export class ArchivosComponent implements OnInit {
   public isSuper = false;
   public isAdmin = false;
 
-  constructor(private administradorService: AdministradorService, private archivosSrv: ArchivosService, private consorcioService: ConsorcioService, public loginService: LoginService) {
-  }
+  /** Pendiente de subir tras enviar email (solo cuando el usuario eligió "Sí" a enviar email). */
+  public pendingUpload: { files: File[]; carpeta: Carpeta } | null = null;
+
+  constructor(
+    private administradorService: AdministradorService,
+    private archivosSrv: ArchivosService,
+    private archivosNuevosSrv: ArchivosNuevosService,
+    private consorcioService: ConsorcioService,
+    public loginService: LoginService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
     this.isSuper = this.loginService.hasRole(['superuser']);
@@ -81,6 +92,7 @@ export class ArchivosComponent implements OnInit {
           this.consorcios = resp.body ?? [];
           this.showEmpty = this.consorcios.length === 0;
           this.loading = false;
+          if (this.isAdmin) this.refreshCountsForConsorcios();
         },
         error: (err) => {
           this.loading = false;
@@ -94,6 +106,15 @@ export class ArchivosComponent implements OnInit {
           console.error(err);
         },
       });
+  }
+
+  /** Pide a la API los conteos de archivos nuevos para los consorcios actuales. */
+  private refreshCountsForConsorcios(): void {
+    const ids = (this.consorcios || []).map((c) => c._id).filter(Boolean) as string[];
+    this.archivosNuevosSrv
+      .loadNuevosCounts(ids)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({ next: () => this.cdr.detectChanges(), error: () => this.cdr.detectChanges() });
   }
 
   public onConsorvioSeleccionado(): void {
@@ -283,6 +304,10 @@ public crearNuevaCarpeta(): void {
   public seleccionarCarpeta(carpeta: Carpeta): void {
     this.carpetaSeleccionada = carpeta;
     this.cargarArchivos(carpeta._id);
+    if (this.isAdmin) {
+      this.archivosNuevosSrv.markFolderSeen(carpeta._id, carpeta.cantidadArchivos ?? 0, carpeta.consorcioId);
+      this.cdr.detectChanges();
+    }
   }
 
   private cargarArchivos(carpetaId: string): void {
@@ -500,6 +525,11 @@ public renombrarCarpeta(carpeta: Carpeta): void {
 
 
   public verArchivosDeCarpeta(carpeta: Carpeta): void {
+    if (this.isAdmin) {
+      this.archivosNuevosSrv.markFolderSeen(carpeta._id, carpeta.cantidadArchivos ?? 0, carpeta.consorcioId);
+      this.cdr.detectChanges();
+    }
+
     Swal.fire({
       title: `${carpeta.titulo}`,
       html: 'Cargando...',
@@ -621,6 +651,54 @@ private mostrarDialogArchivos(carpeta: Carpeta, archivos: Archivo[]): void {
 
       const fileInput = document.getElementById('filePicker') as HTMLInputElement | null;
 
+      const doUpload = (filesToUpload: File[]) => {
+        Swal.fire({
+          title: 'Subiendo...',
+          allowOutsideClick: false,
+          didOpen: () => Swal.showLoading()
+        }).then();
+
+        this.archivosSrv.subirArchivos(carpeta.consorcioId, carpeta._id, filesToUpload).subscribe({
+          next: () => {
+            this.archivosSrv.getArchivos(carpeta._id).subscribe({
+              next: (archs) => {
+                Swal.close();
+                this.mostrarDialogArchivos(carpeta, archs);
+                if (this.carpetaSeleccionada?._id === carpeta._id) {
+                  this.cargarArchivos(carpeta._id);
+                }
+                this.cargarCarpetas();
+                if (this.isAdmin) this.refreshCountsForConsorcios();
+                Swal.fire({
+                  icon: 'success',
+                  title: 'Archivos subidos exitosamente',
+                  timer: 1200,
+                  showConfirmButton: false
+                }).then();
+                if (fileInput) fileInput.value = '';
+              },
+              error: () => {
+                Swal.fire({
+                  icon: 'error',
+                  title: 'Error',
+                  text: 'Subió, pero no se pudo refrescar la lista'
+                }).then();
+                if (fileInput) fileInput.value = '';
+              }
+            });
+          },
+          error: (err) => {
+            const msj = err?.status === 413 ? 'Uno o más archivos superan 2 MB.' : 'No se pudieron subir los archivos';
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: msj
+            }).then();
+            if (fileInput) fileInput.value = '';
+          }
+        });
+      };
+
       const autoUpload = () => {
         if (!fileInput) return;
         const files = Array.from(fileInput.files ?? []);
@@ -638,50 +716,30 @@ private mostrarDialogArchivos(carpeta: Carpeta, archivos: Archivo[]): void {
           return;
         }
 
-        Swal.fire({
-          title: 'Subiendo...',
-          allowOutsideClick: false,
-          didOpen: () => Swal.showLoading()
-        }).then();
-
-        this.archivosSrv.subirArchivos(carpeta.consorcioId, carpeta._id, files).subscribe({
-          next: () => {
-            this.archivosSrv.getArchivos(carpeta._id).subscribe({
-              next: (archs) => {
-                Swal.close();
-                this.mostrarDialogArchivos(carpeta, archs);
-                if (this.carpetaSeleccionada?._id === carpeta._id) {
-                  this.cargarArchivos(carpeta._id);
-                }
-                this.cargarCarpetas();
-                Swal.fire({
-                  icon: 'success',
-                  title: 'Archivos subidos exitosamente',
-                  timer: 1200,
-                  showConfirmButton: false
-                }).then();
-                fileInput.value = '';
-              },
-              error: () => {
-                Swal.fire({
-                  icon: 'error',
-                  title: 'Error',
-                  text: 'Subió, pero no se pudo refrescar la lista'
-                }).then();
-                fileInput.value = '';
-              }
-            });
-          },
-          error: (err) => {
-            const msj = err?.status === 413 ? 'Uno o más archivos superan 2 MB.' : 'No se pudieron subir los archivos';
-            Swal.fire({
-              icon: 'error',
-              title: 'Error',
-              text: msj
-            }).then();
-            fileInput.value = '';
-          }
-        });
+        const askEmail = this.isSuper && this.administradorSeleccionado;
+        if (askEmail) {
+          Swal.fire({
+            title: '¿Enviar email?',
+            text: '¿Desea enviar un email por la carga de estos archivos?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Sí',
+            cancelButtonText: 'No',
+            confirmButtonColor: '#c60f17',
+            cancelButtonColor: '#6c757d'
+          }).then((result) => {
+            if (result.isConfirmed) {
+              this.pendingUpload = { files, carpeta };
+              Swal.close();
+              if (fileInput) fileInput.value = '';
+              this.openSendEmailModalForUpload();
+            } else {
+              doUpload(files);
+            }
+          });
+        } else {
+          doUpload(files);
+        }
       };
 
       fileInput?.addEventListener('change', autoUpload);
@@ -772,6 +830,7 @@ private mostrarDialogArchivos(carpeta: Carpeta, archivos: Archivo[]): void {
               this.mostrarDialogArchivos(carpeta, archivos);
               if (this.carpetaSeleccionada?._id === carpeta._id) this.cargarArchivos(carpeta._id);
               this.cargarCarpetas();
+              if (this.isAdmin) this.refreshCountsForConsorcios();
               Swal.fire({
                 icon: 'success',
                 title: 'Archivo eliminado exitosamente',
@@ -841,5 +900,71 @@ private mostrarDialogArchivos(carpeta: Carpeta, archivos: Archivo[]): void {
     this.consorcioSeleccionadoId = '';
     this.administradorSeleccionado = this.administradores.find((a) => a._id === this.adminSeleccionadoId) || null;
     this.cargarConsorcios(this.adminSeleccionadoId);
+  }
+
+  getNewForFolder(carpetaId: string, currentTotal: number): number {
+    return this.archivosNuevosSrv.getNewForFolder(carpetaId, currentTotal ?? 0);
+  }
+
+  getNewForConsorcio(consorcioId: string): number {
+    return this.archivosNuevosSrv.getNewForConsorcio(consorcioId);
+  }
+
+  /** Abre el modal de envío de email (para subir archivos después de enviar). */
+  openSendEmailModalForUpload(): void {
+    const el = document.getElementById('sendEmailBeforeUpload');
+    if (el) {
+      const Modal = (window as any).bootstrap?.Modal;
+      if (Modal) {
+        const modal = Modal.getOrCreateInstance(el);
+        modal.show();
+      }
+    }
+  }
+
+  /** Cierra el modal de email (subida pendiente) sin subir. */
+  onEmailModalClosedForUpload(): void {
+    this.pendingUpload = null;
+    const el = document.getElementById('sendEmailBeforeUpload');
+    if (el) {
+      const modal = (window as any).bootstrap?.Modal?.getInstance(el);
+      modal?.hide();
+    }
+  }
+
+  /** Tras enviar el email: subir los archivos pendientes y cerrar el modal. */
+  onEmailSentThenUpload(): void {
+    const pending = this.pendingUpload;
+    if (!pending) {
+      this.onEmailModalClosedForUpload();
+      return;
+    }
+    const { files, carpeta } = pending;
+    this.archivosSrv.subirArchivos(carpeta.consorcioId, carpeta._id, files).subscribe({
+      next: () => {
+        this.pendingUpload = null;
+        this.onEmailModalClosedForUpload();
+        this.archivosSrv.getArchivos(carpeta._id).subscribe({
+          next: (archs) => {
+            if (this.carpetaSeleccionada?._id === carpeta._id) this.cargarArchivos(carpeta._id);
+            this.cargarCarpetas();
+            if (this.isAdmin) this.refreshCountsForConsorcios();
+          },
+          error: () => {},
+        });
+        Swal.fire({
+          icon: 'success',
+          title: 'Email enviado y archivos subidos',
+          timer: 2000,
+          showConfirmButton: false,
+        }).then();
+      },
+      error: (err) => {
+        const msj = err?.status === 413 ? 'Uno o más archivos superan 2 MB.' : 'No se pudieron subir los archivos';
+        Swal.fire({ icon: 'error', title: 'Error', text: msj }).then();
+        this.pendingUpload = null;
+        this.onEmailModalClosedForUpload();
+      },
+    });
   }
 }

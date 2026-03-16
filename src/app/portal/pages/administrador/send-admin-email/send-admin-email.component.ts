@@ -1,16 +1,20 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnDestroy, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges } from '@angular/core';
 import {
   FormBuilder,
   FormControl,
   FormGroup,
+  FormsModule,
   ReactiveFormsModule,
   Validators
 } from '@angular/forms';
+import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import Swal from 'sweetalert2';
 import { Administrador } from '../core-administrador/administrador.interface';
 import { EmailService } from '../service/email.service';
+import { PlantillaEmail } from '../../plantillas-email/plantilla-email.interface';
+import { PlantillaEmailService } from '../../plantillas-email/plantilla-email.service';
 
 
 type EmailForm = FormGroup<{
@@ -21,10 +25,10 @@ type EmailForm = FormGroup<{
 @Component({
   selector: 'app-send-admin-email',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './send-admin-email.component.html'
 })
-export class SendAdminEmailComponent implements OnDestroy {
+export class SendAdminEmailComponent implements OnChanges, OnDestroy {
   // Permitimos null para que nunca truene el binding del padre
   @Input() admin: Administrador | null = null;
 
@@ -56,9 +60,44 @@ export class SendAdminEmailComponent implements OnDestroy {
     '{{CONSORCIOS}}'
   ];
 
+  plantillas: PlantillaEmail[] = [];
+  plantillaSeleccionadaId: string | null = null;
+
   private destroy$ = new Subject<void>();
 
-  constructor(private fb: FormBuilder, private emailSvc: EmailService) {}
+  constructor(
+    private fb: FormBuilder,
+    private emailSvc: EmailService,
+    private plantillaSvc: PlantillaEmailService,
+    private router: Router
+  ) {}
+
+  get hasPlantillas(): boolean {
+    return this.plantillas.length > 0;
+  }
+
+  loadPlantillas(): void {
+    this.plantillas = this.plantillaSvc.getAll();
+    this.plantillaSeleccionadaId = null;
+    this.form.patchValue({ subject: '', body: '' });
+  }
+
+  onPlantillaChange(): void {
+    const id = this.plantillaSeleccionadaId;
+    if (!id) {
+      this.form.patchValue({ subject: '', body: '' });
+      return;
+    }
+    const p = this.plantillaSvc.getById(id);
+    if (p) {
+      this.form.patchValue({ subject: p.asunto, body: p.body });
+    }
+  }
+
+  goToPlantillas(): void {
+    this.close();
+    this.router.navigate(['/panel/plantillas-email']);
+  }
 
   get subjectCtrl() {
     return this.form.controls.subject;
@@ -118,6 +157,12 @@ export class SendAdminEmailComponent implements OnDestroy {
 
   close(): void {
     this.closed.emit();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['admin'] && this.admin) {
+      this.loadPlantillas();
+    }
   }
 
   ngOnDestroy(): void {

@@ -133,6 +133,23 @@ input[type=number]::-webkit-outer-spin-button {
 .card .bottom-section .row .item:nth-child(2) { border-left: 1px solid rgba(255, 255, 255, 0.126); border-right: 1px solid rgba(255, 255, 255, 0.126); }
 
 .text-file { color: white; }
+
+.archivos-nuevos-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  margin-left: 6px;
+  border-radius: 50%;
+  background-color: #c60f17;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+}
+
 .icono { width: 60px; }
 
 .empty-container {

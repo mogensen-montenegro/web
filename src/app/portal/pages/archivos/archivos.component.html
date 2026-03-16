@@ -26,7 +26,7 @@
           Sin consorcios
         </option>
         <option *ngFor="let data of consorcios" [ngValue]="data._id">
-          {{ data.nombre }}
+          {{ data.nombre }}{{ isAdmin && getNewForConsorcio(data._id ?? '') > 0 ? ' (' + getNewForConsorcio(data._id ?? '') + ' nuevos)' : '' }}
         </option>
       </select>
     </div>
@@ -47,6 +47,9 @@
         <div class="icons">
           <div class="logo">
             <span class="text-file">{{ carpeta.cantidadArchivos ?? 0 }} archivos</span>
+            <span *ngIf="isAdmin && getNewForFolder(carpeta._id, carpeta.cantidadArchivos ?? 0) > 0" class="archivos-nuevos-badge" [title]="getNewForFolder(carpeta._id, carpeta.cantidadArchivos ?? 0) + ' archivos nuevos'">
+              {{ getNewForFolder(carpeta._id, carpeta.cantidadArchivos ?? 0) }}
+            </span>
           </div>
         </div>
       </div>
@@ -79,5 +82,16 @@
   <div class="d-flex align-items-center justify-content-center flex-column">
     <img class="icono" src="../../../assets/img/administrador.png"/>
     <span class="pt-2">Seleccione un administrador.</span>
+  </div>
+</div>
+
+<!-- Modal para enviar email antes de subir archivos (solo superuser, cuando eligió "Sí" a enviar email) -->
+<div class="modal fade" id="sendEmailBeforeUpload" tabindex="-1" aria-hidden="true" *ngIf="isSuper">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <app-send-admin-email
+      [admin]="administradorSeleccionado"
+      (sent)="onEmailSentThenUpload()"
+      (closed)="onEmailModalClosedForUpload()">
+    </app-send-admin-email>
   </div>
 </div>

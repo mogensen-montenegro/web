@@ -33,7 +33,14 @@ export const GYM_ROUTES_CONFIG: SidebarConfig[] = [
     id: 'noticia',
     name: 'Noticia',
     url: '/panel/noticia',
-    icon: 'fa-newspaper-o',
+    icon: 'fa-newspaper',
+    roles: ['superuser']
+  },
+  {
+    id: 'plantillas-email',
+    name: 'Plantillas de Email',
+    url: '/panel/plantillas-email',
+    icon: 'fa-envelope',
     roles: ['superuser']
   }
 ]

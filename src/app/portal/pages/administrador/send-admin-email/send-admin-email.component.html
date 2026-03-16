@@ -6,17 +6,42 @@
       <h5 class="modal-title">
         Enviar email a {{ admin?.nombre || '-' }}
       </h5>
-      <button
+      <!-- <button
         type="button"
         class="btn-close"
         aria-label="Close"
         (click)="close()"
-      ></button>
+      ></button> -->
     </div>
 
     <div class="modal-body">
-      <!-- Asunto -->
-      <div class="mb-3">
+      <!-- Sin plantillas: mensaje y botón Ir a plantillas -->
+      <div *ngIf="!hasPlantillas" class="alert alert-warning mb-0">
+        <p class="mb-3">No se encuentran plantillas cargadas. Por favor vaya a la sección Plantillas de Email y cree una.</p>
+        <button type="button" class="btn btn-color btn-sm" (click)="goToPlantillas()">
+          Ir a plantillas
+        </button>
+      </div>
+
+      <!-- Formulario cuando hay plantillas -->
+      <ng-container *ngIf="hasPlantillas">
+        <div class="mb-3">
+          <label class="form-label">Seleccionar plantilla</label>
+          <select
+            class="form-select"
+            [ngModel]="plantillaSeleccionadaId"
+            (ngModelChange)="plantillaSeleccionadaId = $event; onPlantillaChange()"
+            [ngModelOptions]="{standalone: true}"
+          >
+            <option [ngValue]="null">— Sin plantilla —</option>
+            <option *ngFor="let p of plantillas" [ngValue]="p.id">{{ p.nombre }}</option>
+          </select>
+        </div>
+        <p *ngIf="!plantillaSeleccionadaId" class="text-muted mb-0">Seleccione una plantilla para mandar email.</p>
+      </ng-container>
+
+      <!-- Asunto (solo cuando hay plantilla seleccionada) -->
+      <div class="mb-3" [class.d-none]="!hasPlantillas || !plantillaSeleccionadaId">
         <label class="form-label">Asunto</label>
         <input
           class="form-control"
@@ -31,8 +56,8 @@
         </div>
       </div>
 
-      <!-- Mensaje -->
-      <div class="mb-2">
+      <!-- Mensaje (solo cuando hay plantilla seleccionada) -->
+      <div class="mb-2" [class.d-none]="!hasPlantillas || !plantillaSeleccionadaId">
         <label class="form-label">Mensaje</label>
         <textarea
           class="form-control"
@@ -49,10 +74,10 @@
         </div>
       </div>
 
-      <hr />
+      <hr *ngIf="hasPlantillas && plantillaSeleccionadaId" />
 
-      <!-- Vista previa -->
-      <div>
+      <!-- Vista previa (solo cuando hay plantilla seleccionada) -->
+      <div *ngIf="hasPlantillas && plantillaSeleccionadaId">
         <div class="fw-semibold mb-2">Vista previa</div>
         <div class="border rounded p-3" [innerHTML]="previewHtml"></div>
       </div>
@@ -70,8 +95,8 @@
       <button
         type="submit"
         class="btn btn-primary"
-        [disabled]="isSending || form.invalid || !admin?.email"
-        title="{{ !admin?.email ? 'El administrador no tiene email' : '' }}"
+        [disabled]="isSending || form.invalid || !admin?.email || !hasPlantillas || !plantillaSeleccionadaId"
+        title="{{ !admin?.email ? 'El administrador no tiene email' : !hasPlantillas ? 'Cree plantillas en Plantillas de Email' : !plantillaSeleccionadaId ? 'Seleccione una plantilla' : '' }}"
       >
         <i class="fa fa-paper-plane" *ngIf="!isSending"></i>
         <span *ngIf="!isSending">Enviar</span>

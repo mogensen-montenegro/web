@@ -1,0 +1,93 @@
+<div class="row p-5">
+  <div class="col-12">
+    <h3 class="title">Plantillas de Email</h3>
+    <span class="sub-titulo">Creá plantillas con asunto y mensaje para usar al enviar emails a administradores. Podés usar las variables indicadas abajo.</span>
+  </div>
+</div>
+
+<div class="row px-5 pb-3">
+  <div class="col-12">
+    <div class="card card-info p-4">
+      <h5 class="mb-3">{{ editingId ? 'Editar plantilla' : 'Nueva plantilla' }}</h5>
+      <form [formGroup]="form" (ngSubmit)="guardar()">
+        <div class="row">
+          <div class="col-md-12">
+            <div class="mb-3">
+              <label class="form-label">Nombre de la plantilla</label>
+              <input type="text" class="form-control" formControlName="nombre" placeholder="Ej: Aviso de vencimiento" />
+              <div class="text-danger small" *ngIf="form.controls.nombre.invalid && form.controls.nombre.touched">
+                El nombre es obligatorio (máx. 100 caracteres).
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Asunto</label>
+              <input type="text" class="form-control" formControlName="asunto" placeholder="Asunto del email" />
+              <div class="text-danger small" *ngIf="form.controls.asunto.invalid && form.controls.asunto.touched">
+                El asunto es obligatorio (máx. 150 caracteres).
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Mensaje</label>
+              <textarea class="form-control" rows="6" formControlName="body" placeholder="Cuerpo del email"></textarea>
+              <div class="text-muted mt-2">
+                Variables disponibles:
+                <span class="badge bg-light text-dark me-1" *ngFor="let p of placeholders">{{ p }}</span>
+              </div>
+              <div class="text-danger small" *ngIf="form.controls.body.invalid && form.controls.body.touched">
+                El mensaje es obligatorio (mín. 5 caracteres).
+              </div>
+            </div>
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn btn-color" [disabled]="form.invalid">
+                {{ editingId ? 'Guardar cambios' : 'Agregar plantilla' }}
+              </button>
+              <button *ngIf="editingId" type="button" class="btn btn-outline-secondary" (click)="cancelar()">
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="row px-5">
+  <div class="col-12">
+    <h5 class="mb-3">Lista de plantillas</h5>
+    <div class="table-responsive">
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Asunto</th>
+            <th class="texto-corto">Mensaje (resumen)</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody *ngIf="loading">
+          <tr *ngFor="let i of [1,2,3]">
+            <td><div class="skeleton-cell"></div></td>
+            <td><div class="skeleton-cell"></div></td>
+            <td><div class="skeleton-cell"></div></td>
+            <td><div class="skeleton-cell"></div></td>
+          </tr>
+        </tbody>
+        <tbody *ngIf="!loading && plantillas.length">
+          <tr *ngFor="let p of plantillas">
+            <td>{{ p.nombre || '—' }}</td>
+            <td>{{ p.asunto || '—' }}</td>
+            <td class="texto-corto">{{ (p.body || '').slice(0, 80) }}{{ (p.body || '').length > 80 ? '…' : '' }}</td>
+            <td>
+              <button type="button" class="btn btn-sm btn-outline-primary me-1" (click)="editar(p)">Editar</button>
+              <button type="button" class="btn btn-sm btn-outline-danger" (click)="eliminar(p)">Eliminar</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div *ngIf="!loading && !plantillas.length" class="empty-container py-4">
+      <span class="text-muted">No hay plantillas cargadas. Creá una desde el formulario de arriba.</span>
+    </div>
+  </div>
+</div>
