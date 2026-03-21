@@ -38,7 +38,7 @@
               </div>
             </div>
             <div class="d-flex gap-2">
-              <button type="submit" class="btn btn-color" [disabled]="form.invalid">
+              <button type="submit" class="btn btn-color" [disabled]="form.invalid || saving">
                 {{ editingId ? 'Guardar cambios' : 'Agregar plantilla' }}
               </button>
               <button *ngIf="editingId" type="button" class="btn btn-outline-secondary" (click)="cancelar()">

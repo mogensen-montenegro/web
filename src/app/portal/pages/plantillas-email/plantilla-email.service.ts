@@ -1,51 +1,65 @@
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { Observable, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
+import { environment } from 'src/environments/environment';
+import { LoginService } from '../login/login-core/login.service';
 import { PlantillaEmail } from './plantilla-email.interface';
 
-const STORAGE_KEY = 'mogensen-plantillas-email';
+interface ApiResponse<T> {
+  ok: boolean;
+  body?: T;
+  msj?: string;
+}
 
 @Injectable({ providedIn: 'root' })
 export class PlantillaEmailService {
-  getAll(): PlantillaEmail[] {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return [];
-      const list = JSON.parse(raw) as PlantillaEmail[];
-      return Array.isArray(list) ? list : [];
-    } catch {
-      return [];
-    }
+  private baseUrl = `${environment.baseUrl}/plantillas-email`;
+
+  constructor(private http: HttpClient, private auth: LoginService) {}
+
+  private authHeaders(): HttpHeaders {
+    const token = this.auth.getToken();
+    const access = this.auth.getAccess();
+    return new HttpHeaders().set('Authorization', `${access} ${token}`);
   }
 
-  getById(id: string): PlantillaEmail | null {
-    return this.getAll().find((p) => p.id === id) ?? null;
+  getAll(): Observable<PlantillaEmail[]> {
+    return this.http.get<ApiResponse<PlantillaEmail[]>>(`${this.baseUrl}/all`, { headers: this.authHeaders() }).pipe(
+      map((res) => (res?.ok && Array.isArray(res.body) ? res.body : [])),
+      catchError(() => of([]))
+    );
   }
 
-  create(data: Omit<PlantillaEmail, 'id'>): PlantillaEmail {
-    const list = this.getAll();
-    const id = `plantilla-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
-    const nueva: PlantillaEmail = { ...data, id };
-    list.push(nueva);
-    this.save(list);
-    return nueva;
+  getById(id: string): Observable<PlantillaEmail | null> {
+    return this.http.get<ApiResponse<PlantillaEmail>>(`${this.baseUrl}/${id}`, { headers: this.authHeaders() }).pipe(
+      map((res) => (res?.ok && res.body ? res.body : null)),
+      catchError(() => of(null))
+    );
   }
 
-  update(id: string, data: Partial<Omit<PlantillaEmail, 'id'>>): PlantillaEmail | null {
-    const list = this.getAll();
-    const idx = list.findIndex((p) => p.id === id);
-    if (idx === -1) return null;
-    list[idx] = { ...list[idx], ...data };
-    this.save(list);
-    return list[idx];
+  create(data: Omit<PlantillaEmail, 'id'>): Observable<PlantillaEmail | null> {
+    return this.http
+      .post<ApiResponse<PlantillaEmail>>(`${this.baseUrl}/create`, data, { headers: this.authHeaders() })
+      .pipe(
+        map((res) => (res?.ok && res.body ? res.body : null)),
+        catchError(() => of(null))
+      );
   }
 
-  delete(id: string): boolean {
-    const list = this.getAll().filter((p) => p.id !== id);
-    if (list.length === this.getAll().length) return false;
-    this.save(list);
-    return true;
+  update(id: string, data: Partial<Omit<PlantillaEmail, 'id'>>): Observable<PlantillaEmail | null> {
+    return this.http
+      .put<ApiResponse<PlantillaEmail>>(`${this.baseUrl}/update/${id}`, data, { headers: this.authHeaders() })
+      .pipe(
+        map((res) => (res?.ok && res.body ? res.body : null)),
+        catchError(() => of(null))
+      );
   }
 
-  private save(list: PlantillaEmail[]): void {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+  delete(id: string): Observable<boolean> {
+    return this.http.delete<ApiResponse<void>>(`${this.baseUrl}/delete/${id}`, { headers: this.authHeaders() }).pipe(
+      map((res) => !!res?.ok),
+      catchError(() => of(false))
+    );
   }
 }

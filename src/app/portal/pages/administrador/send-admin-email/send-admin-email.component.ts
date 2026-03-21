@@ -77,9 +77,14 @@ export class SendAdminEmailComponent implements OnChanges, OnDestroy {
   }
 
   loadPlantillas(): void {
-    this.plantillas = this.plantillaSvc.getAll();
-    this.plantillaSeleccionadaId = null;
-    this.form.patchValue({ subject: '', body: '' });
+    this.plantillaSvc
+      .getAll()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((list) => {
+        this.plantillas = list;
+        this.plantillaSeleccionadaId = null;
+        this.form.patchValue({ subject: '', body: '' });
+      });
   }
 
   onPlantillaChange(): void {
@@ -88,7 +93,7 @@ export class SendAdminEmailComponent implements OnChanges, OnDestroy {
       this.form.patchValue({ subject: '', body: '' });
       return;
     }
-    const p = this.plantillaSvc.getById(id);
+    const p = this.plantillas.find((x) => x.id === id);
     if (p) {
       this.form.patchValue({ subject: p.asunto, body: p.body });
     }
