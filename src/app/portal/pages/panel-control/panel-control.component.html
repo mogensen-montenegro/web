@@ -6,6 +6,19 @@
       <app-sidebar></app-sidebar>
     </aside>
     <main class="main">
+      <div class="prospectos-nuevos-banner" *ngIf="(prospectosNuevos.getCount$() | async) as total">
+        <div class="prospectos-nuevos-banner__inner" *ngIf="total > 0">
+          <div class="prospectos-nuevos-banner__info">
+            <i class="fa fa-users"></i>
+            <span>
+              {{ total === 1 ? 'Tenés un prospecto nuevo' : 'Tenés ' + total + ' prospectos nuevos' }}
+            </span>
+          </div>
+          <a class="prospectos-nuevos-banner__btn" routerLink="/panel/prospectos">
+            Ir a prospectos <i class="fa fa-arrow-right"></i>
+          </a>
+        </div>
+      </div>
       <router-outlet></router-outlet>
     </main>
   </div>

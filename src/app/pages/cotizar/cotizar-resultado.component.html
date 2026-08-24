@@ -1,0 +1,32 @@
+<app-button-whatsapp></app-button-whatsapp>
+<app-header [isHeader]="false"></app-header>
+
+<section class="resultado-page">
+  <div class="container py-5">
+    <div class="row justify-content-center">
+      <div class="col-12 col-md-8 col-lg-6">
+        <div class="resultado-card text-center" [class.error]="!ok">
+          <div class="icono" *ngIf="ok">✓</div>
+          <div class="icono error" *ngIf="!ok">!</div>
+
+          <ng-container *ngIf="ok; else errorTpl">
+            <h1>¡Gracias por tu consulta!</h1>
+            <p>
+              Recibimos los datos del consorcio. Pronto vamos a estar en contacto para
+              enviarte una cotización a medida.
+            </p>
+            <a class="btn btn-color" routerLink="/home">Volver al inicio</a>
+          </ng-container>
+
+          <ng-template #errorTpl>
+            <h1>No pudimos enviar el formulario</h1>
+            <p>
+              Hubo una falla a la hora de enviar tu consulta. Por favor, intentá de nuevo más tarde.
+            </p>
+            <a class="btn btn-color" routerLink="/cotizar">Reintentar</a>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

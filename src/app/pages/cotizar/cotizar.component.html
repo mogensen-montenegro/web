@@ -1,0 +1,202 @@
+<app-button-whatsapp></app-button-whatsapp>
+<app-header [isHeader]="false"></app-header>
+
+<section class="cotizar-page">
+  <div class="container py-5">
+    <div class="row justify-content-center">
+      <div class="col-12 col-lg-10">
+        <div class="intro text-center mb-4">
+          <p class="eyebrow">Seguro integral de consorcio</p>
+          <h1>Cotizá el seguro de tu edificio</h1>
+          <p class="lead-text">
+            Completá los datos del consorcio y un asesor te va a contactar con una propuesta a medida.
+            Cuanta más información nos des, más precisa va a ser la cotización.
+          </p>
+        </div>
+
+        <div class="resultado-card text-center" *ngIf="vista === 'exito'">
+          <div class="icono">✓</div>
+          <h1>¡Gracias por tu consulta!</h1>
+          <p>
+            Recibimos los datos del consorcio. Pronto vamos a estar en contacto para
+            enviarte una cotización a medida.
+          </p>
+          <a class="btn btn-color" routerLink="/home">Volver al inicio</a>
+        </div>
+
+        <div class="resultado-card text-center" *ngIf="vista === 'error'">
+          <div class="icono error">!</div>
+          <h1>No pudimos enviar el formulario</h1>
+          <p>
+            Hubo una falla a la hora de enviar tu consulta. Por favor, intentá de nuevo más tarde.
+          </p>
+          <button class="btn btn-color" type="button" (click)="volverAlFormulario()">Reintentar</button>
+        </div>
+
+        <form class="form-card" *ngIf="vista === 'form'" [formGroup]="form" (submit)="enviar($event)" novalidate>
+          <div class="section-title">Tus datos de contacto</div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Nombre y apellido *</label>
+              <input class="form-control" formControlName="nombre" placeholder="Ej: María Pérez" />
+              <small class="text-danger" *ngIf="invalid('nombre')">Ingresá tu nombre.</small>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Rol *</label>
+              <select class="form-control" formControlName="rol">
+                <option *ngFor="let r of roles" [value]="r.value">{{ r.label }}</option>
+              </select>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Email *</label>
+              <input class="form-control" type="email" formControlName="email" placeholder="ivan.p@example.net" />
+              <small class="text-danger" *ngIf="invalid('email')">Ingresá un email válido.</small>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Teléfono *</label>
+              <input class="form-control" formControlName="telefono" placeholder="11 1234-5678" />
+              <small class="text-danger" *ngIf="invalid('telefono')">Ingresá un teléfono de contacto.</small>
+            </div>
+          </div>
+
+          <div class="section-title">Datos del consorcio</div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Nombre del consorcio</label>
+              <input class="form-control" formControlName="nombreConsorcio" placeholder="Ej: Consorcio Av. Corrientes 1234" />
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">CUIT del consorcio</label>
+              <input class="form-control" formControlName="cuit" placeholder="XX-XXXXXXXX-X" />
+            </div>
+            <div class="col-md-8 mb-3">
+              <label class="form-label">Dirección *</label>
+              <input class="form-control" formControlName="direccion" placeholder="Calle, número y piso" />
+              <small class="text-danger" *ngIf="invalid('direccion')">Ingresá la dirección del edificio.</small>
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="form-label">Código postal</label>
+              <input class="form-control" formControlName="codigoPostal" placeholder="CABA / GBA" />
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Localidad / ciudad *</label>
+              <input class="form-control" formControlName="localidad" placeholder="Ej: CABA, Vicente López" />
+              <small class="text-danger" *ngIf="invalid('localidad')">Ingresá la localidad.</small>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Tipo de edificio *</label>
+              <select class="form-control" formControlName="tipoEdificio">
+                <option *ngFor="let t of tipos" [value]="t.value">{{ t.label }}</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="section-title">Características del edificio</div>
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <label class="form-label">Unidades funcionales</label>
+              <input class="form-control" type="number" min="1" formControlName="unidadesFuncionales" placeholder="Ej: 24" />
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="form-label">Plantas (incluye PB y subsuelos)</label>
+              <input class="form-control" type="number" min="1" formControlName="cantidadPlantas" placeholder="Ej: 8" />
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="form-label">m² totales (aprox.)</label>
+              <input class="form-control" type="number" min="1" formControlName="metrosCuadrados" placeholder="Ej: 1800" />
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="form-label">Año de construcción</label>
+              <input class="form-control" type="number" min="1900" max="2030" formControlName="anioConstruccion" placeholder="Ej: 1998" />
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="form-label">Cantidad de ascensores</label>
+              <input class="form-control" type="number" min="0" formControlName="cantidadAscensores" placeholder="Ej: 2" />
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="form-label">¿Tiene cocheras?</label>
+              <select class="form-control" formControlName="tieneCocheras">
+                <option value="">Seleccionar</option>
+                <option value="si">Sí</option>
+                <option value="no">No</option>
+              </select>
+            </div>
+          </div>
+
+          <label class="form-label">Espacios comunes</label>
+          <div class="chips mb-4">
+            <button
+              type="button"
+              class="chip"
+              *ngFor="let e of espacios"
+              [class.active]="isEspacio(e.value)"
+              (click)="toggleEspacio(e.value)">
+              {{ e.label }}
+            </button>
+          </div>
+
+          <div class="section-title">Cobertura actual</div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">¿Tiene póliza vigente?</label>
+              <select class="form-control" formControlName="polizaVigente">
+                <option value="">Seleccionar</option>
+                <option value="si">Sí</option>
+                <option value="no">No</option>
+              </select>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Compañía actual</label>
+              <input class="form-control" formControlName="companiaActual" placeholder="Si ya tiene seguro" />
+            </div>
+            <div class="col-12 mb-3">
+              <label class="form-label">Comentarios o coberturas que te interesan</label>
+              <textarea class="form-control" rows="4" formControlName="comentarios"
+                placeholder="Incendio, responsabilidad civil, cristales, daños por agua, etc."></textarea>
+            </div>
+          </div>
+
+          <div class="section-title">Documentación</div>
+          <p class="hint-adjuntos">Podés adjuntar el reglamento y la póliza actual en PDF, JPG o PNG. Máximo 5 MB por archivo.</p>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Subir reglamento</label>
+              <label class="upload-box">
+                <input type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" (change)="onAdjunto('reglamento', $event)" />
+                <span class="upload-title">Subir reglamento</span>
+                <span class="upload-sub">PDF, JPG o PNG · hasta 5 MB</span>
+              </label>
+              <div class="file-ok" *ngIf="reglamento">
+                <span>{{ reglamento.nombre }}</span>
+                <button type="button" class="btn-quitar" (click)="quitarAdjunto('reglamento')">Quitar</button>
+              </div>
+              <small class="text-danger d-block mt-1" *ngIf="errorReglamento">{{ errorReglamento }}</small>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Subir póliza actual</label>
+              <label class="upload-box">
+                <input type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" (change)="onAdjunto('polizaActual', $event)" />
+                <span class="upload-title">Subir póliza actual</span>
+                <span class="upload-sub">PDF, JPG o PNG · hasta 5 MB</span>
+              </label>
+              <div class="file-ok" *ngIf="polizaActual">
+                <span>{{ polizaActual.nombre }}</span>
+                <button type="button" class="btn-quitar" (click)="quitarAdjunto('polizaActual')">Quitar</button>
+              </div>
+              <small class="text-danger d-block mt-1" *ngIf="errorPoliza">{{ errorPoliza }}</small>
+            </div>
+          </div>
+
+          <div class="envio-box mt-2">
+            <small class="text-muted d-block mb-2">Los campos con * son obligatorios. Un asesor se va a comunicar a la brevedad.</small>
+            <div class="alerta-envio" id="alerta-envio" *ngIf="errorEnvio">{{ errorEnvio }}</div>
+            <button class="btn btn-color btn-enviar" type="button" [disabled]="loading" (click)="enviar($event)">
+              {{ loading ? 'Enviando...' : 'Enviar consulta' }}
+            </button>
+          </div>
+          <div class="overlay-envio" *ngIf="loading">Enviando tu consulta...</div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>

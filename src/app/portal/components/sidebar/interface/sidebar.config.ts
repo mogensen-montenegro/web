@@ -42,5 +42,12 @@ export const GYM_ROUTES_CONFIG: SidebarConfig[] = [
     url: '/panel/plantillas-email',
     icon: 'fa-envelope',
     roles: ['superuser']
+  },
+  {
+    id: 'prospectos',
+    name: 'Prospectos',
+    url: '/panel/prospectos',
+    icon: 'fa-users',
+    roles: ['superuser']
   }
 ]

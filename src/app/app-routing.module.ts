@@ -7,6 +7,8 @@ import {ContactoComponent} from './pages/contacto/contacto.component';
 import {NosotrosComponent} from './pages/nosotros/nosotros.component';
 import {ServiciosComponent} from './pages/servicios/servicios.component';
 import {NoticiasComponent} from './pages/noticias/noticias.component';
+import {CotizarComponent} from './pages/cotizar/cotizar.component';
+import {CotizarResultadoComponent} from './pages/cotizar/cotizar-resultado.component';
 import {LoginComponent} from './portal/pages/login/login.component';
 import {PanelControlComponent} from './portal/pages/panel-control/panel-control.component';
 import {AdministradorComponent} from './portal/pages/administrador/administrador.component';
@@ -15,6 +17,7 @@ import {ArchivosComponent} from './portal/pages/archivos/archivos.component';
 import {GeneradorRecibosComponent} from './portal/pages/generador-recibos/generador-recibos.component';
 import {NoticiaComponent} from './portal/pages/noticia/noticia.component';
 import {PlantillasEmailComponent} from './portal/pages/plantillas-email/plantillas-email.component';
+import {ProspectosComponent} from './portal/pages/prospectos/prospectos.component';
 import {AuthGuard} from "./portal/pages/login/login-core/auth.guard";
 import {RoleGuard} from "./portal/pages/login/login-core/role.guard";
 import {RedirectGuard} from "./portal/pages/login/login-core/redirect.guard";
@@ -32,7 +35,10 @@ const routes: Routes = [
       {path: 'contacto', component: ContactoComponent},
       {path: 'nosotros', component: NosotrosComponent},
       {path: 'servicios', component: ServiciosComponent},
-      {path: 'noticias', component: NoticiasComponent}
+      {path: 'noticias', component: NoticiasComponent},
+      {path: 'cotizar', component: CotizarComponent},
+      {path: 'cotizar/exito', component: CotizarResultadoComponent, data: {tipo: 'exito'}},
+      {path: 'cotizar/error', component: CotizarResultadoComponent, data: {tipo: 'error'}}
     ]
   },
   {
@@ -82,6 +88,12 @@ const routes: Routes = [
       {
         path: 'plantillas-email',
         component: PlantillasEmailComponent,
+        canActivate: [RoleGuard],
+        data: {roles: ['superuser']}
+      },
+      {
+        path: 'prospectos',
+        component: ProspectosComponent,
         canActivate: [RoleGuard],
         data: {roles: ['superuser']}
       }

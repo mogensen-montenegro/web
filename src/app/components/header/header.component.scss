@@ -145,14 +145,31 @@ ul {
   color: white;
 }
 
+.botonCotizar {
+  color: #b91828;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-right: 8px;
+}
+
+.botonCotizar:hover {
+  background-color: #fff;
+  color: #8b241b;
+}
+
 .botonLogin:hover{
   background-color: #ea1d06;
 }
 
 .menu-desplegado .container .nav-item .botonLogin{
-  margin-top: 50px;
+  margin-top: 20px;
   margin-left: 10px;
   background-color: #b91828;
+}
+
+.menu-desplegado .container .nav-item .botonCotizar {
+  margin-top: 24px;
+  margin-left: 10px;
 }
 
 @media screen and (max-width: 950px) {

@@ -1,0 +1,139 @@
+<div class="row p-5">
+  <div class="col-6">
+    <h3 class="title">Prospectos</h3>
+    <span class="sub-titulo">Consultas de cotización enviadas desde la web.</span>
+  </div>
+  <div class="col-6 d-flex justify-content-end">
+    <div class="w-400">
+      <div class="form">
+        <i class="fa fa-search"></i>
+        <input
+          type="text"
+          [(ngModel)]="busqueda"
+          (ngModelChange)="buscarData()"
+          class="form-control form-input"
+          placeholder="Ingrese un valor a buscar..."
+          (keydown.enter)="buscarData()"
+        />
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row px-5" *ngIf="!loading && prospectos?.length">
+  <div class="col tabla-scroll">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Nombre</th>
+          <th>Email</th>
+          <th>Teléfono</th>
+          <th>Consorcio</th>
+          <th>Dirección</th>
+          <th>Estado</th>
+          <th>Adjuntos</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let p of prospectos">
+          <td>{{ fmtFecha(p.createdAt) }}</td>
+          <td>{{ p.nombre || '-' }}</td>
+          <td>{{ p.email || '-' }}</td>
+          <td>{{ p.telefono || '-' }}</td>
+          <td>{{ p.nombreConsorcio || '-' }}</td>
+          <td>{{ p.direccion || '-' }}</td>
+          <td>
+            <span class="badge-estado" [class.contactado]="p.estado === 'contactado'">
+              {{ p.estado === 'contactado' ? 'Contactado' : 'Nuevo' }}
+            </span>
+          </td>
+          <td>
+            <span *ngIf="tieneAdjuntos(p); else sinAdj">Sí</span>
+            <ng-template #sinAdj>-</ng-template>
+          </td>
+          <td class="min-width d-flex">
+            <div class="pointer icon-box mr-3" (click)="ver(p)" title="Ver detalle">
+              <i class="fa fa-eye color-principal"></i>
+            </div>
+            <div class="pointer icon-box mr-3" (click)="marcarContactado(p)" [title]="p.estado === 'contactado' ? 'Marcar como nuevo' : 'Marcar como contactado'">
+              <i class="fa fa-check color-principal"></i>
+            </div>
+            <div class="pointer icon-box" (click)="eliminar(p)" title="Eliminar">
+              <i class="fa fa-trash color-principal"></i>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div *ngIf="loading" class="empty-container">
+  <div class="d-flex align-items-center justify-content-center flex-column">
+    <img class="icono" src="../../../assets/img/cargando.png"/>
+    <span class="pt-2">Cargando...</span>
+  </div>
+</div>
+
+<div *ngIf="!loading && showEmpty" class="empty-container">
+  <div class="d-flex align-items-center justify-content-center flex-column">
+    <img class="icono" src="../../../assets/img/default.png"/>
+    <span class="pt-2">No se encontraron resultados.</span>
+  </div>
+</div>
+
+<div class="detalle-overlay" *ngIf="selected" (click)="cerrarDetalle()">
+  <div class="detalle-card" (click)="$event.stopPropagation()">
+    <div class="d-flex justify-content-between align-items-start mb-3">
+      <div>
+        <h4 class="title mb-1">Detalle del prospecto</h4>
+        <span class="badge-estado" [class.contactado]="selected.estado === 'contactado'">
+          {{ selected.estado === 'contactado' ? 'Contactado' : 'Nuevo' }}
+        </span>
+      </div>
+      <button class="btn btn-link" type="button" (click)="cerrarDetalle()">Cerrar</button>
+    </div>
+
+    <div class="row detalle-grid">
+      <div class="col-md-6 mb-3"><b>Fecha</b><div>{{ fmtFecha(selected.createdAt) }}</div></div>
+      <div class="col-md-6 mb-3"><b>Nombre</b><div>{{ selected.nombre || '-' }}</div></div>
+      <div class="col-md-6 mb-3"><b>Email</b><div>{{ selected.email || '-' }}</div></div>
+      <div class="col-md-6 mb-3"><b>Teléfono</b><div>{{ selected.telefono || '-' }}</div></div>
+      <div class="col-md-6 mb-3"><b>Rol</b><div>{{ selected.rol || '-' }}</div></div>
+      <div class="col-md-6 mb-3"><b>Consorcio</b><div>{{ selected.nombreConsorcio || '-' }}</div></div>
+      <div class="col-md-6 mb-3"><b>CUIT</b><div>{{ selected.cuit || '-' }}</div></div>
+      <div class="col-md-6 mb-3"><b>Dirección</b><div>{{ selected.direccion || '-' }}</div></div>
+      <div class="col-md-6 mb-3"><b>Localidad</b><div>{{ selected.localidad || '-' }}</div></div>
+      <div class="col-md-6 mb-3"><b>Código postal</b><div>{{ selected.codigoPostal || '-' }}</div></div>
+      <div class="col-md-6 mb-3"><b>Tipo de edificio</b><div>{{ selected.tipoEdificio || '-' }}</div></div>
+      <div class="col-md-6 mb-3"><b>Unidades funcionales</b><div>{{ selected.unidadesFuncionales ?? '-' }}</div></div>
+      <div class="col-md-6 mb-3"><b>Plantas</b><div>{{ selected.cantidadPlantas ?? '-' }}</div></div>
+      <div class="col-md-6 mb-3"><b>m² totales</b><div>{{ selected.metrosCuadrados ?? '-' }}</div></div>
+      <div class="col-md-6 mb-3"><b>Año de construcción</b><div>{{ selected.anioConstruccion ?? '-' }}</div></div>
+      <div class="col-md-6 mb-3"><b>Ascensores</b><div>{{ selected.cantidadAscensores ?? '-' }}</div></div>
+      <div class="col-md-6 mb-3"><b>Cocheras</b><div>{{ siNo(selected.tieneCocheras) }}</div></div>
+      <div class="col-md-6 mb-3"><b>Póliza vigente</b><div>{{ siNo(selected.polizaVigente) }}</div></div>
+      <div class="col-md-6 mb-3"><b>Compañía actual</b><div>{{ selected.companiaActual || '-' }}</div></div>
+      <div class="col-12 mb-3"><b>Espacios comunes</b><div>{{ espaciosLabel(selected.espaciosComunes) }}</div></div>
+      <div class="col-12 mb-3"><b>Comentarios</b><div>{{ selected.comentarios || '-' }}</div></div>
+      <div class="col-md-6 mb-3">
+        <b>Reglamento</b>
+        <div *ngIf="selected.reglamento; else sinReglamento">
+          <a class="link-adjunto" [href]="selected.reglamento.base64" [download]="selected.reglamento.nombre">Descargar {{ selected.reglamento.nombre }}</a>
+          <img *ngIf="esImagen(selected.reglamento)" class="preview-adjunto" [src]="selected.reglamento.base64" [alt]="selected.reglamento.nombre" />
+        </div>
+        <ng-template #sinReglamento>-</ng-template>
+      </div>
+      <div class="col-md-6 mb-3">
+        <b>Póliza actual</b>
+        <div *ngIf="selected.polizaActual; else sinPoliza">
+          <a class="link-adjunto" [href]="selected.polizaActual.base64" [download]="selected.polizaActual.nombre">Descargar {{ selected.polizaActual.nombre }}</a>
+          <img *ngIf="esImagen(selected.polizaActual)" class="preview-adjunto" [src]="selected.polizaActual.base64" [alt]="selected.polizaActual.nombre" />
+        </div>
+        <ng-template #sinPoliza>-</ng-template>
+      </div>
+    </div>
+  </div>
+</div>

@@ -5,6 +5,7 @@ import { SidebarConfig } from './interface/sidebar.interface';
 import { GYM_ROUTES_CONFIG } from './interface/sidebar.config';
 import { LoginService } from "../../pages/login/login-core/login.service";
 import { ArchivosNuevosService } from "../../pages/archivos/archivos-core/archivos-nuevos.service";
+import { ProspectosNuevosService } from "../../../core/prospecto/prospectos-nuevos.service";
 
 @Component({
   selector: 'app-sidebar',
@@ -19,7 +20,8 @@ export class SidebarComponent implements OnInit {
   constructor(
     private cdRef: ChangeDetectorRef,
     private authService: LoginService,
-    public archivosNuevosSrv: ArchivosNuevosService
+    public archivosNuevosSrv: ArchivosNuevosService,
+    public prospectosNuevosSrv: ProspectosNuevosService
   ) {}
 
   ngOnInit(): void {
@@ -38,5 +40,9 @@ export class SidebarComponent implements OnInit {
   /** Solo los clientes (rol admin) ven el badge de archivos nuevos; el superuser no. */
   get showArchivosNuevosBadge(): boolean {
     return this.authService.hasRole(['admin']);
+  }
+
+  get showProspectosNuevosBadge(): boolean {
+    return this.authService.hasRole(['superuser']);
   }
 }
