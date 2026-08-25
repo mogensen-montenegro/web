@@ -24,12 +24,17 @@ export interface Prospecto {
   anioConstruccion?: number | null;
   cantidadAscensores?: number | null;
   tieneCocheras?: boolean | null;
+  tieneCalderasTermotanques?: boolean | null;
+  cantidadCalderasTermotanques?: number | null;
+  sumaAsegurableDetalle?: string;
+  sumaAsegurableMonto?: number | null;
   espaciosComunes?: string[];
   polizaVigente?: boolean | null;
   companiaActual?: string;
   comentarios?: string;
   reglamento?: ProspectoAdjunto | null;
   polizaActual?: ProspectoAdjunto | null;
+  documentosAdicionales?: ProspectoAdjunto[];
   estado?: ProspectoEstado;
   createdAt?: string;
 }

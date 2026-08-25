@@ -78,6 +78,19 @@
   color: #fff;
 }
 
+.feature-box {
+  border: 1px solid #e8e8e8;
+  border-radius: 12px;
+  padding: 18px 20px;
+  background: #fafafa;
+}
+
+.feature-box-title {
+  font-weight: 700;
+  color: #25241c;
+  margin-bottom: 14px;
+}
+
 .btn-enviar {
   min-width: 220px;
   width: 100%;
@@ -92,6 +105,22 @@
 .hint-adjuntos {
   color: #666;
   margin-bottom: 16px;
+}
+
+.hint-adjunto-item {
+  color: #666;
+  font-size: 0.92rem;
+  margin: -4px 0 10px;
+}
+
+.upload-box-wide {
+  min-height: 110px;
+}
+
+.upload-box.disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 .upload-box {
@@ -132,12 +161,46 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 12px;
   margin-top: 8px;
   padding: 8px 12px;
   border-radius: 8px;
   background: #f4f4f4;
   font-size: 0.9rem;
+}
+
+.file-ok-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+}
+
+.file-thumb {
+  width: 44px;
+  height: 44px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid #e0e0e0;
+  background: #fff;
+}
+
+.file-thumb-pdf {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #b91828;
+  background: #fde8ea;
+}
+
+.file-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .btn-quitar {
@@ -146,6 +209,7 @@
   color: #b91828;
   font-weight: 700;
   cursor: pointer;
+  flex-shrink: 0;
 }
 
 .envio-box {

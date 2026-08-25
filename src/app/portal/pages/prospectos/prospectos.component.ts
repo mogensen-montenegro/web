@@ -109,13 +109,34 @@ export class ProspectosComponent implements OnInit, OnDestroy {
     return '-';
   }
 
+  public calderasLabel(p: Prospecto): string {
+    if (p.tieneCalderasTermotanques === true) {
+      const cant = p.cantidadCalderasTermotanques;
+      return cant != null ? `Sí (${cant})` : 'Sí';
+    }
+    if (p.tieneCalderasTermotanques === false) return 'No';
+    return '-';
+  }
+
+  public sumaAsegurableLabel(p: Prospecto): string {
+    const detalle = (p.sumaAsegurableDetalle || '').trim();
+    const monto = p.sumaAsegurableMonto;
+    if (!detalle && (monto == null || monto === 0)) return '-';
+    const partes: string[] = [];
+    if (detalle) partes.push(detalle);
+    if (monto != null && monto > 0) {
+      partes.push(`$${monto.toLocaleString('es-AR')}`);
+    }
+    return partes.join(' · ');
+  }
+
   public espaciosLabel(list?: string[]): string {
     if (!list?.length) return '-';
     return list.map((v) => this.espaciosMap.get(v) || v).join(', ');
   }
 
   public tieneAdjuntos(p: Prospecto): boolean {
-    return !!(p.reglamento?.base64 || p.polizaActual?.base64);
+    return !!(p.reglamento?.base64 || p.polizaActual?.base64 || p.documentosAdicionales?.length);
   }
 
   public esImagen(adjunto?: ProspectoAdjunto | null): boolean {

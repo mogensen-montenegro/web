@@ -26,8 +26,11 @@ export class CotizarComponent {
   public espaciosSeleccionados: string[] = [];
   public reglamento: ProspectoAdjunto | null = null;
   public polizaActual: ProspectoAdjunto | null = null;
+  public documentosAdicionales: ProspectoAdjunto[] = [];
   public errorReglamento = '';
   public errorPoliza = '';
+  public errorDocumentosAdicionales = '';
+  readonly maxDocumentosAdicionales = 5;
   private readonly maxFileBytes = 5 * 1024 * 1024;
   private readonly mimePermitidos = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
 
@@ -48,6 +51,10 @@ export class CotizarComponent {
     anioConstruccion: [null as number | null],
     cantidadAscensores: [null as number | null],
     tieneCocheras: [''],
+    tieneCalderasTermotanques: [''],
+    cantidadCalderasTermotanques: [null as number | null],
+    sumaAsegurableDetalle: [''],
+    sumaAsegurableMonto: [null as number | null],
     polizaVigente: [''],
     companiaActual: [''],
     comentarios: ['']
@@ -76,6 +83,12 @@ export class CotizarComponent {
     return this.espaciosSeleccionados.includes(value);
   }
 
+  public onCalderasChange(): void {
+    if (this.form.get('tieneCalderasTermotanques')?.value !== 'si') {
+      this.form.patchValue({ cantidadCalderasTermotanques: null });
+    }
+  }
+
   public onAdjunto(tipo: 'reglamento' | 'polizaActual', event: Event): void {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
@@ -92,16 +105,71 @@ export class CotizarComponent {
       }
     };
 
+    this.leerArchivo(file, setError, (adjunto) => {
+      if (tipo === 'reglamento') {
+        this.reglamento = adjunto;
+        this.errorReglamento = '';
+      } else {
+        this.polizaActual = adjunto;
+        this.errorPoliza = '';
+      }
+    });
+  }
+
+  public onDocumentosAdicionales(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const files = Array.from(input.files || []);
+    input.value = '';
+    if (!files.length) return;
+
+    const disponibles = this.maxDocumentosAdicionales - this.documentosAdicionales.length;
+    if (disponibles <= 0) {
+      this.errorDocumentosAdicionales = `Podés subir hasta ${this.maxDocumentosAdicionales} archivos adicionales.`;
+      return;
+    }
+
+    const aProcesar = files.slice(0, disponibles);
+    if (files.length > disponibles) {
+      this.errorDocumentosAdicionales = `Solo se agregaron ${disponibles} archivo(s). El máximo es ${this.maxDocumentosAdicionales}.`;
+    } else {
+      this.errorDocumentosAdicionales = '';
+    }
+
+    for (const file of aProcesar) {
+      this.leerArchivo(
+        file,
+        (msg) => {
+          this.errorDocumentosAdicionales = msg;
+        },
+        (adjunto) => {
+          this.documentosAdicionales = [...this.documentosAdicionales, adjunto];
+        }
+      );
+    }
+  }
+
+  public quitarDocumentoAdicional(index: number): void {
+    this.documentosAdicionales = this.documentosAdicionales.filter((_, i) => i !== index);
+    if (this.documentosAdicionales.length < this.maxDocumentosAdicionales) {
+      this.errorDocumentosAdicionales = '';
+    }
+  }
+
+  private leerArchivo(
+    file: File,
+    onError: (msg: string) => void,
+    onOk: (adjunto: ProspectoAdjunto) => void
+  ): void {
     const mime = (file.type || '').toLowerCase();
     const ext = file.name.split('.').pop()?.toLowerCase() || '';
     const extOk = ['pdf', 'jpg', 'jpeg', 'png'].includes(ext);
     const mimeOk = this.mimePermitidos.includes(mime);
     if (!mimeOk && !extOk) {
-      setError('Solo se admiten archivos PDF, JPG o PNG.');
+      onError('Solo se admiten archivos PDF, JPG o PNG.');
       return;
     }
     if (file.size > this.maxFileBytes) {
-      setError('El archivo no puede superar los 5 MB.');
+      onError('Cada archivo no puede superar los 5 MB.');
       return;
     }
 
@@ -111,23 +179,16 @@ export class CotizarComponent {
       const tipoFinal = mime === 'image/jpg' ? 'image/jpeg' : mime || this.mimeDesdeNombre(file.name);
       const payload = raw.includes(',') ? raw.split(',')[1] : '';
       if (!payload) {
-        setError('No se pudo leer el archivo. Intentá de nuevo.');
+        onError('No se pudo leer el archivo. Intentá de nuevo.');
         return;
       }
-      const adjunto: ProspectoAdjunto = {
+      onOk({
         nombre: file.name.slice(0, 180),
         tipo: tipoFinal,
         base64: `data:${tipoFinal};base64,${payload}`
-      };
-      if (tipo === 'reglamento') {
-        this.reglamento = adjunto;
-        this.errorReglamento = '';
-      } else {
-        this.polizaActual = adjunto;
-        this.errorPoliza = '';
-      }
+      });
     };
-    reader.onerror = () => setError('No se pudo leer el archivo. Intentá de nuevo.');
+    reader.onerror = () => onError('No se pudo leer el archivo. Intentá de nuevo.');
     reader.readAsDataURL(file);
   }
 
@@ -139,6 +200,10 @@ export class CotizarComponent {
     }
     this.polizaActual = null;
     this.errorPoliza = '';
+  }
+
+  public esImagen(adjunto?: ProspectoAdjunto | null): boolean {
+    return !!adjunto?.tipo?.startsWith('image/');
   }
 
   private mimeDesdeNombre(nombre: string): string {
@@ -191,12 +256,17 @@ export class CotizarComponent {
       anioConstruccion: toNum(v.anioConstruccion),
       cantidadAscensores: toNum(v.cantidadAscensores),
       tieneCocheras: v.tieneCocheras === 'si' ? true : v.tieneCocheras === 'no' ? false : null,
+      tieneCalderasTermotanques: v.tieneCalderasTermotanques === 'si' ? true : v.tieneCalderasTermotanques === 'no' ? false : null,
+      cantidadCalderasTermotanques: v.tieneCalderasTermotanques === 'si' ? toNum(v.cantidadCalderasTermotanques) : null,
+      sumaAsegurableDetalle: (v.sumaAsegurableDetalle || '').trim(),
+      sumaAsegurableMonto: toNum(v.sumaAsegurableMonto),
       espaciosComunes: this.espaciosSeleccionados,
       polizaVigente: v.polizaVigente === 'si' ? true : v.polizaVigente === 'no' ? false : null,
       companiaActual: (v.companiaActual || '').trim(),
       comentarios: (v.comentarios || '').trim(),
       reglamento: this.reglamento,
-      polizaActual: this.polizaActual
+      polizaActual: this.polizaActual,
+      documentosAdicionales: this.documentosAdicionales
     };
 
     this.prospectoService.crear(payload).pipe(
@@ -238,7 +308,7 @@ export class CotizarComponent {
   }
 
   private trimCampos(): void {
-    const keys = ['nombre', 'email', 'telefono', 'nombreConsorcio', 'direccion', 'localidad', 'codigoPostal', 'cuit', 'companiaActual', 'comentarios'] as const;
+    const keys = ['nombre', 'email', 'telefono', 'nombreConsorcio', 'direccion', 'localidad', 'codigoPostal', 'cuit', 'companiaActual', 'sumaAsegurableDetalle', 'comentarios'] as const;
     const patch: Record<string, string> = {};
     for (const key of keys) {
       const value = this.form.get(key)?.value;

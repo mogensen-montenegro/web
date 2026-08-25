@@ -114,25 +114,49 @@
       <div class="col-md-6 mb-3"><b>Año de construcción</b><div>{{ selected.anioConstruccion ?? '-' }}</div></div>
       <div class="col-md-6 mb-3"><b>Ascensores</b><div>{{ selected.cantidadAscensores ?? '-' }}</div></div>
       <div class="col-md-6 mb-3"><b>Cocheras</b><div>{{ siNo(selected.tieneCocheras) }}</div></div>
+      <div class="col-md-6 mb-3"><b>Calderas / termotanques</b><div>{{ calderasLabel(selected) }}</div></div>
+      <div class="col-md-6 mb-3"><b>Suma asegurable</b><div>{{ sumaAsegurableLabel(selected) }}</div></div>
       <div class="col-md-6 mb-3"><b>Póliza vigente</b><div>{{ siNo(selected.polizaVigente) }}</div></div>
       <div class="col-md-6 mb-3"><b>Compañía actual</b><div>{{ selected.companiaActual || '-' }}</div></div>
       <div class="col-12 mb-3"><b>Espacios comunes</b><div>{{ espaciosLabel(selected.espaciosComunes) }}</div></div>
       <div class="col-12 mb-3"><b>Comentarios</b><div>{{ selected.comentarios || '-' }}</div></div>
       <div class="col-md-6 mb-3">
         <b>Reglamento</b>
-        <div *ngIf="selected.reglamento; else sinReglamento">
-          <a class="link-adjunto" [href]="selected.reglamento.base64" [download]="selected.reglamento.nombre">Descargar {{ selected.reglamento.nombre }}</a>
-          <img *ngIf="esImagen(selected.reglamento)" class="preview-adjunto" [src]="selected.reglamento.base64" [alt]="selected.reglamento.nombre" />
+        <div *ngIf="selected.reglamento; else sinReglamento" class="adjuntos-grid adjuntos-grid-single">
+          <div class="adjunto-card">
+            <a class="adjunto-thumb-wrap" [href]="selected.reglamento.base64" [download]="selected.reglamento.nombre" target="_blank" rel="noopener">
+              <img *ngIf="esImagen(selected.reglamento)" class="adjunto-thumb" [src]="selected.reglamento.base64" [alt]="selected.reglamento.nombre" />
+              <span *ngIf="!esImagen(selected.reglamento)" class="adjunto-thumb adjunto-pdf">PDF</span>
+            </a>
+            <a class="adjunto-name" [href]="selected.reglamento.base64" [download]="selected.reglamento.nombre">{{ selected.reglamento.nombre }}</a>
+          </div>
         </div>
         <ng-template #sinReglamento>-</ng-template>
       </div>
       <div class="col-md-6 mb-3">
         <b>Póliza actual</b>
-        <div *ngIf="selected.polizaActual; else sinPoliza">
-          <a class="link-adjunto" [href]="selected.polizaActual.base64" [download]="selected.polizaActual.nombre">Descargar {{ selected.polizaActual.nombre }}</a>
-          <img *ngIf="esImagen(selected.polizaActual)" class="preview-adjunto" [src]="selected.polizaActual.base64" [alt]="selected.polizaActual.nombre" />
+        <div *ngIf="selected.polizaActual; else sinPoliza" class="adjuntos-grid adjuntos-grid-single">
+          <div class="adjunto-card">
+            <a class="adjunto-thumb-wrap" [href]="selected.polizaActual.base64" [download]="selected.polizaActual.nombre" target="_blank" rel="noopener">
+              <img *ngIf="esImagen(selected.polizaActual)" class="adjunto-thumb" [src]="selected.polizaActual.base64" [alt]="selected.polizaActual.nombre" />
+              <span *ngIf="!esImagen(selected.polizaActual)" class="adjunto-thumb adjunto-pdf">PDF</span>
+            </a>
+            <a class="adjunto-name" [href]="selected.polizaActual.base64" [download]="selected.polizaActual.nombre">{{ selected.polizaActual.nombre }}</a>
+          </div>
         </div>
         <ng-template #sinPoliza>-</ng-template>
+      </div>
+      <div class="col-12 mb-3" *ngIf="selected.documentosAdicionales?.length">
+        <b>Documentos adicionales</b>
+        <div class="adjuntos-grid">
+          <div class="adjunto-card" *ngFor="let doc of selected.documentosAdicionales">
+            <a class="adjunto-thumb-wrap" [href]="doc.base64" [download]="doc.nombre" target="_blank" rel="noopener">
+              <img *ngIf="esImagen(doc)" class="adjunto-thumb" [src]="doc.base64" [alt]="doc.nombre" />
+              <span *ngIf="!esImagen(doc)" class="adjunto-thumb adjunto-pdf">PDF</span>
+            </a>
+            <a class="adjunto-name" [href]="doc.base64" [download]="doc.nombre" [title]="doc.nombre">{{ doc.nombre }}</a>
+          </div>
+        </div>
       </div>
     </div>
   </div>
