@@ -1,4 +1,10 @@
 
+:host {
+  display: block;
+  position: relative;
+  z-index: 10;
+  overflow: visible;
+}
 
 .cuadroColorRecto {
   width: 100%;
@@ -6,19 +12,75 @@
   background: linear-gradient(90deg, rgb(139, 36, 27) 0%, rgb(216, 9, 20, 1) 61%, rgb(139, 36, 27) 100%);
   position: absolute;
   border-radius: 0px 0px 40px 40px;
-
 }
 
-.white
-{color:white}
+.white {
+  color: white;
+}
 
-.padding-header {
-  padding-top: 35px;
-  padding-bottom: 35px;
+.header-nav {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  width: 100%;
+  padding: 20px 0 10px;
+  overflow: visible;
+}
+
+.header-logo {
+  flex: 0 0 auto;
+  margin-right: 20px;
+}
+
+.header-menu {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: visible;
 }
 
 ul {
-  padding-inline-start: 0px;
+  padding-inline-start: 0;
+  margin-bottom: 0;
+}
+
+.navbar-ul {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0 18px;
+  width: 100%;
+  overflow: visible;
+}
+
+* {
+  list-style: none;
+}
+
+.navbar-ul .nav-item {
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.navbar-ul .nav-item .nav-link {
+  line-height: 1.4;
+  opacity: .8;
+  font-size: 1.06rem;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: white;
+  padding: 4px 0;
+  white-space: nowrap;
+}
+
+.tamanoLogoIcono {
+  max-width: 240px;
+  width: auto;
+  height: auto;
+  display: block;
+  cursor: pointer;
 }
 
 .description {
@@ -26,29 +88,10 @@ ul {
   font-size: 18px;
 }
 
-.tamanoLogoIcono {
-  max-width: 300px;
-  padding-right: 35px;
-}
-
-* {
-  list-style: none;
-}
-
-.navbar-ul .nav-item .nav-link {
-  line-height: 1.6;
-  opacity: .8;
-  font-size: 1rem;
-  text-transform: uppercase;
-  font-weight: 600;
-  color: white;
-}
-
 .tituloHeader {
   font-size: 2.4rem;
   color: #25241c;
   font-family: 'Kaushan Script', cursive;
-  ;
 }
 
 .titulo-bold {
@@ -77,8 +120,7 @@ ul {
 }
 
 .menu_btn {
-  padding-top: 40px;
-  position: relative;
+  flex: 0 0 auto;
   display: none;
   justify-content: center;
   align-items: center;
@@ -119,12 +161,11 @@ ul {
   transform: translateY(10px);
 }
 
-.linea-divisora{
+.linea-divisora {
   border-bottom: 1px solid rgba(255,255,255,.5);
-  ;
 }
 
-.menu-desplegado{
+.menu-desplegado {
   background-color: rgba(0, 0, 0, .8);
   width: 100%;
   height: 577px;
@@ -149,7 +190,15 @@ ul {
   color: #b91828;
   font-weight: 700;
   text-transform: uppercase;
-  margin-right: 8px;
+  font-size: 0.9rem;
+  padding: 7px 14px;
+  white-space: nowrap;
+}
+
+.botonLogin {
+  font-size: 0.9rem;
+  padding: 7px 14px;
+  white-space: nowrap;
 }
 
 .botonCotizar:hover {
@@ -157,11 +206,11 @@ ul {
   color: #8b241b;
 }
 
-.botonLogin:hover{
+.botonLogin:hover {
   background-color: #ea1d06;
 }
 
-.menu-desplegado .container .nav-item .botonLogin{
+.menu-desplegado .container .nav-item .botonLogin {
   margin-top: 20px;
   margin-left: 10px;
   background-color: #b91828;
@@ -172,8 +221,27 @@ ul {
   margin-left: 10px;
 }
 
-@media screen and (max-width: 950px) {
+@media screen and (max-width: 1200px) {
+  .tamanoLogoIcono {
+    max-width: 200px;
+  }
 
+  .navbar-ul {
+    gap: 0 12px;
+  }
+
+  .navbar-ul .nav-item .nav-link {
+    font-size: 0.96rem;
+  }
+
+  .botonCotizar,
+  .botonLogin {
+    font-size: 0.84rem;
+    padding: 6px 12px;
+  }
+}
+
+@media screen and (max-width: 950px) {
   .titulo,
   .tituloHeader {
     font-size: 2rem !important;
@@ -184,26 +252,11 @@ ul {
   }
 }
 
-@media screen and (max-width: 750px) {
-  .navbar-toggle {
-    color: white !important;
-    font-size: 3rem;
-  }
-
-  .padding-header {
-    padding: 20px;
-  }
-
-  .tamanoLogoIcono {
-    padding-right: 0px;
-    padding-top: 20px;
-  }
-}
-
 @media screen and (max-width: 450px) {
-  .tamanoCaja{
+  .tamanoCaja {
     height: 520px;
   }
+
   .navbar-collapse {
     position: absolute !important;
     width: 100% !important;
@@ -224,80 +277,64 @@ ul {
     display: none;
   }
 
+  .header-nav {
+    justify-content: space-between;
+  }
+
+  .header-logo {
+    margin-right: 0;
+    flex: 1 1 auto;
+  }
+
+  .tamanoLogoIcono {
+    max-width: 180px;
+  }
+
   .menu-completo {
     display: none !important;
   }
 
-  .menu_btn{
+  .menu_btn {
     display: flex;
   }
 }
 
-/* A N I M A C I O N E S */
-.menu-desplegado.open{
+.menu-desplegado.open {
   animation: abrirMenu .5s forwards;
   z-index: 1;
 }
-.menu-desplegado.close{
+
+.menu-desplegado.close {
   animation: cerrarMenu .5s forwards;
 }
+
 .menu_btn.open .menu_btn_burger {
   transform: translateX(-50px);
   background: transparent;
   box-shadow: none;
-  }
+}
 
-  .menu_btn.open .menu_btn_burger::before{
+.menu_btn.open .menu_btn_burger::before {
   transform: rotate(45deg) translate(35px, -35px);
-  }
+}
 
-  .menu_btn.open .menu_btn_burger::after{
+.menu_btn.open .menu_btn_burger::after {
   transform: rotate(-45deg) translate(35px, 35px);
-  }
+}
 
-  @keyframes movimientoActive {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(0.95);
-  }
-  100%{
-    transform: scale(1);
-  }
-  }
+@keyframes abrirMenu {
+  0% { left: -100%; }
+  100% { left: 0%; }
+}
 
-  @keyframes abrirMenu {
-    0%{
-left: -100%;    }
-    100%{
-left: 0%;    }
-  }
-  @keyframes cerrarMenu {
-    0%{
-left: 0%;    }
-    100%{
-left: -100%;    }
-  }
+@keyframes cerrarMenu {
+  0% { left: 0%; }
+  100% { left: -100%; }
+}
 
-  @keyframes vueloCPU {
-    0% {
-      transform: translate3d(0, 0, 0);
-    }
-
-    25% {
-      transform: translate3d(0, 3%, 0);
-    }
-
-    75% {
-      transform: translate3d(0, -3%, 0);
-    }
-
-    100% {
-      transform: translate3d(0, 0, 0);
-    }
-  }
-
-
-
-
+@keyframes vueloCPU {
+  0% { transform: translate3d(0, 0, 0); }
+  25% { transform: translate3d(0, 3%, 0); }
+  75% { transform: translate3d(0, -3%, 0); }
+  100% { transform: translate3d(0, 0, 0); }
+}

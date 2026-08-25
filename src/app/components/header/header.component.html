@@ -1,49 +1,45 @@
 <ng-container>
 <div class="cuadroColorRecto" *ngIf="!isHeader"></div>
 <div class="container">
-  <div class="row d-flex justify-content-center align-items-center px-2">
-    <div class="col-8 col-md-5 pt-3 d-flex justify-content-center">
+  <div class="header-nav">
+    <div class="header-logo">
       <img
         alt="Logo"
         routerLink="/home"
-        class="tamanoLogoIcono w-100"
+        class="tamanoLogoIcono"
         src="../../../../assets/img/logo.png"
       />
     </div>
-    <div #menuBtn class="col-4 menu_btn" (click)="abrirMenu()">
-      <div class="menu_btn_burger"></div>
-    </div>
-    <div
-      class="col-12 col-md-7 padding-header d-flex justify-content-center menu-completo"
-    >
-      <div class="navbar-ul d-flex align-items-end">
+    <nav class="header-menu menu-completo">
+      <ul class="navbar-ul">
         <li class="nav-item">
-          <a class="nav-link" routerLink="/home"> Home </a>
+          <a class="nav-link" routerLink="/home">Home</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" routerLink="/productos">Productos </a>
+          <a class="nav-link" routerLink="/productos">Productos</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" routerLink="/servicios">Servicios </a>
+          <a class="nav-link" routerLink="/servicios">Servicios</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" routerLink="/contacto"> Contacto</a>
+          <a class="nav-link" routerLink="/contacto">Contacto</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" routerLink="/nosotros"> Nosotros</a>
+          <a class="nav-link" routerLink="/nosotros">Nosotros</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" routerLink="/noticias"> Noticias</a>
+          <a class="nav-link" routerLink="/noticias">Noticias</a>
         </li>
         <li class="nav-item">
           <a class="btn btn-light botonCotizar" routerLink="/cotizar"><b>Cotizar consorcio</b></a>
         </li>
         <li class="nav-item">
-          <a class="btn btn-outline-light botonLogin " routerLink="/login"
-            ><b class="white"> Portal</b>
-          </a>
+          <a class="btn btn-outline-light botonLogin" routerLink="/login"><b class="white">Portal</b></a>
         </li>
-      </div>
+      </ul>
+    </nav>
+    <div #menuBtn class="menu_btn" (click)="abrirMenu()">
+      <div class="menu_btn_burger"></div>
     </div>
   </div>
 
