@@ -24,6 +24,7 @@ export interface Prospecto {
   anioConstruccion?: number | null;
   cantidadAscensores?: number | null;
   tieneCocheras?: boolean | null;
+  calderasTermotanques?: string;
   tieneCalderasTermotanques?: boolean | null;
   cantidadCalderasTermotanques?: number | null;
   sumaAsegurableDetalle?: string;

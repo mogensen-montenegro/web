@@ -37,23 +37,23 @@
           <div class="section-title">Tus datos de contacto</div>
           <div class="row">
             <div class="col-md-6 mb-3">
-              <label class="form-label">Nombre y apellido *</label>
+              <label class="form-label">Nombre y apellido <span class="required-mark">(*)</span></label>
               <input class="form-control" formControlName="nombre" placeholder="Ej: María Pérez" />
               <small class="text-danger" *ngIf="invalid('nombre')">Ingresá tu nombre.</small>
             </div>
             <div class="col-md-6 mb-3">
-              <label class="form-label">Rol *</label>
+              <label class="form-label">Rol <span class="required-mark">(*)</span></label>
               <select class="form-control" formControlName="rol">
                 <option *ngFor="let r of roles" [value]="r.value">{{ r.label }}</option>
               </select>
             </div>
             <div class="col-md-6 mb-3">
-              <label class="form-label">Email *</label>
+              <label class="form-label">Email <span class="required-mark">(*)</span></label>
               <input class="form-control" type="email" formControlName="email" placeholder="ivan.p@example.net" />
               <small class="text-danger" *ngIf="invalid('email')">Ingresá un email válido.</small>
             </div>
             <div class="col-md-6 mb-3">
-              <label class="form-label">Teléfono *</label>
+              <label class="form-label">Teléfono <span class="required-mark">(*)</span></label>
               <input class="form-control" formControlName="telefono" placeholder="11 1234-5678" />
               <small class="text-danger" *ngIf="invalid('telefono')">Ingresá un teléfono de contacto.</small>
             </div>
@@ -70,7 +70,7 @@
               <input class="form-control" formControlName="cuit" placeholder="XX-XXXXXXXX-X" />
             </div>
             <div class="col-md-8 mb-3">
-              <label class="form-label">Dirección *</label>
+              <label class="form-label">Dirección <span class="required-mark">(*)</span></label>
               <input class="form-control" formControlName="direccion" placeholder="Calle, número y piso" />
               <small class="text-danger" *ngIf="invalid('direccion')">Ingresá la dirección del edificio.</small>
             </div>
@@ -79,12 +79,12 @@
               <input class="form-control" formControlName="codigoPostal" placeholder="CABA / GBA" />
             </div>
             <div class="col-md-6 mb-3">
-              <label class="form-label">Localidad / ciudad *</label>
+              <label class="form-label">Localidad / ciudad <span class="required-mark">(*)</span></label>
               <input class="form-control" formControlName="localidad" placeholder="Ej: CABA, Vicente López" />
               <small class="text-danger" *ngIf="invalid('localidad')">Ingresá la localidad.</small>
             </div>
             <div class="col-md-6 mb-3">
-              <label class="form-label">Tipo de edificio *</label>
+              <label class="form-label">Tipo de edificio <span class="required-mark">(*)</span></label>
               <select class="form-control" formControlName="tipoEdificio">
                 <option *ngFor="let t of tipos" [value]="t.value">{{ t.label }}</option>
               </select>
@@ -126,17 +126,12 @@
           <div class="feature-box mb-4">
             <div class="feature-box-title">Calderas y/o termotanques</div>
             <div class="row mb-0">
-              <div class="col-md-6 mb-3 mb-md-0">
-                <label class="form-label">¿Tiene calderas y/o termotanques?</label>
-                <select class="form-control" formControlName="tieneCalderasTermotanques" (change)="onCalderasChange()">
-                  <option value="">Seleccionar</option>
-                  <option value="si">Sí</option>
-                  <option value="no">No</option>
-                </select>
-              </div>
-              <div class="col-md-6" *ngIf="form.get('tieneCalderasTermotanques')?.value === 'si'">
+              <div class="col-12">
                 <label class="form-label">¿Cuántos?</label>
-                <input class="form-control" type="number" min="1" formControlName="cantidadCalderasTermotanques" placeholder="Ej: 2" />
+                <input
+                  class="form-control"
+                  formControlName="calderasTermotanques"
+                  placeholder="Ej: 2 calderas, 1 termo" />
               </div>
             </div>
           </div>
@@ -193,14 +188,14 @@
           </div>
 
           <div class="section-title">Documentación</div>
-          <p class="hint-adjuntos">Podés adjuntar el reglamento y la póliza actual en PDF, JPG o PNG. Máximo 5 MB por archivo.</p>
+          <p class="hint-adjuntos">Podés adjuntar el reglamento y la póliza actual en PDF, JPG, JPEG o PNG. Máximo 5 MB por archivo.</p>
           <div class="row">
             <div class="col-md-6 mb-3">
               <label class="form-label">Subir reglamento</label>
               <label class="upload-box">
-                <input type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" (change)="onAdjunto('reglamento', $event)" />
+                <input type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/jpg,image/png" (change)="onAdjunto('reglamento', $event)" />
                 <span class="upload-title">Subir reglamento</span>
-                <span class="upload-sub">PDF, JPG o PNG · hasta 5 MB</span>
+                <span class="upload-sub">PDF, JPG, JPEG o PNG · hasta 5 MB</span>
               </label>
               <div class="file-ok" *ngIf="reglamento">
                 <div class="file-ok-info">
@@ -215,9 +210,9 @@
             <div class="col-md-6 mb-3">
               <label class="form-label">Subir póliza actual</label>
               <label class="upload-box">
-                <input type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" (change)="onAdjunto('polizaActual', $event)" />
+                <input type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/jpg,image/png" (change)="onAdjunto('polizaActual', $event)" />
                 <span class="upload-title">Subir póliza actual</span>
-                <span class="upload-sub">PDF, JPG o PNG · hasta 5 MB</span>
+                <span class="upload-sub">PDF, JPG, JPEG o PNG · hasta 5 MB</span>
               </label>
               <div class="file-ok" *ngIf="polizaActual">
                 <div class="file-ok-info">
@@ -234,16 +229,16 @@
           <div class="row">
             <div class="col-12 mb-3">
               <label class="form-label">Documentos adicionales</label>
-              <p class="hint-adjunto-item">Designación, recibos, última expensa, o cualquier otro documento que sea relevante.</p>
+              <p class="hint-adjunto-item">Designación, recibos, última expensa, o cualquier otro documento que sea relevante (expensas, designación, último recibo).</p>
               <label class="upload-box upload-box-wide" [class.disabled]="documentosAdicionales.length >= maxDocumentosAdicionales">
                 <input
                   type="file"
                   multiple
-                  accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
+                  accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/jpg,image/png"
                   [disabled]="documentosAdicionales.length >= maxDocumentosAdicionales"
                   (change)="onDocumentosAdicionales($event)" />
                 <span class="upload-title">Subir documentos adicionales</span>
-                <span class="upload-sub">PDF, JPG o PNG · hasta 5 MB c/u · máx. {{ maxDocumentosAdicionales }} archivos</span>
+                <span class="upload-sub">PDF, JPG, JPEG o PNG · hasta 5 MB c/u · máx. {{ maxDocumentosAdicionales }} archivos</span>
               </label>
               <div class="file-ok" *ngFor="let doc of documentosAdicionales; let i = index">
                 <div class="file-ok-info">
@@ -258,7 +253,7 @@
           </div>
 
           <div class="envio-box mt-2">
-            <small class="text-muted d-block mb-2">Los campos con * son obligatorios. Un asesor se va a comunicar a la brevedad.</small>
+            <small class="text-muted d-block mb-2">Los campos con <span class="required-mark">(*)</span> son obligatorios. Un asesor se va a comunicar a la brevedad.</small>
             <div class="alerta-envio" id="alerta-envio" *ngIf="errorEnvio">{{ errorEnvio }}</div>
             <button class="btn btn-color btn-enviar" type="button" [disabled]="loading" (click)="enviar($event)">
               {{ loading ? 'Enviando...' : 'Enviar consulta' }}

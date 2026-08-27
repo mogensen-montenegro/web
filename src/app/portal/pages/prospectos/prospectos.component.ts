@@ -110,6 +110,8 @@ export class ProspectosComponent implements OnInit, OnDestroy {
   }
 
   public calderasLabel(p: Prospecto): string {
+    const detalle = (p.calderasTermotanques || '').trim();
+    if (detalle) return detalle;
     if (p.tieneCalderasTermotanques === true) {
       const cant = p.cantidadCalderasTermotanques;
       return cant != null ? `Sí (${cant})` : 'Sí';

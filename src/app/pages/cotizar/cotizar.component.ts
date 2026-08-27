@@ -51,8 +51,7 @@ export class CotizarComponent {
     anioConstruccion: [null as number | null],
     cantidadAscensores: [null as number | null],
     tieneCocheras: [''],
-    tieneCalderasTermotanques: [''],
-    cantidadCalderasTermotanques: [null as number | null],
+    calderasTermotanques: [''],
     sumaAsegurableDetalle: [''],
     sumaAsegurableMonto: [null as number | null],
     polizaVigente: [''],
@@ -81,12 +80,6 @@ export class CotizarComponent {
 
   public isEspacio(value: string): boolean {
     return this.espaciosSeleccionados.includes(value);
-  }
-
-  public onCalderasChange(): void {
-    if (this.form.get('tieneCalderasTermotanques')?.value !== 'si') {
-      this.form.patchValue({ cantidadCalderasTermotanques: null });
-    }
   }
 
   public onAdjunto(tipo: 'reglamento' | 'polizaActual', event: Event): void {
@@ -165,7 +158,7 @@ export class CotizarComponent {
     const extOk = ['pdf', 'jpg', 'jpeg', 'png'].includes(ext);
     const mimeOk = this.mimePermitidos.includes(mime);
     if (!mimeOk && !extOk) {
-      onError('Solo se admiten archivos PDF, JPG o PNG.');
+      onError('Solo se admiten archivos PDF, JPG, JPEG o PNG.');
       return;
     }
     if (file.size > this.maxFileBytes) {
@@ -256,8 +249,7 @@ export class CotizarComponent {
       anioConstruccion: toNum(v.anioConstruccion),
       cantidadAscensores: toNum(v.cantidadAscensores),
       tieneCocheras: v.tieneCocheras === 'si' ? true : v.tieneCocheras === 'no' ? false : null,
-      tieneCalderasTermotanques: v.tieneCalderasTermotanques === 'si' ? true : v.tieneCalderasTermotanques === 'no' ? false : null,
-      cantidadCalderasTermotanques: v.tieneCalderasTermotanques === 'si' ? toNum(v.cantidadCalderasTermotanques) : null,
+      calderasTermotanques: (v.calderasTermotanques || '').trim(),
       sumaAsegurableDetalle: (v.sumaAsegurableDetalle || '').trim(),
       sumaAsegurableMonto: toNum(v.sumaAsegurableMonto),
       espaciosComunes: this.espaciosSeleccionados,
@@ -308,7 +300,7 @@ export class CotizarComponent {
   }
 
   private trimCampos(): void {
-    const keys = ['nombre', 'email', 'telefono', 'nombreConsorcio', 'direccion', 'localidad', 'codigoPostal', 'cuit', 'companiaActual', 'sumaAsegurableDetalle', 'comentarios'] as const;
+    const keys = ['nombre', 'email', 'telefono', 'nombreConsorcio', 'direccion', 'localidad', 'codigoPostal', 'cuit', 'companiaActual', 'calderasTermotanques', 'sumaAsegurableDetalle', 'comentarios'] as const;
     const patch: Record<string, string> = {};
     for (const key of keys) {
       const value = this.form.get(key)?.value;
