@@ -1,0 +1,92 @@
+<div class="cumple-overlay" *ngIf="abierto" (click)="cerrar()">
+  <div class="cumple-card" role="dialog" aria-modal="true" aria-labelledby="cumpleTitulo" (click)="$event.stopPropagation()">
+    <div class="cumple-card__head">
+      <div>
+        <p class="cumple-card__eyebrow">Administradores</p>
+        <h3 id="cumpleTitulo">Próximos cumpleaños</h3>
+        <p>Cumpleaños de los próximos {{ ventanaDias }} días.</p>
+      </div>
+      <button type="button" class="cumple-card__close" (click)="cerrar()" aria-label="Cerrar">×</button>
+    </div>
+
+    <div class="cumple-card__body">
+      <p *ngIf="cargando" class="cumple-empty">Buscando cumpleaños...</p>
+
+      <p *ngIf="!cargando && !proximos.length" class="cumple-empty">
+        No hay cumpleaños en los próximos {{ ventanaDias }} días.
+      </p>
+
+      <div *ngIf="!cargando && proximos.length" class="cumple-tools">
+        <button type="button" class="cumple-link" (click)="seleccionarTodos()">
+          {{ todosConEmailSeleccionados ? 'Quitar selección' : 'Seleccionar todos' }}
+        </button>
+      </div>
+
+      <ul class="cumple-list" *ngIf="!cargando && proximos.length">
+        <li *ngFor="let item of proximos" [class.is-disabled]="!item.email">
+          <label>
+            <input
+              type="checkbox"
+              [checked]="estaSeleccionado(item)"
+              [disabled]="!item.email"
+              (change)="toggle(item)"
+            />
+            <span>
+              <strong>{{ item.nombre }}</strong>
+              <small class="cumple-cuando">
+                {{ item.cuando }} · {{ item.fechaTexto }}
+                <ng-container *ngIf="item.edad"> · Cumple {{ item.edad }} años</ng-container>
+              </small>
+              <small *ngIf="item.email; else sinEmail">{{ item.email }}</small>
+              <ng-template #sinEmail><small class="sin-email">Sin email cargado</small></ng-template>
+            </span>
+          </label>
+        </li>
+      </ul>
+    </div>
+
+    <div class="cumple-card__foot" *ngIf="!cargando && proximos.length">
+      <button type="button" class="btn-ghost" (click)="cerrar()">Cerrar</button>
+      <button type="button" class="btn-rojo" [disabled]="!puedeEnviarSaludo" (click)="abrirSaludo()">
+        Enviar saludo
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="cumple-overlay cumple-overlay--saludo" *ngIf="saludoAbierto" (click)="cerrarSaludo()">
+  <div class="cumple-card" role="dialog" aria-modal="true" aria-labelledby="saludoTitulo" (click)="$event.stopPropagation()">
+    <div class="cumple-card__head">
+      <div>
+        <p class="cumple-card__eyebrow">Email</p>
+        <h3 id="saludoTitulo">Enviar saludo</h3>
+        <p>El título, el asunto y el mensaje se pueden editar antes de enviar.</p>
+      </div>
+      <button type="button" class="cumple-card__close" (click)="cerrarSaludo()" aria-label="Cerrar">×</button>
+    </div>
+
+    <div class="cumple-card__body">
+      <label class="campo">
+        <span>Título</span>
+        <input type="text" [(ngModel)]="titulo" maxlength="120" />
+      </label>
+      <label class="campo">
+        <span>Asunto</span>
+        <input type="text" [(ngModel)]="asunto" maxlength="150" />
+      </label>
+      <label class="campo">
+        <span>Mensaje</span>
+        <textarea rows="8" [(ngModel)]="mensaje"></textarea>
+      </label>
+      <p class="ayuda">Podés usar {{ variableNombre }} y se reemplaza por cada persona.</p>
+      <p class="ayuda">Se envía a: {{ nombresSeleccionados }}.</p>
+    </div>
+
+    <div class="cumple-card__foot">
+      <button type="button" class="btn-ghost" [disabled]="enviando" (click)="cerrarSaludo()">Volver</button>
+      <button type="button" class="btn-rojo" [disabled]="enviando" (click)="enviarSaludo()">
+        {{ enviando ? 'Enviando...' : 'Enviar saludo' }}
+      </button>
+    </div>
+  </div>
+</div>

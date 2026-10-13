@@ -6,6 +6,7 @@ import {SidebarComponent} from '../../components/sidebar/sidebar.component';
 import {ReactiveFormsModule} from '@angular/forms';
 import {InternalHeaderComponent} from '../../components/internal-header/internal-header.component';
 import {FooterComponent} from "../../components/footer/footer.component";
+import {ModalCumpleanosComponent} from "../administrador/modal-cumpleanos/modal-cumpleanos.component";
 
 @NgModule({
   declarations: [PanelControlComponent],
@@ -15,7 +16,8 @@ import {FooterComponent} from "../../components/footer/footer.component";
     ReactiveFormsModule,
     SidebarComponent,
     InternalHeaderComponent,
-    FooterComponent
+    FooterComponent,
+    ModalCumpleanosComponent
   ],
   exports: [PanelControlComponent]
 })

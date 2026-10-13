@@ -17,9 +17,14 @@
   </section>
 
   <section class="panel-page__content">
-    <div>
-      <div class="panel-page__section-label">Listado</div>
-      <h4 class="panel-page__section-title">Administradores registrados</h4>
+    <div class="listado-head">
+      <div>
+        <div class="panel-page__section-label">Listado</div>
+        <h4 class="panel-page__section-title">Administradores registrados</h4>
+      </div>
+      <button type="button" class="btn btn-cumple" (click)="abrirCumpleanos()">
+        Próximo cumpleaños
+      </button>
     </div>
 
     <div class="panel-page__table-wrapper" *ngIf="administradores?.length">
@@ -38,7 +43,7 @@
         </tr>
         </thead>
         <tbody>
-        <tr class="usuario-selector fadeIn" *ngFor="let usuario of administradores">
+        <tr class="usuario-selector fadeIn pointer" *ngFor="let usuario of administradores" (click)="editarAdministrador(usuario)">
           <td>{{ usuario.nombre || '-' }}</td>
           <td>{{ usuario.email || '-' }}</td>
           <td>{{ usuario.telefono || '-' }}</td>
@@ -46,7 +51,7 @@
           <td>{{ usuario.cuit || '-' }}</td>
           <td>{{ fmtFecha(usuario.fechaNacimiento) || '-' }}</td>
           <td>{{ usuario.consorciosCount || 0 }}</td>
-          <td class="text-center">
+          <td class="text-center" (click)="$event.stopPropagation()">
             <ng-container *ngIf="(usuario.observacion || '').trim().length; else sinObs">
               <button type="button" class="btn btn-link p-0" (click)="verObs(usuario)" title="Ver observación" aria-label="Ver observación">
                 <i class="fa fa-eye"></i>
@@ -54,7 +59,7 @@
             </ng-container>
             <ng-template #sinObs> -</ng-template>
           </td>
-          <td class="min-width d-flex">
+          <td class="min-width d-flex" (click)="$event.stopPropagation()">
             <div class="pointer icon-box mr-3"
                  [class.disabled]="!usuario.email"
                  (click)="usuario.email && openEmailModal(usuario)"

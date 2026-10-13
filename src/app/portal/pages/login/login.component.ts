@@ -36,6 +36,7 @@ export class LoginComponent implements OnDestroy {
     this.loading = true;
     this.loginService.clearAuthData();
     sessionStorage.removeItem("token");
+    sessionStorage.removeItem('cumpleanosModalMostrado');
     this.limpiarEspaciosForm();
     const {nombre, password} = this.loginForm.getRawValue();
     const loginDataRequest: LoginDataRequest = {

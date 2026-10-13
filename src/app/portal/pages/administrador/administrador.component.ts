@@ -10,6 +10,7 @@ import {AdministradorService} from "./core-administrador/administrador.service";
 import {NavigationEnd, Router} from "@angular/router";
 import { SendAdminEmailComponent } from './send-admin-email/send-admin-email.component';
 import {LoginService} from "../login/login-core/login.service";
+import {CumpleanosService} from "./modal-cumpleanos/cumpleanos.service";
 
 declare const bootstrap: any;
 
@@ -34,7 +35,8 @@ export class AdministradorComponent implements OnInit, OnDestroy {
   constructor(
     private adminSvc: AdministradorService,
     private router: Router,
-    private loginService: LoginService
+    private loginService: LoginService,
+    private cumpleanos: CumpleanosService
   ) {
   }
 
@@ -74,6 +76,10 @@ export class AdministradorComponent implements OnInit, OnDestroy {
           console.error(err);
         },
       });
+  }
+
+  public abrirCumpleanos(): void {
+    this.cumpleanos.pedirAbrir();
   }
 
   public crearNuevoAdministrador(): void {
