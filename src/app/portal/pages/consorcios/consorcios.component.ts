@@ -8,6 +8,7 @@ import {Consorcio, ConsorcioResponse} from './core-consorcio/consorcio.interface
 import Swal from "sweetalert2";
 import {AdministradorService} from "../administrador/core-administrador/administrador.service";
 import {ConsorcioService} from "./core-consorcio/consorcio.service";
+import {LoginService} from "../login/login-core/login.service";
 
 declare const bootstrap: any;
 
@@ -29,7 +30,11 @@ export class ConsorciosComponent implements OnInit, AfterViewInit {
   public consorcioSeleccionado: Consorcio | null = null;
   private modal?: any;
 
-  constructor(private administradorService: AdministradorService, private consorcioService: ConsorcioService) {
+  constructor(
+    private administradorService: AdministradorService,
+    private consorcioService: ConsorcioService,
+    private loginService: LoginService
+  ) {
   }
 
   ngOnInit(): void {
@@ -37,7 +42,7 @@ export class ConsorciosComponent implements OnInit, AfterViewInit {
   }
 
   private getUserId(): string {
-    return localStorage.getItem('userId') ?? '000000000000000000000000';
+    return this.loginService.getDataUserId();
   }
 
   protected getAdminId(): string {

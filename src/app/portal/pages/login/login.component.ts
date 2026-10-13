@@ -45,7 +45,14 @@ export class LoginComponent implements OnDestroy {
     this.loginService.login(loginDataRequest)
     .pipe(finalize(() => { this.loading = false; }))
     .subscribe({
-      next: () => {
+      next: (response) => {
+        if (response?.role === 'personal') {
+          this.loginService.registrarEvento({
+            tipo: 'asistencia',
+            accionRealizada: 'Ingreso al portal',
+            detalle: 'Inicio de jornada'
+          }).subscribe({ error: () => undefined });
+        }
         this.router.navigate(['/panel']).then();
       },
       error: (err) => {

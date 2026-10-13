@@ -3,5 +3,5 @@ export interface SidebarConfig {
   name: string;
   url: string;
   icon: string;
-  roles?: Array<'superuser' | 'admin'>;
+  roles?: Array<'superuser' | 'admin' | 'personal'>;
 }

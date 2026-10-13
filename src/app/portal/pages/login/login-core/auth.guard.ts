@@ -1,17 +1,17 @@
 import {inject} from '@angular/core';
 import {CanActivateFn, CanActivateChildFn, Router} from '@angular/router';
+import {InactividadService} from './inactividad.service';
 import {LoginService} from './login.service';
 
-export const AuthGuard: CanActivateFn = () => {
+const checkAuth = () => {
   const loginService = inject(LoginService);
+  const inactividad = inject(InactividadService);
   const router = inject(Router);
-  const logged = loginService.isLoggedIn();
-  return logged ? true : router.parseUrl('/login');
+  if (!loginService.isLoggedIn()) return router.parseUrl('/login');
+  if (inactividad.enforce()) return router.parseUrl('/login');
+  return true;
 };
 
-export const AuthChildGuard: CanActivateChildFn = () => {
-  const loginService = inject(LoginService);
-  const router = inject(Router);
-  const logged = loginService.isLoggedIn();
-  return logged ? true : router.parseUrl('/login');
-};
+export const AuthGuard: CanActivateFn = () => checkAuth();
+
+export const AuthChildGuard: CanActivateChildFn = () => checkAuth();

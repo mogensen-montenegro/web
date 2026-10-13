@@ -1,25 +1,8 @@
-.card-info {
-  background: #f8f9fa;
-  border-radius: 8px;
-}
-
 .texto-corto {
   max-width: 280px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.btn-color {
-  background-color: #c60f17;
-  color: #fff;
-  border-color: #c60f17;
-
-  &:hover {
-    background-color: #a00d14;
-    color: #fff;
-    border-color: #a00d14;
-  }
 }
 
 .skeleton-cell {

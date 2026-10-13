@@ -1,94 +1,110 @@
-<div class="row p-5">
-  <div class="col-6">
-    <h3 class="title">Mis Consorcios</h3>
-    <span class="sub-titulo">Se almanecerán todos los datos de los administradores almacenados.</span>
-  </div>
-  <div class="col-6 d-flex justify-content-end">
-    <div id="administradores">
-      <select class="form-select" [(ngModel)]="adminSeleccionadoId" (change)="onAdministradorSeleccionado()">
-        <option class="color-principal bg-color-light" disabled selected value="">
-          Seleccionar un administrador
-        </option>
-        <option *ngIf="!administradores?.length" value="">
-          Sin administradores
-        </option>
-        <option *ngFor="let data of administradores" [ngValue]="data._id">
-          {{ data.nombre }}
-        </option>
-      </select>
+<div class="panel-page">
+  <section class="panel-page__hero">
+    <div class="panel-page__copy">
+      <span class="panel-page__eyebrow">Gestión</span>
+      <h3 class="panel-page__title">Mis Consorcios</h3>
+      <p class="panel-page__subtitle">Se almacenarán todos los datos de los consorcios registrados.</p>
     </div>
-    <div class="pl-3">
+    <div class="panel-page__actions">
+      <div id="administradores">
+        <select class="form-select" [(ngModel)]="adminSeleccionadoId" (change)="onAdministradorSeleccionado()">
+          <option class="color-principal bg-color-light" disabled selected value="">
+            Seleccionar un administrador
+          </option>
+          <option *ngIf="!administradores?.length" value="">
+            Sin administradores
+          </option>
+          <option *ngFor="let data of administradores" [ngValue]="data._id">
+            {{ data.nombre }}
+          </option>
+        </select>
+      </div>
       <button
         [disabled]="this.administradorSeleccionado == null"
-        class="btn h-button btn-color"
+        class="btn btn-color"
         data-bs-toggle="modal"
         data-bs-target="#agregarConsorcio"
         (click)="crearNuevoConsorcio()">
         Crear Consorcio
       </button>
     </div>
-  </div>
-</div>
+  </section>
 
-<div class="row px-5" *ngIf="consorcios?.length">
-  <div class="col tabla-scroll">
-    <table class="table table-striped">
-      <thead>
-      <tr>
-        <th>Nombre</th>
-        <th>Encargado</th>
-        <th>Teléfono</th>
-        <th>Dirección</th>
-        <th>Cuil/Cuit</th>
-        <th>Cantidad de Carpetas</th>
-        <th>Cantidad de Archivos</th>
-        <th class="text-center">Observación</th>
-        <th>Acciones</th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr class="pointer usuario-selector fadeIn" *ngFor="let consorcio of consorcios">
-        <td>
-          {{ consorcio.nombre ? consorcio.nombre : "-" }}
-        </td>
-        <td>
-          {{ consorcio.encargado ? consorcio.encargado : "-" }}
-        </td>
-        <td>
-          {{ consorcio.telefono ? consorcio.telefono : "-" }}
-        </td>
-        <td>
-          {{ consorcio.direccion ? consorcio.direccion : "-" }}
-        </td>
-        <td>
-          {{ consorcio.cuit ? consorcio.cuit : "-" }}
-        </td>
-        <td>
-          {{ consorcio.cantidadCarpetas ? consorcio.cantidadCarpetas : "-" }}
-        </td>
-        <td>
-          {{ consorcio.cantidadArchivos ? consorcio.cantidadArchivos : "-" }}
-        </td>
-        <td class="text-center">
-          <ng-container *ngIf="(consorcio.observacion || '').trim().length; else sinObs">
-            <button type="button" class="btn btn-link p-0 pointer" (click)="verObs(consorcio)" title="Ver observación" aria-label="Ver observación">
-              <i class="fa fa-eye"></i>
-            </button>
-          </ng-container>
-          <ng-template #sinObs> -</ng-template>
-        </td>
-        <td class="min-width d-flex">
-          <div class="icon-box mr-3" (click)="eliminarConsorcio(consorcio)">
-            <i class="fa fa-trash color-principal"></i>
-          </div>
-          <div class="icon-box" (click)="editarConsorcio(consorcio)">
-            <i class="fa fa-pencil color-principal"></i>
-          </div>
-        </td>
-      </tr>
-      </tbody>
-    </table>
-  </div>
+  <section class="panel-page__content">
+    <div>
+      <div class="panel-page__section-label">Listado</div>
+      <h4 class="panel-page__section-title">Consorcios del administrador</h4>
+    </div>
+
+    <div class="panel-page__table-wrapper" *ngIf="consorcios?.length">
+      <table class="table panel-page__table">
+        <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Encargado</th>
+          <th>Teléfono</th>
+          <th>Dirección</th>
+          <th>Cuil/Cuit</th>
+          <th>Cantidad de Carpetas</th>
+          <th>Cantidad de Archivos</th>
+          <th class="text-center">Observación</th>
+          <th>Acciones</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr class="pointer usuario-selector fadeIn" *ngFor="let consorcio of consorcios">
+          <td>
+            {{ consorcio.nombre ? consorcio.nombre : "-" }}
+          </td>
+          <td>
+            {{ consorcio.encargado ? consorcio.encargado : "-" }}
+          </td>
+          <td>
+            {{ consorcio.telefono ? consorcio.telefono : "-" }}
+          </td>
+          <td>
+            {{ consorcio.direccion ? consorcio.direccion : "-" }}
+          </td>
+          <td>
+            {{ consorcio.cuit ? consorcio.cuit : "-" }}
+          </td>
+          <td>
+            {{ consorcio.cantidadCarpetas ? consorcio.cantidadCarpetas : "-" }}
+          </td>
+          <td>
+            {{ consorcio.cantidadArchivos ? consorcio.cantidadArchivos : "-" }}
+          </td>
+          <td class="text-center">
+            <ng-container *ngIf="(consorcio.observacion || '').trim().length; else sinObs">
+              <button type="button" class="btn btn-link p-0 pointer" (click)="verObs(consorcio)" title="Ver observación" aria-label="Ver observación">
+                <i class="fa fa-eye"></i>
+              </button>
+            </ng-container>
+            <ng-template #sinObs> -</ng-template>
+          </td>
+          <td class="min-width d-flex">
+            <div class="icon-box mr-3" (click)="eliminarConsorcio(consorcio)">
+              <i class="fa fa-trash color-principal"></i>
+            </div>
+            <div class="icon-box" (click)="editarConsorcio(consorcio)">
+              <i class="fa fa-pencil color-principal"></i>
+            </div>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div *ngIf="!loading && consorcios?.length === 0 && administradorSeleccionado != null" class="panel-page__empty">
+      <img class="icono" src="../../../assets/img/default.png"/>
+      <span>No se encontraron resultados.</span>
+    </div>
+
+    <div *ngIf="administradorSeleccionado == null" class="panel-page__empty">
+      <img class="icono" src="../../../assets/img/administrador.png"/>
+      <span>Seleccione un administrador.</span>
+    </div>
+  </section>
 </div>
 
 <div class="modal fade" id="agregarConsorcio" tabindex="-1" aria-labelledby="agregarConsorcioLabel" aria-hidden="true">
@@ -98,18 +114,4 @@
     (saved)="onConsorcioGuardado($event)"
     (closed)="cerrarModal()">
   </app-add-consorcio>
-</div>
-
-<div *ngIf="!this.loading && consorcios?.length === 0 && this.administradorSeleccionado != null" class="empty-container">
-  <div class="d-flex align-items-center justify-content-center flex-column">
-    <img class="icono" src="../../../assets/img/default.png"/>
-    <span class="pt-2">No se encontraron resultados.</span>
-  </div>
-</div>
-
-<div *ngIf="this.administradorSeleccionado == null" class="empty-container">
-  <div class="d-flex align-items-center justify-content-center flex-column">
-    <img class="icono" src="../../../assets/img/administrador.png"/>
-    <span class="pt-2">Seleccione un administrador.</span>
-  </div>
 </div>

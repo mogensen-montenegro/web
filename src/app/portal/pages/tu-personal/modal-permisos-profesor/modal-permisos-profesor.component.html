@@ -1,0 +1,56 @@
+<div class="modal-backdrop" (click)="cerrar()"></div>
+<div class="modal-panel" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+  <div class="modal-header">
+    <div>
+      <h5 class="modal-title">
+        <i class="fa fa-shield-halved modal-title-icon"></i>
+        Administrar Permisos
+      </h5>
+      <p class="modal-subtitle">Elegí qué módulos puede ver cada empleado.</p>
+    </div>
+    <button type="button" class="modal-close" (click)="cerrar()" aria-label="Cerrar">×</button>
+  </div>
+
+  <div class="modal-body">
+    <div class="permissions-empty" *ngIf="!profesores.length">
+      <i class="fa fa-user-tie"></i>
+      <p>No hay personal cargado.</p>
+    </div>
+
+    <div class="permissions-table-wrapper" *ngIf="profesores.length">
+      <table class="table permissions-table">
+        <thead>
+          <tr>
+            <th>Empleado</th>
+            <th *ngFor="let modulo of modulos">{{ modulo.label }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let profesor of profesores">
+            <td class="permissions-professor">
+              <strong>{{ profesor.nombre || '-' }} {{ profesor.apellido || '' }}</strong>
+              <span>{{ profesor.documento || '-' }}</span>
+            </td>
+            <td *ngFor="let modulo of modulos">
+              <label class="permission-check" *ngIf="profesorId(profesor) as id">
+                <input
+                  type="checkbox"
+                  [(ngModel)]="permisosPorProfesor[id][modulo.id]"
+                  [disabled]="saving"
+                />
+              </label>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="cerrar()" [disabled]="saving">Cancelar</button>
+    <button type="button" class="btn btn-color" (click)="guardar()" [disabled]="saving || !profesores.length">
+      <span *ngIf="saving" class="spinner-border spinner-border-sm me-2"></span>
+      Guardar permisos
+    </button>
+  </div>
+</div>

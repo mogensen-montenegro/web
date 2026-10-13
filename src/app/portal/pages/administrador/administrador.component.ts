@@ -9,6 +9,7 @@ import {Administrador, AdministradorResponse} from "./core-administrador/adminis
 import {AdministradorService} from "./core-administrador/administrador.service";
 import {NavigationEnd, Router} from "@angular/router";
 import { SendAdminEmailComponent } from './send-admin-email/send-admin-email.component';
+import {LoginService} from "../login/login-core/login.service";
 
 declare const bootstrap: any;
 
@@ -30,7 +31,11 @@ export class AdministradorComponent implements OnInit, OnDestroy {
   public isEdit = false;
   public selectedAdmin: Administrador | null = null;
 
-  constructor(private adminSvc: AdministradorService, private router: Router) {
+  constructor(
+    private adminSvc: AdministradorService,
+    private router: Router,
+    private loginService: LoginService
+  ) {
   }
 
   ngOnInit(): void {
@@ -44,7 +49,7 @@ export class AdministradorComponent implements OnInit, OnDestroy {
   }
 
   private getUserId(): string {
-    return localStorage.getItem('userId') ?? '000000000000000000000000';
+    return this.loginService.getDataUserId();
   }
 
   private cargarAdministradores(): void {

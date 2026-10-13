@@ -1,16 +1,56 @@
 $themecolor: #b91828;
 $sidebar: #242a33;
-$topbar: #fff;
 $sidebar-text: #687384;
-$sidebar-icons: #424a56;
-$sidebar-alt: #1c2128;
-$themecolor-alt: #26c6da;
-$dark: #263238;
 $border: WHITE;
-$white: #ffffff;
+$dark: #263238;
 
 .left-sidebar {
-  z-index: -1 !important;
+  overflow: hidden;
+  width: 100%;
+  min-height: 100%;
+  height: auto;
+  top: 0;
+  background: $sidebar;
+  box-shadow: 1px 0 20px rgba(0, 0, 0, 0.08);
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 12px 12px 4px;
+  flex-shrink: 0;
+}
+
+.left-sidebar.is-collapsed .sidebar-toolbar {
+  justify-content: center;
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+.sidebar-toggle {
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #d7dde5;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.sidebar-toggle:hover {
+  background: rgba(185, 24, 40, 0.25);
+  color: #fff;
+}
+
+.sidebar-toggle i {
+  font-size: 18px;
 }
 
 .font-10 {
@@ -24,6 +64,10 @@ $white: #ffffff;
 .icon-wrap {
   position: relative;
   flex-shrink: 0;
+  width: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .sidebar-icon-badge {
@@ -45,16 +89,6 @@ $white: #ffffff;
   border: 2px solid $sidebar;
 }
 
-.puntero {
-  position: absolute;
-  width: 10px;
-  height: 10px;
-  border-radius: 5px;
-  background-color: red;
-  margin-left: -25px;
-  animation: puntero 1s ease-in-out infinite;
-}
-
 .nav-devider {
   background: $border;
   display: block;
@@ -63,76 +97,73 @@ $white: #ffffff;
 
 .select-option {
   font-size: 16px;
-  padding-top: 10px;
+  white-space: nowrap;
 }
 
-.left-sidebar {
-  overflow: hidden;
-  width: 100%;
-  min-height: 100%;
-  height: auto;
-  top: 0px;
-  background: $sidebar;
-  box-shadow: 1px 0px 20px rgba(0, 0, 0, 0.08);
+.scroll-sidebar {
+  flex: 1 1 auto;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .nav-small-cap {
   font-size: 12px;
-  margin-bottom: 0px;
+  margin-bottom: 0;
   padding: 14px 14px 14px 20px;
-  color: $dark;
   font-weight: 500;
   color: white;
 }
 
 .sidebar-nav {
   background: $sidebar;
-  padding: 15px 0 0 0px;
+  padding: 8px 0 16px;
 
   ul {
-    margin: 0px;
-    padding: 0px;
+    margin: 0;
+    padding: 0;
 
     li {
       list-style: none;
-
-      a {
-        width: 200px;
-        color: $sidebar-text;
-        padding: 8px 35px 8px 15px;
-        display: block;
-
-        &.active,
-        &:hover {
-          color: $themecolor;
-          text-decoration: none;
-        }
-
-        &.active,
-        li a:hover {
-          font-weight: 500;
-          color: white;
-        }
-      }
-
-      svg {
-        fill: $themecolor;
-        margin-top: 8px;
-        margin-left: 15px;
-      }
-
-      svg:last-child {
-        margin-right: 10px;
-      }
     }
   }
 }
 
-.sidebar-nav .has-arrow {
-  position: relative;
+.sidebar-item {
+  padding: 0 10px;
+}
+
+.sidebar-link {
+  width: 100%;
+  color: $sidebar-text;
+  padding: 10px 12px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 12px;
+  border-radius: 12px;
+  text-decoration: none;
+  min-height: 44px;
+  transition: background 0.2s ease, color 0.2s ease;
+
+  &:hover,
+  &.active {
+    color: #fff;
+    background: rgba(185, 24, 40, 0.16);
+    text-decoration: none;
+  }
+
+  &.active .color-principal,
+  &:hover .color-principal {
+    color: #fff;
+  }
+}
+
+.sidebar-label {
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 1;
+  max-width: 160px;
+  transition: opacity 0.2s ease, max-width 0.28s ease, margin 0.28s ease;
 }
 
 .sidebar-archivos-nuevos-badge {
@@ -151,27 +182,25 @@ $white: #ffffff;
   flex-shrink: 0;
 }
 
-.flecha-right {
-  margin-right: 10px;
-}
-
-.linea-cuenta {
-  background-color: white;
-  height: 1px;
-  opacity: 0.1;
-  margin-top: 15px;
-}
-
 .color-principal {
   color: $themecolor;
 }
 
-@keyframes puntero {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0;
-  }
+.left-sidebar.is-collapsed .sidebar-item {
+  padding: 0 6px;
+  justify-content: center;
+}
+
+.left-sidebar.is-collapsed .sidebar-link {
+  justify-content: center;
+  padding: 10px 0;
+  gap: 0;
+}
+
+.left-sidebar.is-collapsed .sidebar-label,
+.left-sidebar.is-collapsed .sidebar-archivos-nuevos-badge {
+  opacity: 0;
+  max-width: 0;
+  margin: 0;
+  pointer-events: none;
 }

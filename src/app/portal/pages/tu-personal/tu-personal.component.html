@@ -1,0 +1,150 @@
+<div class="activity-log">
+  <section class="activity-log__hero">
+    <div class="activity-log__copy">
+      <span class="activity-log__eyebrow">Registro</span>
+      <h3 class="activity-log__title">Registro de actividades</h3>
+      <p class="activity-log__subtitle">
+        Podrás ver las interacciones de tu personal y auditar cada acción realizada dentro del panel.
+      </p>
+    </div>
+    <div class="activity-log__actions">
+      <button type="button" class="btn btn-primary" (click)="goToPanelProfesor()">
+        Equipo de trabajo
+      </button>
+    </div>
+  </section>
+
+  <section class="activity-log__content" *ngIf="!showLoading">
+    <aside class="activity-log__filters-card">
+      <div class="activity-log__filters-header">
+        <h4>Filtrar actividad</h4>
+        <p>Combiná filtros por personal, módulo o fecha para acotar los resultados.</p>
+      </div>
+      <div class="activity-log__filters-grid">
+        <div class="form-field">
+          <label>Ver dato del personal</label>
+          <select class="form-select" [(ngModel)]="profesor" (ngModelChange)="onProfesorSeleccionado($event)">
+            <option [ngValue]="null" disabled>Seleccionar personal</option>
+            <option *ngIf="!profesores?.length" [ngValue]="null" disabled>Sin personal</option>
+            <option *ngFor="let item of profesores" [ngValue]="item">
+              {{ item.nombre }} {{ item.apellido }}
+            </option>
+          </select>
+        </div>
+
+        <div class="form-field form-field--stack" *ngIf="showFechaFiltro" [class.is-disabled]="!!fechaSeleccionada">
+          <label>Filtrar por fecha</label>
+          <div class="activity-log__date-group">
+            <select class="form-select" [(ngModel)]="diaSeleccionado" (ngModelChange)="onFechaSeleccionadaIndividual()">
+              <option [ngValue]="null" disabled>Día</option>
+              <option *ngFor="let dia of dias" [ngValue]="dia">{{ dia }}</option>
+            </select>
+            <select class="form-select" [(ngModel)]="mesSeleccionado" (ngModelChange)="onFechaSeleccionadaIndividual()">
+              <option [ngValue]="null" disabled>Mes</option>
+              <option *ngFor="let mes of meses" [ngValue]="mes">{{ mes }}</option>
+            </select>
+            <select class="form-select" [(ngModel)]="anioSeleccionado" (ngModelChange)="onFechaSeleccionadaIndividual()">
+              <option [ngValue]="null" disabled>Año</option>
+              <option *ngFor="let anio of anios" [ngValue]="anio">{{ anio }}</option>
+            </select>
+            <button type="button" class="activity-log__clear" (click)="cancelarFecha()" *ngIf="fechaIndividualSeleccionada">
+              <i class="fa fa-times"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="form-field" *ngIf="showFechaFiltro" [class.is-disabled]="fechaIndividualSeleccionada">
+          <label>Filtrar por fecha calendario</label>
+          <div class="activity-log__calendar">
+            <input class="form-control" type="date" [ngModel]="fechaModel" (change)="onFechaCalendario($event)" />
+            <button type="button" class="activity-log__clear" (click)="cancelarFecha()" *ngIf="fechaSeleccionada">
+              <i class="fa fa-times"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="form-field" *ngIf="showFechaFiltro">
+          <label>Filtrar por módulo</label>
+          <div class="activity-log__module">
+            <select class="form-select" [(ngModel)]="moduloSeleccionado" (ngModelChange)="filtrarPorModulo()">
+              <option [ngValue]="null" disabled>Seleccionar un módulo</option>
+              <option *ngFor="let modulo of modulos" [ngValue]="modulo">{{ modulo }}</option>
+            </select>
+            <button type="button" class="activity-log__clear" (click)="cancelarModulo()" *ngIf="moduloSeleccionado">
+              <i class="fa fa-times"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <div class="activity-log__table-card">
+      <div class="activity-log__table-header">
+        <div>
+          <span class="activity-log__table-label">Registros recientes</span>
+          <h4 class="activity-log__table-title">
+            {{ profesorSeleccionado && profesor ? (profesor.nombre + ' ' + profesor.apellido) : 'Selecciona al personal' }}
+          </h4>
+        </div>
+        <div class="activity-log__counter" *ngIf="profesorSeleccionado">
+          <span class="activity-log__counter-value">{{ copiaRegistroDatos.length }}</span>
+          <span class="activity-log__counter-label">movimientos</span>
+        </div>
+      </div>
+
+      <div class="activity-log__table-wrapper">
+        <table class="table activity-log__table">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Documento</th>
+              <th>Acción realizada</th>
+              <th>Módulo</th>
+              <th>Resultado</th>
+              <th>Fecha de registro</th>
+              <th>Horario de registro</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="activity-log__row" *ngFor="let dato of copiaRegistroDatos">
+              <td data-label="Nombre">{{ dato.nombre || '-' }}</td>
+              <td data-label="Documento">{{ dato.documento || '-' }}</td>
+              <td data-label="Acción realizada">{{ dato.accionRealizada || '-' }}</td>
+              <td data-label="Módulo"><b>{{ dato.moduloModificacion || '-' }}</b></td>
+              <td data-label="Resultado">{{ dato.resultadoModificacion || '-' }}</td>
+              <td data-label="Fecha de registro">{{ dato.registradoEnISO ? (dato.registradoEnISO | date:'dd-MM-yyyy') : (dato.fechaDeRegistro || '-') }}</td>
+              <td data-label="Horario de registro">{{ dato.registradoEnISO ? (dato.registradoEnISO | date:'HH:mm') : (dato.horaRegistro || '-') }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="activity-log__empty" *ngIf="profesorSeleccionado && !copiaRegistroDatos.length">
+        <p>No encontramos registros para el período seleccionado.</p>
+      </div>
+
+      <nav class="activity-log__pagination" *ngIf="totalPaginas > 1">
+        <ul class="pagination">
+          <li class="page-item" [class.disabled]="paginaActual === 1">
+            <a class="page-link" (click)="cambiarPagina(paginaActual - 1)">Anterior</a>
+          </li>
+          <li
+            *ngFor="let pagina of obtenerPaginasVisibles()"
+            class="page-item"
+            [class.active]="pagina === paginaActual"
+            [class.disabled]="pagina === '...'">
+            <a class="page-link" *ngIf="pagina !== '...'" (click)="cambiarPaginaDesdeTemplate(pagina)">{{ pagina }}</a>
+            <span class="page-link" *ngIf="pagina === '...'">…</span>
+          </li>
+          <li class="page-item" [class.disabled]="paginaActual === totalPaginas">
+            <a class="page-link" (click)="cambiarPagina(paginaActual + 1)">Siguiente</a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </section>
+
+  <div class="loader-overlay" *ngIf="showLoading">
+    <div class="loader-text">Cargando...</div>
+  </div>
+</div>

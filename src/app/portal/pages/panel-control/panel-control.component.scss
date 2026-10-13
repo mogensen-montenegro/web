@@ -89,13 +89,22 @@ html, body {
 
 .sidebar {
   flex: 0 0 240px;
-  overflow: auto;
+  width: 240px;
+  overflow: hidden;
+  transition: flex-basis 0.28s ease, width 0.28s ease, min-width 0.28s ease;
+}
+
+.sidebar.is-collapsed {
+  flex-basis: 72px;
+  width: 72px;
+  min-width: 72px;
 }
 
 .main {
   flex: 1 1 auto;
   overflow: auto;
   min-width: 0;
+  transition: padding 0.28s ease;
 }
 
 @media (max-width: 450px) {

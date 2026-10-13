@@ -1,0 +1,131 @@
+<ng-container>
+  <form class="modal-dialog" [formGroup]="agregarProfesorForm" autocomplete="off">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          {{ editProfesor ? 'Modificar Empleado' : 'Agregar Empleado' }}
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar" (click)="clicked.emit()"></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="row padding-bottom-1">
+          <div class="col">
+            <span class="subtitle color-principal">Datos del empleado</span>
+            <small class="d-block text-muted">Los campos con (*) son obligatorios</small>
+          </div>
+        </div>
+
+        <div class="row g-3 padding-bottom-1">
+          <div class="col-12 col-md-4">
+            <label class="form-label">Nombre <span class="required-mark">(*)</span></label>
+            <input type="text" class="form-control" formControlName="nombre" />
+            <small class="text-danger" *ngIf="f['nombre'].invalid && (f['nombre'].dirty || f['nombre'].touched)">
+              El nombre es obligatorio.
+            </small>
+          </div>
+          <div class="col-12 col-md-4">
+            <label class="form-label">Apellido</label>
+            <input type="text" class="form-control" formControlName="apellido" />
+          </div>
+          <div class="col-12 col-md-4">
+            <label class="form-label">Documento <span class="required-mark">(*)</span></label>
+            <input type="text" class="form-control" formControlName="dni" />
+            <small class="text-danger" *ngIf="f['dni'].invalid && (f['dni'].dirty || f['dni'].touched)">
+              El documento es obligatorio.
+            </small>
+          </div>
+        </div>
+
+        <div class="row g-3 padding-bottom-1">
+          <div class="col-12 col-md-4">
+            <label class="form-label">Teléfono</label>
+            <input type="text" class="form-control" formControlName="telefono" />
+          </div>
+          <div class="col-12 col-md-4">
+            <label class="form-label">Dirección</label>
+            <input type="text" class="form-control" formControlName="direccion" />
+          </div>
+          <div class="col-12 col-md-4">
+            <label class="form-label">Fecha de cumpleaños</label>
+            <div class="d-flex">
+              <select formControlName="dia" class="form-select select-max">
+                <option value="" disabled selected hidden>Día</option>
+                <option *ngFor="let day of arrayDia" [value]="day">{{ day }}</option>
+              </select>
+              <select formControlName="mes" class="form-select mx-1 select-max">
+                <option value="" disabled selected hidden>Mes</option>
+                <option *ngFor="let month of arrayMes" [value]="month">{{ month }}</option>
+              </select>
+              <select formControlName="anio" class="form-select">
+                <option value="" disabled selected hidden>Año</option>
+                <option *ngFor="let year of arrayAnio" [value]="year">{{ year }}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <hr />
+
+        <div class="row g-3 padding-bottom-1">
+          <div class="col-12 col-md-4">
+            <label class="form-label">Horario</label>
+            <input type="text" class="form-control" formControlName="horario" />
+          </div>
+          <div class="col-12 col-md-4">
+            <label class="form-label">Especialidad</label>
+            <input type="text" class="form-control" formControlName="especialidad" />
+          </div>
+          <div class="col-12 col-md-4">
+            <label class="form-label">Cargo</label>
+            <input type="text" class="form-control" formControlName="cargo" />
+          </div>
+        </div>
+
+        <hr />
+
+        <div class="row padding-bottom-1">
+          <div class="col">
+            <span class="subtitle color-principal">Acceso al portal</span>
+            <small class="d-block text-muted">Con este usuario y contraseña el empleado ingresa al portal.</small>
+          </div>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-12 col-md-4">
+            <label class="form-label">Usuario <span class="required-mark">(*)</span></label>
+            <input type="text" class="form-control" formControlName="user" autocomplete="off" />
+            <small class="text-danger" *ngIf="f['user'].invalid && (f['user'].dirty || f['user'].touched)">
+              El usuario es obligatorio y debe tener mínimo 3 caracteres.
+            </small>
+          </div>
+          <div class="col-12 col-md-4">
+            <label class="form-label">Contraseña <span class="required-mark" *ngIf="!editProfesor">(*)</span></label>
+            <input type="password" class="form-control" formControlName="password" autocomplete="new-password" />
+            <small class="text-danger" *ngIf="f['password'].touched && f['password'].errors?.['minlength']">
+              Debe tener mínimo 6 caracteres.
+            </small>
+          </div>
+          <div class="col-12 col-md-4">
+            <label class="form-label">Repetir contraseña <span class="required-mark" *ngIf="!editProfesor">(*)</span></label>
+            <input type="password" class="form-control" formControlName="password2" autocomplete="new-password" />
+            <small class="text-danger" *ngIf="showPwdMismatch">Las contraseñas no coinciden.</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" (click)="closeModal()">Cancelar</button>
+        <button *ngIf="editProfesor" [disabled]="isLoading || agregarProfesorForm.invalid" type="button" class="btn btn-warning" (click)="modificarProfesorSeleccionado()">
+          Modificar
+        </button>
+        <button *ngIf="editProfesor" [disabled]="isLoading" type="button" class="btn btn-danger" (click)="eliminarProfesorSeleccionado()">
+          Eliminar
+        </button>
+        <button *ngIf="!editProfesor" [disabled]="isLoading || agregarProfesorForm.invalid" type="button" class="btn btn-warning" (click)="agregarProfesor()">
+          Guardar
+        </button>
+      </div>
+    </div>
+  </form>
+</ng-container>

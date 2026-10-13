@@ -1,26 +1,6 @@
-.title {
-  font-weight: 700;
-  color: #1b233d;
-}
-
-.sub-titulo {
-  display: block;
-  margin-top: 0.25rem;
-  color: #656464;
-  font-size: 0.95rem;
-}
-
-.content-placeholder {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 50vh;
-  font-size: 1.1rem;
-  color: #555;
-}
-
-.icono {
-  width: 60px;
+.btn-upload {
+  position: relative;
+  overflow: hidden;
 }
 
 .btn-upload input[type="file"] {
@@ -33,12 +13,15 @@
   cursor: pointer;
 }
 
-.btn-upload {
-  position: relative;
-  overflow: hidden;
+.info-box {
+  padding: 1.25rem 1.5rem;
+  border-radius: 20px;
+  background: rgba(28, 31, 58, 0.03);
+  border: 1px solid rgba(28, 31, 58, 0.08);
 }
 
-.card-info {
-  background-color: #f8f9fa;
-  border: 1px solid #dee2e6;
+.info-box h6 {
+  margin: 0 0 0.5rem;
+  color: #1c1f3a;
+  font-weight: 700;
 }

@@ -1,0 +1,104 @@
+<div class="professor-admin">
+  <section class="professor-admin__hero">
+    <div class="professor-admin__hero-copy">
+      <div class="professor-admin__hero-text">
+        <span class="professor-admin__eyebrow">Gestión</span>
+        <h3 class="professor-admin__title">Agregar Empleado</h3>
+        <p class="professor-admin__subtitle">Podrás filtrar, editar o eliminar personal</p>
+      </div>
+    </div>
+    <div class="professor-admin__hero-actions">
+      <button class="btn btn-outline-primary btn-icon" type="button" (click)="navegarRegistro()">
+        <i class="fa fa-arrow-left"></i>
+        Volver
+      </button>
+      <div class="professor-admin__search">
+        <i class="fa fa-search"></i>
+        <input
+          type="text"
+          [(ngModel)]="busqueda"
+          class="professor-admin__search-input"
+          placeholder="Ingrese el personal que desea buscar..."
+        />
+      </div>
+    </div>
+  </section>
+
+  <section class="professor-admin__content">
+    <div class="professor-admin__summary" *ngIf="!showLoader">
+      <div class="professor-admin__summary-card">
+        <span>Cantidad de personal:</span>
+        <strong>{{ filtrarUsuarios().length }}</strong>
+      </div>
+      <div class="professor-admin__summary-actions">
+        <button class="btn btn-primary" type="button" (click)="abrirModalPermisos()">
+          <i class="fa fa-shield-halved"></i>
+          Administrar Permisos
+        </button>
+        <button class="btn btn-primary" type="button" (click)="agregarUsuario()">
+          <i class="fa fa-plus"></i>
+          Agregar Empleado
+        </button>
+      </div>
+    </div>
+
+    <div class="professor-admin__table-card">
+      <div class="professor-admin__table-wrapper" *ngIf="!showLoader; else loading">
+        <table class="table professor-admin__table">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Apellido</th>
+              <th>Documento / ID / CI</th>
+              <th>Usuario</th>
+              <th>Telefono</th>
+              <th>Horario</th>
+              <th>Cargo</th>
+              <th>Especialidad</th>
+              <th>Fecha de Nacimiento</th>
+              <th>Dirección</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="professor-admin__row" *ngFor="let profesor of filtrarUsuarios()">
+              <td (click)="editarProfesorSeleccionado(profesor)">{{ valorCelda(profesor.nombre) }}</td>
+              <td (click)="editarProfesorSeleccionado(profesor)">{{ valorCelda(profesor.apellido) }}</td>
+              <td (click)="editarProfesorSeleccionado(profesor)">{{ valorCelda(profesor.documento) }}</td>
+              <td (click)="editarProfesorSeleccionado(profesor)">{{ valorCelda(profesor.user) }}</td>
+              <td (click)="editarProfesorSeleccionado(profesor)">{{ valorCelda(profesor.telefono) }}</td>
+              <td (click)="editarProfesorSeleccionado(profesor)">{{ valorCelda(profesor.horario) }}</td>
+              <td (click)="editarProfesorSeleccionado(profesor)">{{ valorCelda(profesor.cargo) }}</td>
+              <td (click)="editarProfesorSeleccionado(profesor)">{{ valorCelda(profesor.especialidad) }}</td>
+              <td (click)="editarProfesorSeleccionado(profesor)">{{ valorCelda(profesor.fechaNacimiento) }}</td>
+              <td (click)="editarProfesorSeleccionado(profesor)">{{ valorCelda(profesor.direccion) }}</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="professor-admin__empty" *ngIf="!filtrarUsuarios().length">
+          <i class="fa fa-ban"></i>
+          <p>No se encontraron resultados.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="modal fade" id="agregarEjercicio" tabindex="-1" aria-labelledby="agregarEjercicioLabel" aria-hidden="true">
+    <app-modal-profesor
+      [editProfesor]="editProfesor"
+      [initialData]="selectedProfesor"
+      (clicked)="cerrarModal()"
+      (submit)="onSubmit($event)"
+    ></app-modal-profesor>
+  </div>
+
+  <app-modal-permisos-profesor
+    *ngIf="showPermisosModal"
+    [profesores]="profesores"
+    (closed)="cerrarModalPermisos()"
+    (saved)="permisosGuardados()"
+  ></app-modal-permisos-profesor>
+</div>
+
+<ng-template #loading>
+  <div class="professor-admin__loader">Cargando...</div>
+</ng-template>

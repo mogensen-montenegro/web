@@ -1,20 +1,11 @@
-input, textarea {
-  width: 100%;
-  text-align: left;
-  padding: 10px;
-  border: 0;
-  outline: 0;
-  border-radius: 6px;
-  background-color: #e1dfdf;
-  font-size: 15px;
-  font-weight: 300;
-  color: #656464;
-  transition: all 0.3s ease;
-}
-
-.subtitle {
-  font-weight: 900;
-  font-size: 18px;
+.icon-box {
+  width: 30px;
+  border-radius: 10px;
+  height: 30px;
+  background-color: rgb(242, 203, 203);
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .modal-body .form-select {
@@ -29,53 +20,4 @@ input, textarea {
   font-weight: 300;
   color: #8D8D8D;
   transition: all 0.3s ease;
-}
-
-input[type=number]::-webkit-inner-spin-button,
-input[type=number]::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-.form-select {
-  width: 100%;
-  padding: 9px 5px;
-  text-align: left;
-  border: 0;
-  outline: 0;
-  border-radius: 6px;
-  background-color: #f0eeee;
-  font-size: 15px;
-  font-weight: 300;
-  color: #8D8D8D;
-  transition: all 0.3s ease;
-  height: 55px;
-}
-
-.icon-box {
-  width: 30px;
-  border-radius: 10px;
-  height: 30px;
-  background-color: rgb(242, 203, 203);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.btn-color {
-  height: 55px;
-}
-
-.icono {
-  width: 60px;
-}
-
-.empty-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 60vh;
-  font-size: 1.4rem;
-  font-weight: 500;
-  color: #555;
 }

@@ -1,62 +1,65 @@
-<div class="row p-5">
-  <div class="col-12">
-    <h3 class="title">Plantillas de Email</h3>
-    <span class="sub-titulo">Creá plantillas con asunto y mensaje para usar al enviar emails a administradores. Podés usar las variables indicadas abajo.</span>
-  </div>
-</div>
+<div class="panel-page">
+  <section class="panel-page__hero">
+    <div class="panel-page__copy">
+      <span class="panel-page__eyebrow">Comunicación</span>
+      <h3 class="panel-page__title">Plantillas de Email</h3>
+      <p class="panel-page__subtitle">Creá plantillas con asunto y mensaje para usar al enviar emails a administradores. Podés usar las variables indicadas abajo.</p>
+    </div>
+  </section>
 
-<div class="row px-5 pb-3">
-  <div class="col-12">
-    <div class="card card-info p-4">
-      <h5 class="mb-3">{{ editingId ? 'Editar plantilla' : 'Nueva plantilla' }}</h5>
-      <form [formGroup]="form" (ngSubmit)="guardar()">
-        <div class="row">
-          <div class="col-md-12">
-            <div class="mb-3">
-              <label class="form-label">Nombre de la plantilla</label>
-              <input type="text" class="form-control" formControlName="nombre" placeholder="Ej: Aviso de vencimiento" />
-              <div class="text-danger small" *ngIf="form.controls.nombre.invalid && form.controls.nombre.touched">
-                El nombre es obligatorio (máx. 100 caracteres).
-              </div>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Asunto</label>
-              <input type="text" class="form-control" formControlName="asunto" placeholder="Asunto del email" />
-              <div class="text-danger small" *ngIf="form.controls.asunto.invalid && form.controls.asunto.touched">
-                El asunto es obligatorio (máx. 150 caracteres).
-              </div>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Mensaje</label>
-              <textarea class="form-control" rows="6" formControlName="body" placeholder="Cuerpo del email"></textarea>
-              <div class="text-muted mt-2">
-                Variables disponibles:
-                <span class="badge bg-light text-dark me-1" *ngFor="let p of placeholders">{{ p }}</span>
-              </div>
-              <div class="text-danger small" *ngIf="form.controls.body.invalid && form.controls.body.touched">
-                El mensaje es obligatorio (mín. 5 caracteres).
-              </div>
-            </div>
-            <div class="d-flex gap-2">
-              <button type="submit" class="btn btn-color" [disabled]="form.invalid || saving">
-                {{ editingId ? 'Guardar cambios' : 'Agregar plantilla' }}
-              </button>
-              <button *ngIf="editingId" type="button" class="btn btn-outline-secondary" (click)="cancelar()">
-                Cancelar
-              </button>
+  <section class="panel-page__content panel-page__form-card">
+    <div>
+      <div class="panel-page__section-label">Formulario</div>
+      <h4 class="panel-page__section-title">{{ editingId ? 'Editar plantilla' : 'Nueva plantilla' }}</h4>
+    </div>
+    <form [formGroup]="form" (ngSubmit)="guardar()">
+      <div class="row">
+        <div class="col-md-12">
+          <div class="mb-3">
+            <label class="form-label">Nombre de la plantilla</label>
+            <input type="text" class="form-control" formControlName="nombre" placeholder="Ej: Aviso de vencimiento" />
+            <div class="text-danger small" *ngIf="form.controls.nombre.invalid && form.controls.nombre.touched">
+              El nombre es obligatorio (máx. 100 caracteres).
             </div>
           </div>
+          <div class="mb-3">
+            <label class="form-label">Asunto</label>
+            <input type="text" class="form-control" formControlName="asunto" placeholder="Asunto del email" />
+            <div class="text-danger small" *ngIf="form.controls.asunto.invalid && form.controls.asunto.touched">
+              El asunto es obligatorio (máx. 150 caracteres).
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Mensaje</label>
+            <textarea class="form-control" rows="6" formControlName="body" placeholder="Cuerpo del email"></textarea>
+            <div class="text-muted mt-2">
+              Variables disponibles:
+              <span class="badge bg-light text-dark me-1" *ngFor="let p of placeholders">{{ p }}</span>
+            </div>
+            <div class="text-danger small" *ngIf="form.controls.body.invalid && form.controls.body.touched">
+              El mensaje es obligatorio (mín. 5 caracteres).
+            </div>
+          </div>
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-color" [disabled]="form.invalid || saving">
+              {{ editingId ? 'Guardar cambios' : 'Agregar plantilla' }}
+            </button>
+            <button *ngIf="editingId" type="button" class="btn btn-outline-secondary" (click)="cancelar()">
+              Cancelar
+            </button>
+          </div>
         </div>
-      </form>
-    </div>
-  </div>
-</div>
+      </div>
+    </form>
+  </section>
 
-<div class="row px-5">
-  <div class="col-12">
-    <h5 class="mb-3">Lista de plantillas</h5>
-    <div class="table-responsive">
-      <table class="table table-bordered">
+  <section class="panel-page__content">
+    <div>
+      <div class="panel-page__section-label">Plantillas</div>
+      <h4 class="panel-page__section-title">Lista de plantillas</h4>
+    </div>
+    <div class="panel-page__table-wrapper">
+      <table class="table panel-page__table">
         <thead>
           <tr>
             <th>Nombre</th>
@@ -86,8 +89,8 @@
         </tbody>
       </table>
     </div>
-    <div *ngIf="!loading && !plantillas.length" class="empty-container py-4">
-      <span class="text-muted">No hay plantillas cargadas. Creá una desde el formulario de arriba.</span>
+    <div *ngIf="!loading && !plantillas.length" class="panel-page__empty">
+      <span>No hay plantillas cargadas. Creá una desde el formulario de arriba.</span>
     </div>
-  </div>
+  </section>
 </div>

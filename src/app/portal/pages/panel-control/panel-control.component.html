@@ -1,9 +1,9 @@
 <div id="main-wrapper">
   <app-internal-header class="topbar"></app-internal-header>
 
-  <div class="content">
-    <aside class="sidebar">
-      <app-sidebar></app-sidebar>
+  <div class="content" [class.content--sidebar-collapsed]="sidebarCollapsed">
+    <aside class="sidebar" [class.is-collapsed]="sidebarCollapsed">
+      <app-sidebar (collapsedChange)="onSidebarCollapsed($event)"></app-sidebar>
     </aside>
     <main class="main">
       <div class="prospectos-nuevos-banner" *ngIf="(prospectosNuevos.getCount$() | async) as total">

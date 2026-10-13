@@ -18,6 +18,7 @@ export class InternalHeaderComponent implements OnInit {
   @ViewChild('menuDesplegado') menuDesplegado: ElementRef | undefined;
   public abiertoMenu: boolean = true;
   public isSuper = false;
+  public sessionUser = '';
   private base_url: string = environment.baseUrl;
 
   constructor(private router: Router, private render2: Renderer2, private loginService: LoginService, private http: HttpClient) {
@@ -83,6 +84,7 @@ export class InternalHeaderComponent implements OnInit {
 
   public ngOnInit(): void {
     this.isSuper = this.loginService.hasRole(['superuser']);
+    this.sessionUser = this.loginService.getSessionUser() || '';
   }
 
   public goHome(): void {

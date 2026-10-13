@@ -1,11 +1,12 @@
-<div class="row p-5">
-  <div class="col-6">
-    <h3 class="title">Prospectos</h3>
-    <span class="sub-titulo">Consultas de cotización enviadas desde la web.</span>
-  </div>
-  <div class="col-6 d-flex justify-content-end">
-    <div class="w-400">
-      <div class="form">
+<div class="panel-page">
+  <section class="panel-page__hero">
+    <div class="panel-page__copy">
+      <span class="panel-page__eyebrow">Comercial</span>
+      <h3 class="panel-page__title">Prospectos</h3>
+      <p class="panel-page__subtitle">Consultas de cotización enviadas desde la web.</p>
+    </div>
+    <div class="panel-page__actions">
+      <div class="panel-page__search">
         <i class="fa fa-search"></i>
         <input
           type="text"
@@ -17,78 +18,79 @@
         />
       </div>
     </div>
-  </div>
-</div>
+  </section>
 
-<div class="row px-5" *ngIf="!loading && prospectos?.length">
-  <div class="col tabla-scroll">
-    <table class="table table-striped">
-      <thead>
-        <tr>
-          <th>Fecha</th>
-          <th>Nombre</th>
-          <th>Email</th>
-          <th>Teléfono</th>
-          <th>Consorcio</th>
-          <th>Dirección</th>
-          <th>Estado</th>
-          <th>Adjuntos</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let p of prospectos">
-          <td>{{ fmtFecha(p.createdAt) }}</td>
-          <td>{{ p.nombre || '-' }}</td>
-          <td>{{ p.email || '-' }}</td>
-          <td>{{ p.telefono || '-' }}</td>
-          <td>{{ p.nombreConsorcio || '-' }}</td>
-          <td>{{ p.direccion || '-' }}</td>
-          <td>
-            <span class="badge-estado" [class.contactado]="p.estado === 'contactado'">
-              {{ p.estado === 'contactado' ? 'Contactado' : 'Nuevo' }}
-            </span>
-          </td>
-          <td>
-            <span *ngIf="tieneAdjuntos(p); else sinAdj">Sí</span>
-            <ng-template #sinAdj>-</ng-template>
-          </td>
-          <td class="min-width d-flex">
-            <div class="pointer icon-box mr-3" (click)="ver(p)" title="Ver detalle">
-              <i class="fa fa-eye color-principal"></i>
-            </div>
-            <div class="pointer icon-box mr-3" (click)="marcarContactado(p)" [title]="p.estado === 'contactado' ? 'Marcar como nuevo' : 'Marcar como contactado'">
-              <i class="fa fa-check color-principal"></i>
-            </div>
-            <div class="pointer icon-box" (click)="eliminar(p)" title="Eliminar">
-              <i class="fa fa-trash color-principal"></i>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
+  <section class="panel-page__content">
+    <div>
+      <div class="panel-page__section-label">Registros</div>
+      <h4 class="panel-page__section-title">Consultas recibidas</h4>
+    </div>
 
-<div *ngIf="loading" class="empty-container">
-  <div class="d-flex align-items-center justify-content-center flex-column">
-    <img class="icono" src="../../../assets/img/cargando.png"/>
-    <span class="pt-2">Cargando...</span>
-  </div>
-</div>
+    <div class="panel-page__table-wrapper" *ngIf="!loading && prospectos?.length">
+      <table class="table panel-page__table">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Nombre</th>
+            <th>Email</th>
+            <th>Teléfono</th>
+            <th>Consorcio</th>
+            <th>Dirección</th>
+            <th>Estado</th>
+            <th>Adjuntos</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let p of prospectos">
+            <td>{{ fmtFecha(p.createdAt) }}</td>
+            <td>{{ p.nombre || '-' }}</td>
+            <td>{{ p.email || '-' }}</td>
+            <td>{{ p.telefono || '-' }}</td>
+            <td>{{ p.nombreConsorcio || '-' }}</td>
+            <td>{{ p.direccion || '-' }}</td>
+            <td>
+              <span class="badge-estado" [class.contactado]="p.estado === 'contactado'">
+                {{ p.estado === 'contactado' ? 'Contactado' : 'Nuevo' }}
+              </span>
+            </td>
+            <td>
+              <span *ngIf="tieneAdjuntos(p); else sinAdj">Sí</span>
+              <ng-template #sinAdj>-</ng-template>
+            </td>
+            <td class="min-width d-flex">
+              <div class="pointer icon-box mr-3" (click)="ver(p)" title="Ver detalle">
+                <i class="fa fa-eye color-principal"></i>
+              </div>
+              <div class="pointer icon-box mr-3" (click)="marcarContactado(p)" [title]="p.estado === 'contactado' ? 'Marcar como nuevo' : 'Marcar como contactado'">
+                <i class="fa fa-check color-principal"></i>
+              </div>
+              <div class="pointer icon-box" (click)="eliminar(p)" title="Eliminar">
+                <i class="fa fa-trash color-principal"></i>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
-<div *ngIf="!loading && showEmpty" class="empty-container">
-  <div class="d-flex align-items-center justify-content-center flex-column">
-    <img class="icono" src="../../../assets/img/default.png"/>
-    <span class="pt-2">No se encontraron resultados.</span>
-  </div>
+    <div *ngIf="loading" class="panel-page__empty">
+      <img class="icono" src="../../../assets/img/cargando.png"/>
+      <span>Cargando...</span>
+    </div>
+
+    <div *ngIf="!loading && showEmpty" class="panel-page__empty">
+      <img class="icono" src="../../../assets/img/default.png"/>
+      <span>No se encontraron resultados.</span>
+    </div>
+  </section>
 </div>
 
 <div class="detalle-overlay" *ngIf="selected" (click)="cerrarDetalle()">
   <div class="detalle-card" (click)="$event.stopPropagation()">
     <div class="d-flex justify-content-between align-items-start mb-3">
       <div>
-        <h4 class="title mb-1">Detalle del prospecto</h4>
+        <h4 class="detalle-title mb-1">Detalle del prospecto</h4>
         <span class="badge-estado" [class.contactado]="selected.estado === 'contactado'">
           {{ selected.estado === 'contactado' ? 'Contactado' : 'Nuevo' }}
         </span>

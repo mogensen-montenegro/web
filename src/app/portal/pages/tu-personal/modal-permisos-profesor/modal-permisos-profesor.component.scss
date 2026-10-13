@@ -1,0 +1,135 @@
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1040;
+}
+
+.modal-panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(1100px, calc(100vw - 2rem));
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.24);
+  z-index: 1050;
+}
+
+.modal-header,
+.modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+}
+
+.modal-title {
+  margin: 0;
+  color: #25241c;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 700;
+}
+
+.modal-subtitle {
+  margin: 0.25rem 0 0;
+  color: rgba(37, 36, 28, 0.62);
+  font-size: 0.9rem;
+}
+
+.modal-title-icon {
+  color: #b91828;
+}
+
+.modal-close {
+  background: transparent;
+  border: 0;
+  color: rgba(37, 36, 28, 0.55);
+  cursor: pointer;
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.modal-body {
+  overflow: hidden;
+  padding: 1.25rem;
+}
+
+.permissions-table-wrapper {
+  border: 1px solid #eee;
+  border-radius: 12px;
+  max-height: min(58vh, 560px);
+  overflow: auto;
+}
+
+.permissions-table {
+  margin: 0;
+  min-width: 980px;
+}
+
+.permissions-table th {
+  background: #fde8ea;
+  border: 0;
+  color: #555;
+  font-size: 0.76rem;
+  letter-spacing: 0.04em;
+  padding: 0.9rem 0.75rem;
+  text-align: center;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.permissions-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.permissions-table td {
+  border-bottom: 1px solid #eee;
+  padding: 0.85rem 0.75rem;
+  text-align: center;
+}
+
+.permissions-professor {
+  min-width: 210px;
+  text-align: left !important;
+}
+
+.permissions-professor strong,
+.permissions-professor span {
+  display: block;
+}
+
+.permissions-professor span {
+  color: #888;
+  font-size: 0.86rem;
+}
+
+.permission-check input {
+  accent-color: #b91828;
+  width: 18px;
+  height: 18px;
+}
+
+.permissions-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+  padding: 2.5rem 1rem;
+  color: #777;
+}
+
+.permissions-empty i {
+  color: #b91828;
+  font-size: 2rem;
+}

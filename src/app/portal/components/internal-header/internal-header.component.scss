@@ -25,10 +25,30 @@ $color: #b91828;
   width: 23%;
 }
 
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+  padding-right: 12px;
+}
+
 .logo {
   width: 180px;
   padding-left: 10px;
   cursor: pointer;
+  flex-shrink: 0;
+}
+
+.session-user {
+  color: #fff;
+  font-size: 19px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: min(420px, 46vw);
+  opacity: 0.95;
 }
 
 .topbar {
@@ -135,6 +155,15 @@ hr {
 
   .menu_btn {
     display: flex;
+  }
+
+  .logo {
+    width: 130px;
+  }
+
+  .session-user {
+    font-size: 15px;
+    max-width: 36vw;
   }
 }
 

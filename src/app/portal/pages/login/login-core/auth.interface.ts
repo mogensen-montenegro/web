@@ -13,6 +13,12 @@ export interface LoginResponse {
   sessionId: string;
   version: string;
   userId: string;
+  ownerUserId?: string | null;
+  user?: string;
+  nombre?: string;
+  documento?: string | null;
+  role?: 'admin' | 'superuser' | 'personal';
+  permisosModulos?: Record<string, boolean> | null;
   sessionTimeout: Data;
 }
 

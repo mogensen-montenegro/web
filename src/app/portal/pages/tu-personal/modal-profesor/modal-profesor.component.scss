@@ -1,0 +1,39 @@
+input, textarea {
+  padding: 10px;
+  border: 0;
+  outline: 0;
+  border-radius: 6px;
+  background-color: #e1dfdf;
+  font-size: 15px;
+  font-weight: 300;
+  color: #656464;
+}
+
+.padding-bottom-1 {
+  padding-bottom: 1rem;
+}
+
+.subtitle {
+  font-weight: 900;
+  font-size: 18px;
+}
+
+.required-mark {
+  color: #b91828;
+  font-weight: 700;
+}
+
+.select-max {
+  max-width: 80px;
+}
+
+.modal-body .form-select {
+  width: 100%;
+  padding: 9px 5px;
+  border: 0;
+  outline: 0;
+  border-radius: 6px;
+  background-color: #f0eeee;
+  font-size: 15px;
+  color: #8D8D8D;
+}

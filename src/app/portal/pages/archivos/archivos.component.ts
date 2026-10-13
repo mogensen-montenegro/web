@@ -35,6 +35,9 @@ export class ArchivosComponent implements OnInit {
 
   public isSuper = false;
   public isAdmin = false;
+  public isPersonal = false;
+  /** Superuser o personal autorizado: ven/gestionan datos de la oficina. */
+  public canManageOffice = false;
 
   /** Pendiente de subir tras enviar email (solo cuando el usuario eligió "Sí" a enviar email). */
   public pendingUpload: { files: File[]; carpeta: Carpeta } | null = null;
@@ -51,8 +54,10 @@ export class ArchivosComponent implements OnInit {
   ngOnInit(): void {
     this.isSuper = this.loginService.hasRole(['superuser']);
     this.isAdmin = this.loginService.hasRole(['admin']);
+    this.isPersonal = this.loginService.hasRole(['personal']);
+    this.canManageOffice = this.isSuper || this.isPersonal;
 
-    if (this.isSuper) {
+    if (this.canManageOffice) {
       this.cargarAdministradores();
     } else if (this.isAdmin) {
       this.adminSeleccionadoId = this.getCurrentUserId();
@@ -64,7 +69,7 @@ export class ArchivosComponent implements OnInit {
   }
 
   private getCurrentUserId(): string {
-    return localStorage.getItem('userId') ?? '000000000000000000000000';
+    return this.loginService.getDataUserId();
   }
 
   protected getConsorcioId(): string {
@@ -716,7 +721,7 @@ private mostrarDialogArchivos(carpeta: Carpeta, archivos: Archivo[]): void {
           return;
         }
 
-        const askEmail = this.isSuper && this.administradorSeleccionado;
+        const askEmail = this.canManageOffice && this.administradorSeleccionado;
         if (askEmail) {
           Swal.fire({
             title: '¿Enviar email?',

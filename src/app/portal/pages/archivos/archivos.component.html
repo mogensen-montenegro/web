@@ -1,92 +1,93 @@
-<div class="row p-5">
-  <div class="col-6">
-    <h3 class="title">Carga de Archivos</h3>
-    <span class="sub-titulo">Se almacenarán todos los archivos de los consorcios seleccionados.</span>
-  </div>
-  <div class="col-6 d-flex justify-content-end">
-    <div *ngIf="isSuper" id="administradores">
-      <select class="form-select" [(ngModel)]="adminSeleccionadoId" (change)="onAdministradorSeleccionado()">
-        <option class="color-principal bg-color-light" disabled selected value="">
-          Seleccionar un administrador
-        </option>
-        <option *ngIf="!administradores?.length" value="">
-          Sin administradores
-        </option>
-        <option *ngFor="let data of administradores" [ngValue]="data._id">
-          {{ data.nombre }}
-        </option>
-      </select>
+<div class="panel-page">
+  <section class="panel-page__hero">
+    <div class="panel-page__copy">
+      <span class="panel-page__eyebrow">Documentación</span>
+      <h3 class="panel-page__title">Carga de Archivos</h3>
+      <p class="panel-page__subtitle">Se almacenarán todos los archivos de los consorcios seleccionados.</p>
     </div>
-    <div class="pl-3" id="consorcios">
-      <select class="form-select" [(ngModel)]="consorcioSeleccionadoId" (change)="onConsorvioSeleccionado()" [disabled]="isSuper ? !adminSeleccionadoId : false">>
-        <option class="color-principal bg-color-light" disabled selected value="">
-          Seleccionar un consorcio
-        </option>
-        <option *ngIf="!consorcios?.length" value="">
-          Sin consorcios
-        </option>
-        <option *ngFor="let data of consorcios" [ngValue]="data._id">
-          {{ data.nombre }}{{ isAdmin && getNewForConsorcio(data._id ?? '') > 0 ? ' (' + getNewForConsorcio(data._id ?? '') + ' nuevos)' : '' }}
-        </option>
-      </select>
-    </div>
-    <div *ngIf="isSuper" class="pl-3">
-      <button class="btn h-button btn-color" [disabled]="!consorcioSeleccionadoId" (click)="crearNuevaCarpeta()">
+    <div class="panel-page__actions">
+      <div *ngIf="canManageOffice" id="administradores">
+        <select class="form-select" [(ngModel)]="adminSeleccionadoId" (change)="onAdministradorSeleccionado()">
+          <option class="color-principal bg-color-light" disabled selected value="">
+            Seleccionar un administrador
+          </option>
+          <option *ngIf="!administradores?.length" value="">
+            Sin administradores
+          </option>
+          <option *ngFor="let data of administradores" [ngValue]="data._id">
+            {{ data.nombre }}
+          </option>
+        </select>
+      </div>
+      <div id="consorcios">
+        <select class="form-select" [(ngModel)]="consorcioSeleccionadoId" (change)="onConsorvioSeleccionado()" [disabled]="canManageOffice ? !adminSeleccionadoId : false">
+          <option class="color-principal bg-color-light" disabled selected value="">
+            Seleccionar un consorcio
+          </option>
+          <option *ngIf="!consorcios?.length" value="">
+            Sin consorcios
+          </option>
+          <option *ngFor="let data of consorcios" [ngValue]="data._id">
+            {{ data.nombre }}{{ isAdmin && getNewForConsorcio(data._id ?? '') > 0 ? ' (' + getNewForConsorcio(data._id ?? '') + ' nuevos)' : '' }}
+          </option>
+        </select>
+      </div>
+      <button *ngIf="canManageOffice" class="btn btn-color" [disabled]="!consorcioSeleccionadoId" (click)="crearNuevaCarpeta()">
         Nueva Carpeta
       </button>
     </div>
-  </div>
-</div>
+  </section>
 
-<!-- CARPETAS -->
-<div class="row p-5" *ngIf="carpetas.length">
-  <div class="card mr-5 mb-3" *ngFor="let carpeta of carpetas" (click)="seleccionarCarpeta(carpeta)" style="cursor: pointer;">
-    <div (click)="$event.stopPropagation(); verArchivosDeCarpeta(carpeta)">
-      <div class="top-section">
-        <div class="border"></div>
-        <div class="icons">
-          <div class="logo">
-            <span class="text-file">{{ carpeta.cantidadArchivos ?? 0 }} archivos</span>
-            <span *ngIf="isAdmin && getNewForFolder(carpeta._id, carpeta.cantidadArchivos ?? 0) > 0" class="archivos-nuevos-badge" [title]="getNewForFolder(carpeta._id, carpeta.cantidadArchivos ?? 0) + ' archivos nuevos'">
-              {{ getNewForFolder(carpeta._id, carpeta.cantidadArchivos ?? 0) }}
-            </span>
+  <section class="panel-page__content">
+    <div>
+      <div class="panel-page__section-label">Carpetas</div>
+      <h4 class="panel-page__section-title">Archivos del consorcio</h4>
+    </div>
+
+    <div class="archivos-grid" *ngIf="carpetas.length">
+      <div class="card mr-5 mb-3" *ngFor="let carpeta of carpetas" (click)="seleccionarCarpeta(carpeta)" style="cursor: pointer;">
+        <div (click)="$event.stopPropagation(); verArchivosDeCarpeta(carpeta)">
+          <div class="top-section">
+            <div class="border"></div>
+            <div class="icons">
+              <div class="logo">
+                <span class="text-file">{{ carpeta.cantidadArchivos ?? 0 }} archivos</span>
+                <span *ngIf="isAdmin && getNewForFolder(carpeta._id, carpeta.cantidadArchivos ?? 0) > 0" class="archivos-nuevos-badge" [title]="getNewForFolder(carpeta._id, carpeta.cantidadArchivos ?? 0) + ' archivos nuevos'">
+                  {{ getNewForFolder(carpeta._id, carpeta.cantidadArchivos ?? 0) }}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="bottom-section">
+            <span class="title">{{ carpeta.titulo }}</span>
+            <div *ngIf="canManageOffice" class="row row1">
+              <button class="btn btn-light" (click)="$event.stopPropagation(); renombrarCarpeta(carpeta)">Editar</button>
+              <button class="btn btn-danger" (click)="$event.stopPropagation(); eliminarCarpeta(carpeta)">Eliminar</button>
+            </div>
           </div>
         </div>
       </div>
-      <div class="bottom-section">
-        <span class="title">{{ carpeta.titulo }}</span>
-        <div *ngIf="isSuper" class="row row1">
-          <button class="btn btn-light" (click)="$event.stopPropagation(); renombrarCarpeta(carpeta)">Editar</button>
-          <button class="btn btn-danger" (click)="$event.stopPropagation(); eliminarCarpeta(carpeta)">Eliminar</button>
-        </div>
-      </div>
     </div>
-  </div>
-</div>
 
-<div *ngIf="(!carpetas.length && showEmpty)" class="empty-container">
-  <div class="d-flex align-items-center justify-content-center flex-column">
-    <img class="icono" src="../../../assets/img/default.png"/>
-    <span class="pt-2">No se encontraron resultados.</span>
-  </div>
-</div>
+    <div *ngIf="(!carpetas.length && showEmpty)" class="panel-page__empty">
+      <img class="icono" src="../../../assets/img/default.png"/>
+      <span>No se encontraron resultados.</span>
+    </div>
 
-<div *ngIf="!consorcioSeleccionadoId" class="empty-container">
-  <div class="d-flex align-items-center justify-content-center flex-column">
-    <img class="icono" src="../../../assets/img/consorcio.png"/>
-    <span class="pt-2">Seleccione un consorcio.</span>
-  </div>
-</div>
+    <div *ngIf="!consorcioSeleccionadoId" class="panel-page__empty">
+      <img class="icono" src="../../../assets/img/consorcio.png"/>
+      <span>Seleccione un consorcio.</span>
+    </div>
 
-<div *ngIf="isSuper && !adminSeleccionadoId" class="empty-container">
-  <div class="d-flex align-items-center justify-content-center flex-column">
-    <img class="icono" src="../../../assets/img/administrador.png"/>
-    <span class="pt-2">Seleccione un administrador.</span>
-  </div>
+    <div *ngIf="canManageOffice && !adminSeleccionadoId" class="panel-page__empty">
+      <img class="icono" src="../../../assets/img/administrador.png"/>
+      <span>Seleccione un administrador.</span>
+    </div>
+  </section>
 </div>
 
 <!-- Modal para enviar email antes de subir archivos (solo superuser, cuando eligió "Sí" a enviar email) -->
-<div class="modal fade" id="sendEmailBeforeUpload" tabindex="-1" aria-hidden="true" *ngIf="isSuper">
+<div class="modal fade" id="sendEmailBeforeUpload" tabindex="-1" aria-hidden="true" *ngIf="canManageOffice">
   <div class="modal-dialog modal-lg modal-dialog-centered">
     <app-send-admin-email
       [admin]="administradorSeleccionado"
