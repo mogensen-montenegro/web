@@ -22,6 +22,10 @@
         <i class="fa fa-list"></i>
         <span>Acciones</span>
       </button>
+      <button type="button" class="reportes__tab reportes__tab--pdf" (click)="abrirExportar()">
+        <i class="fa fa-file-pdf"></i>
+        <span>Reporte en PDF</span>
+      </button>
     </div>
   </section>
 
@@ -167,6 +171,56 @@
       </ng-template>
     </aside>
   </section>
+
+  <div class="pdf-overlay" *ngIf="exportAbierto" [class.is-out]="exportSaliendo" (click)="cerrarExportar()">
+    <div class="pdf-card" role="dialog" aria-modal="true" aria-labelledby="pdfTitulo" (click)="$event.stopPropagation()">
+      <div class="pdf-card__head">
+        <div>
+          <p class="pdf-card__eyebrow">Exportar</p>
+          <h3 id="pdfTitulo">Reporte en PDF</h3>
+          <p>Elegí si el reporte es de un empleado o de todos, y el rango de fechas.</p>
+        </div>
+        <button type="button" class="pdf-card__close" (click)="cerrarExportar()" aria-label="Cerrar">×</button>
+      </div>
+      <div class="pdf-card__body">
+        <div class="pdf-alcance">
+          <label>
+            <input type="radio" name="alcance" value="todos" [(ngModel)]="exportAlcance" />
+            Todos los empleados
+          </label>
+          <label>
+            <input type="radio" name="alcance" value="uno" [(ngModel)]="exportAlcance" />
+            Un empleado
+          </label>
+        </div>
+        <label class="pdf-field" *ngIf="exportAlcance === 'uno'">
+          <span>Empleado</span>
+          <select class="form-select" [(ngModel)]="exportEmpleado">
+            <option [ngValue]="null">Seleccionar empleado</option>
+            <option *ngFor="let emp of empleados" [ngValue]="emp">
+              {{ emp.nombre }} {{ emp.apellido }}
+            </option>
+          </select>
+        </label>
+        <div class="pdf-fechas">
+          <label class="pdf-field">
+            <span>Desde</span>
+            <input type="date" [(ngModel)]="exportDesde" />
+          </label>
+          <label class="pdf-field">
+            <span>Hasta</span>
+            <input type="date" [(ngModel)]="exportHasta" />
+          </label>
+        </div>
+      </div>
+      <div class="pdf-card__foot">
+        <button type="button" class="btn-ghost" [disabled]="exportando" (click)="cerrarExportar()">Cancelar</button>
+        <button type="button" class="btn-rojo" [disabled]="exportando" (click)="generarPdf()">
+          {{ exportando ? 'Generando...' : 'Descargar PDF' }}
+        </button>
+      </div>
+    </div>
+  </div>
 
   <div class="loader-overlay" *ngIf="loading">
     <div class="loader-text">Cargando reportes...</div>

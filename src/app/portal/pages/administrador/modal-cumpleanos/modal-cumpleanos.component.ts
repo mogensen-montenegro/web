@@ -158,28 +158,55 @@ export class ModalCumpleanosComponent implements OnInit, OnDestroy {
       )
     )
       .pipe(takeUntil(this.destroy$))
-      .subscribe((resultados) => {
-        this.enviando = false;
-        const fallidos = resultados.filter((r) => !r.ok).map((r) => r.nombre);
-        if (!fallidos.length) {
-          this.saludoAbierto = false;
-          Swal.fire({
-            icon: 'success',
-            title: 'Saludo enviado',
-            text: destinatarios.length === 1
-              ? `Se envió el email a ${destinatarios[0].nombre}.`
-              : `Se enviaron ${destinatarios.length} emails.`,
-            timer: 2200,
-            showConfirmButton: false
+      .subscribe({
+        next: (resultados) => {
+          const fallidos = resultados.filter((r) => !r.ok).map((r) => r.nombre);
+          this.cerrarModales();
+          if (!fallidos.length) {
+            this.mostrarAviso({
+              icon: 'success',
+              title: 'Saludo enviado',
+              text: destinatarios.length === 1
+                ? `Se envió el email a ${destinatarios[0].nombre}.`
+                : `Se enviaron ${destinatarios.length} emails.`
+            });
+            return;
+          }
+          this.mostrarAviso({
+            icon: 'error',
+            title: fallidos.length === resultados.length ? 'No se pudo enviar el saludo' : 'Algunos saludos no se enviaron',
+            text: fallidos.join(', ')
           });
-          return;
+        },
+        error: () => {
+          this.cerrarModales();
+          this.mostrarAviso({
+            icon: 'error',
+            title: 'No se pudo enviar el saludo',
+            text: 'Probá de nuevo en unos minutos.'
+          });
         }
-        Swal.fire({
-          icon: 'error',
-          title: 'Algunos saludos no se enviaron',
-          text: fallidos.join(', ')
-        });
       });
+  }
+
+  private cerrarModales(): void {
+    this.enviando = false;
+    this.saludoAbierto = false;
+    this.abierto = false;
+  }
+
+  private mostrarAviso(options: { icon: 'success' | 'error'; title: string; text: string }): void {
+    Swal.fire({
+      icon: options.icon,
+      title: options.title,
+      text: options.text,
+      confirmButtonText: 'Aceptar',
+      confirmButtonColor: '#b91828',
+      didOpen: () => {
+        const container = Swal.getContainer();
+        if (container) container.style.zIndex = '4000';
+      }
+    });
   }
 
   private abrir(automatico: boolean): void {

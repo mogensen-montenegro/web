@@ -1,10 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { forkJoin, Subject, take, takeUntil } from 'rxjs';
+import { firstValueFrom, forkJoin, Subject, take, takeUntil } from 'rxjs';
 import Swal from 'sweetalert2';
 import { Profesores } from '../tu-personal/profesor.interface';
 import { ProfesoresService } from '../tu-personal/profesores.service';
+import { descargarReportePdf } from './reportes-pdf';
 import { ReportesResumen, ReporteRegistro } from './reportes.interface';
 import { ReportesService } from './reportes.service';
 
@@ -34,6 +35,14 @@ export class ReportesComponent implements OnInit, OnDestroy {
   public mesSeleccionado: number | null = null;
   public anioSeleccionado: number | null = null;
 
+  public exportAbierto = false;
+  public exportSaliendo = false;
+  public exportando = false;
+  public exportAlcance: 'uno' | 'todos' = 'todos';
+  public exportEmpleado: Profesores | null = null;
+  public exportDesde = '';
+  public exportHasta = '';
+
   public readonly meses = [
     { value: 1, label: 'Enero' },
     { value: 2, label: 'Febrero' },
@@ -55,6 +64,7 @@ export class ReportesComponent implements OnInit, OnDestroy {
   );
 
   private destroy$ = new Subject<void>();
+  private exportTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
     private reportesService: ReportesService,
@@ -95,6 +105,65 @@ export class ReportesComponent implements OnInit, OnDestroy {
 
   public aplicarFiltros(): void {
     this.cargarDatos();
+  }
+
+  public abrirExportar(): void {
+    if (this.exportTimer) {
+      clearTimeout(this.exportTimer);
+      this.exportTimer = null;
+    }
+    const today = new Date();
+    const inicio = new Date(today.getFullYear(), today.getMonth(), 1);
+    this.exportAlcance = 'todos';
+    this.exportEmpleado = null;
+    this.exportDesde = this.fechaInput(inicio);
+    this.exportHasta = this.fechaInput(today);
+    this.exportSaliendo = false;
+    this.exportAbierto = true;
+  }
+
+  public cerrarExportar(): void {
+    if (this.exportando) return;
+    this.cerrarExportarAnimado();
+  }
+
+  public async generarPdf(): Promise<void> {
+    if (!this.exportDesde || !this.exportHasta) {
+      void this.aviso('warning', 'Elegí el rango', 'Indicá la fecha desde y la fecha hasta.');
+      return;
+    }
+    if (this.exportDesde > this.exportHasta) {
+      void this.aviso('warning', 'Rango inválido', 'La fecha desde no puede ser posterior a la fecha hasta.');
+      return;
+    }
+    if (this.exportAlcance === 'uno' && !this.exportEmpleado) {
+      void this.aviso('warning', 'Elegí un empleado', 'Seleccioná de quién querés el reporte.');
+      return;
+    }
+
+    this.exportando = true;
+    try {
+      const registros = await this.traerRegistrosExport();
+      if (!registros.length) {
+        void this.aviso('info', 'Sin movimientos', 'No hay registros en ese rango para el alcance elegido.');
+        return;
+      }
+      const alcance = this.exportAlcance === 'todos'
+        ? 'Todos los empleados'
+        : `${this.exportEmpleado?.nombre || ''} ${this.exportEmpleado?.apellido || ''}`.trim();
+      descargarReportePdf({
+        alcance,
+        desde: this.exportDesde,
+        hasta: this.exportHasta,
+        registros
+      });
+      this.cerrarExportarAnimado();
+      void this.aviso('success', 'PDF generado', `Se descargó el reporte de ${alcance}.`, 1800);
+    } catch {
+      void this.aviso('error', 'No se pudo generar el PDF', 'Probá de nuevo en unos minutos.');
+    } finally {
+      this.exportando = false;
+    }
   }
 
   public limpiarFiltros(): void {
@@ -181,7 +250,65 @@ export class ReportesComponent implements OnInit, OnDestroy {
       });
   }
 
+  private async traerRegistrosExport(): Promise<ReporteRegistro[]> {
+    const filtro = {
+      documento: this.exportAlcance === 'uno' ? this.exportEmpleado?.documento || null : null,
+      desde: this.exportDesde,
+      hasta: this.exportHasta,
+      limit: 200
+    };
+    const registros: ReporteRegistro[] = [];
+    let page = 1;
+    let totalPages = 1;
+    do {
+      const response = await firstValueFrom(
+        this.reportesService.obtenerReportesPagina({ ...filtro, page })
+      );
+      registros.push(...(response?.registros || []));
+      totalPages = response?.totalPages || 1;
+      page += 1;
+    } while (page <= totalPages && page <= 50);
+    return registros;
+  }
+
+  private cerrarExportarAnimado(): void {
+    if (!this.exportAbierto || this.exportSaliendo) return;
+    this.exportSaliendo = true;
+    this.exportTimer = setTimeout(() => {
+      this.exportAbierto = false;
+      this.exportSaliendo = false;
+      this.exportTimer = null;
+    }, 200);
+  }
+
+  private aviso(
+    icon: 'warning' | 'info' | 'success' | 'error',
+    title: string,
+    text: string,
+    timer?: number
+  ): Promise<unknown> {
+    return Swal.fire({
+      icon,
+      title,
+      text,
+      timer,
+      showConfirmButton: !timer,
+      confirmButtonColor: '#b91828',
+      didOpen: () => {
+        const container = Swal.getContainer();
+        if (container) container.style.zIndex = '4000';
+      }
+    });
+  }
+
+  private fechaInput(fecha: Date): string {
+    const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+    const dia = String(fecha.getDate()).padStart(2, '0');
+    return `${fecha.getFullYear()}-${mes}-${dia}`;
+  }
+
   ngOnDestroy(): void {
+    if (this.exportTimer) clearTimeout(this.exportTimer);
     this.destroy$.next();
     this.destroy$.unsubscribe();
   }

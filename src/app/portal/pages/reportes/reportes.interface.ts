@@ -37,9 +37,13 @@ export interface ReportesResumenResponse {
 }
 
 export interface ReportesFiltro {
-  tipo: 'asistencia' | 'accion';
+  tipo?: 'asistencia' | 'accion' | null;
   documento?: string | null;
   dia?: string | number | null;
   mes?: string | number | null;
   anio?: string | number | null;
+  desde?: string | null;
+  hasta?: string | null;
+  page?: number;
+  limit?: number;
 }

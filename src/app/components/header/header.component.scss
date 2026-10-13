@@ -12,6 +12,7 @@
   background: linear-gradient(90deg, rgb(139, 36, 27) 0%, rgb(216, 9, 20, 1) 61%, rgb(139, 36, 27) 100%);
   position: absolute;
   border-radius: 0px 0px 40px 40px;
+  z-index: 0;
 }
 
 .white {
@@ -26,6 +27,8 @@
   width: 100%;
   padding: 20px 0 10px;
   overflow: visible;
+  position: relative;
+  z-index: 1;
 }
 
 .header-logo {

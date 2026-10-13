@@ -17,7 +17,7 @@
 .cumple-card {
   width: min(640px, 100%);
   max-height: min(86vh, 760px);
-  overflow: auto;
+  overflow: hidden;
   background: #fff;
   border-radius: 28px;
   border: 1px solid rgba(28, 31, 58, 0.08);
@@ -30,6 +30,12 @@
 .cumple-card__head,
 .cumple-card__foot {
   padding: 1.25rem 1.5rem;
+  flex-shrink: 0;
+}
+
+.cumple-card__foot {
+  background: #fff;
+  border-top: 1px solid rgba(28, 31, 58, 0.08);
 }
 
 .cumple-card__head {
@@ -69,7 +75,10 @@
 }
 
 .cumple-card__body {
-  padding: 0 1.5rem 0.5rem;
+  padding: 0 1.5rem 0.75rem;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .cumple-tools {

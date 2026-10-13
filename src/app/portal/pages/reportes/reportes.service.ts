@@ -24,21 +24,27 @@ export class ReportesService {
   }
 
   private buildParams(filtro: ReportesFiltro): HttpParams {
-    let params = new HttpParams().set('tipo', filtro.tipo).set('limit', '200');
+    let params = new HttpParams().set('limit', String(filtro.limit || 200));
+    if (filtro.tipo) params = params.set('tipo', filtro.tipo);
+    if (filtro.page) params = params.set('page', String(filtro.page));
     if (filtro.documento) params = params.set('documento', String(filtro.documento));
     if (filtro.dia) params = params.set('dia', String(filtro.dia));
     if (filtro.mes) params = params.set('mes', String(filtro.mes));
     if (filtro.anio) params = params.set('anio', String(filtro.anio));
+    if (filtro.desde) params = params.set('desde', filtro.desde);
+    if (filtro.hasta) params = params.set('hasta', filtro.hasta);
     return params;
   }
 
   public obtenerReportes(filtro: ReportesFiltro): Observable<ReporteRegistro[]> {
-    return this.http
-      .get<ReportesResponse>(`${this.baseUrl}/personal/reportes`, {
-        headers: this.headers(),
-        params: this.buildParams(filtro)
-      })
-      .pipe(map((response) => response?.registros || []));
+    return this.obtenerReportesPagina(filtro).pipe(map((response) => response?.registros || []));
+  }
+
+  public obtenerReportesPagina(filtro: ReportesFiltro): Observable<ReportesResponse> {
+    return this.http.get<ReportesResponse>(`${this.baseUrl}/personal/reportes`, {
+      headers: this.headers(),
+      params: this.buildParams(filtro)
+    });
   }
 
   public obtenerResumen(filtro: ReportesFiltro): Observable<ReportesResumen> {
