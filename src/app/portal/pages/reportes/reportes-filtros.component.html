@@ -1,0 +1,48 @@
+<section class="reportes__filters">
+  <div class="reportes__filters-header">
+    <h4>{{ titulo }}</h4>
+    <p>{{ subtitulo }}</p>
+  </div>
+  <div class="reportes__filters-grid">
+    <div class="form-field">
+      <label>Empleado</label>
+      <select class="form-select" [ngModel]="empleado" (ngModelChange)="empleadoChange.emit($event)">
+        <option [ngValue]="null">Todos los empleados</option>
+        <option *ngFor="let emp of empleados" [ngValue]="emp">
+          {{ emp.nombre }} {{ emp.apellido }}
+        </option>
+      </select>
+    </div>
+    <div class="form-field">
+      <label>Día</label>
+      <select class="form-select" [ngModel]="dia" (ngModelChange)="diaChange.emit($event)">
+        <option [ngValue]="null">Todos</option>
+        <option *ngFor="let item of dias" [ngValue]="item">{{ item }}</option>
+      </select>
+    </div>
+    <div class="form-field">
+      <label>Mes</label>
+      <select class="form-select" [ngModel]="mes" (ngModelChange)="mesChange.emit($event)">
+        <option [ngValue]="null">Todos</option>
+        <option *ngFor="let item of meses" [ngValue]="item.value">{{ item.label }}</option>
+      </select>
+    </div>
+    <div class="form-field">
+      <label>Año</label>
+      <select class="form-select" [ngModel]="anio" (ngModelChange)="anioChange.emit($event)">
+        <option [ngValue]="null">Todos</option>
+        <option *ngFor="let item of anios" [ngValue]="item">{{ item }}</option>
+      </select>
+    </div>
+    <div class="reportes__filters-actions">
+      <button type="button" class="btn btn-apply" (click)="aplicar.emit()">
+        <i class="fa fa-search"></i>
+        Aplicar filtros
+      </button>
+      <button type="button" class="btn btn-clear" (click)="limpiar.emit()">
+        <i class="fa fa-rotate-left"></i>
+        Limpiar
+      </button>
+    </div>
+  </div>
+</section>

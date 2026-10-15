@@ -1,226 +1,56 @@
 <div class="reportes">
-  <section class="reportes__hero">
-    <div class="reportes__copy">
-      <span class="reportes__eyebrow">Reportes</span>
-      <h3 class="reportes__title">Reportes</h3>
-      <p class="reportes__subtitle">Controlá la actividad y asistencia de tu equipo en un solo lugar.</p>
-    </div>
-    <div class="reportes__tabs">
-      <button
-        type="button"
-        class="reportes__tab"
-        [class.is-active]="vista === 'asistencia'"
-        (click)="cambiarVista('asistencia')">
-        <i class="fa fa-clock"></i>
-        <span>Asistencias</span>
-      </button>
-      <button
-        type="button"
-        class="reportes__tab"
-        [class.is-active]="vista === 'accion'"
-        (click)="cambiarVista('accion')">
-        <i class="fa fa-list"></i>
-        <span>Acciones</span>
-      </button>
-      <button type="button" class="reportes__tab reportes__tab--pdf" (click)="abrirExportar()">
-        <i class="fa fa-file-pdf"></i>
-        <span>Reporte en PDF</span>
-      </button>
-    </div>
-  </section>
+  <app-reportes-hero
+    [vista]="vista"
+    (vistaChange)="cambiarVista($event)"
+    (exportar)="abrirExportar()">
+  </app-reportes-hero>
 
-  <section class="reportes__filters">
-    <div class="reportes__filters-header">
-      <h4>{{ filtroTitulo }}</h4>
-      <p>{{ filtroSubtitulo }}</p>
-    </div>
-    <div class="reportes__filters-grid">
-      <div class="form-field">
-        <label>Empleado</label>
-        <select class="form-select" [(ngModel)]="empleadoSeleccionado">
-          <option [ngValue]="null">Todos los empleados</option>
-          <option *ngFor="let emp of empleados" [ngValue]="emp">
-            {{ emp.nombre }} {{ emp.apellido }}
-          </option>
-        </select>
-      </div>
-      <div class="form-field">
-        <label>Día</label>
-        <select class="form-select" [(ngModel)]="diaSeleccionado">
-          <option [ngValue]="null">Todos</option>
-          <option *ngFor="let dia of dias" [ngValue]="dia">{{ dia }}</option>
-        </select>
-      </div>
-      <div class="form-field">
-        <label>Mes</label>
-        <select class="form-select" [(ngModel)]="mesSeleccionado">
-          <option [ngValue]="null">Todos</option>
-          <option *ngFor="let mes of meses" [ngValue]="mes.value">{{ mes.label }}</option>
-        </select>
-      </div>
-      <div class="form-field">
-        <label>Año</label>
-        <select class="form-select" [(ngModel)]="anioSeleccionado">
-          <option [ngValue]="null">Todos</option>
-          <option *ngFor="let anio of anios" [ngValue]="anio">{{ anio }}</option>
-        </select>
-      </div>
-      <div class="reportes__filters-actions">
-        <button type="button" class="btn btn-apply" (click)="aplicarFiltros()">
-          <i class="fa fa-search"></i>
-          Aplicar filtros
-        </button>
-        <button type="button" class="btn btn-clear" (click)="limpiarFiltros()">
-          <i class="fa fa-rotate-left"></i>
-          Limpiar
-        </button>
-      </div>
-    </div>
-  </section>
+  <app-reportes-filtros
+    [titulo]="filtroTitulo"
+    [subtitulo]="filtroSubtitulo"
+    [empleados]="empleados"
+    [empleado]="empleadoSeleccionado"
+    [dia]="diaSeleccionado"
+    [mes]="mesSeleccionado"
+    [anio]="anioSeleccionado"
+    [dias]="dias"
+    [meses]="meses"
+    [anios]="anios"
+    (empleadoChange)="empleadoSeleccionado = $event"
+    (diaChange)="diaSeleccionado = $event"
+    (mesChange)="mesSeleccionado = $event"
+    (anioChange)="anioSeleccionado = $event"
+    (aplicar)="aplicarFiltros()"
+    (limpiar)="limpiarFiltros()">
+  </app-reportes-filtros>
 
-  <section class="reportes__stats" *ngIf="!loading">
-    <article class="stat-card">
-      <div class="stat-card__icon is-red"><i class="fa fa-file-lines"></i></div>
-      <div>
-        <span class="stat-card__label">Registros del día</span>
-        <strong>{{ resumen.registrosDelDia }} movimientos</strong>
-      </div>
-    </article>
-    <article class="stat-card">
-      <div class="stat-card__icon is-green"><i class="fa fa-arrow-right-to-bracket"></i></div>
-      <div>
-        <span class="stat-card__label">Primer ingreso</span>
-        <strong>{{ resumen.primerIngreso ? (resumen.primerIngreso + ' hs.') : '-' }}</strong>
-      </div>
-    </article>
-    <article class="stat-card">
-      <div class="stat-card__icon is-red"><i class="fa fa-arrow-right-from-bracket"></i></div>
-      <div>
-        <span class="stat-card__label">Último movimiento</span>
-        <strong>{{ resumen.ultimoMovimiento ? (resumen.ultimoMovimiento + ' hs.') : '-' }}</strong>
-      </div>
-    </article>
-    <article class="stat-card">
-      <div class="stat-card__icon is-blue"><i class="fa fa-calendar-days"></i></div>
-      <div>
-        <span class="stat-card__label">Días con actividad este mes</span>
-        <strong>{{ resumen.diasConActividad }} de {{ resumen.diasDelMes }} días</strong>
-      </div>
-    </article>
-  </section>
+  <app-reportes-resumen *ngIf="!loading" [resumen]="resumen"></app-reportes-resumen>
 
-  <section class="reportes__body" *ngIf="!loading">
-    <div class="reportes__table-card">
-      <h4>{{ historialTitulo }}</h4>
-      <div class="reportes__table-wrapper">
-        <table class="table reportes__table">
-          <thead>
-            <tr>
-              <th>Empleado</th>
-              <th>Fecha</th>
-              <th>Hora</th>
-              <th>{{ vista === 'asistencia' ? 'Tipo de registro' : 'Acción' }}</th>
-              <th *ngIf="vista === 'accion'">Módulo</th>
-              <th>Estado</th>
-              <th>Detalle</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let item of registros">
-              <td>{{ nombreEmpleado(item) }}</td>
-              <td>{{ item.fechaDeRegistro || '-' }}</td>
-              <td>{{ item.horaRegistro || '-' }}</td>
-              <td>{{ item.accionRealizada || '-' }}</td>
-              <td *ngIf="vista === 'accion'">{{ item.moduloModificacion || '-' }}</td>
-              <td>
-                <span class="status-pill" [ngClass]="estadoClass(item)">
-                  <span class="status-dot"></span>
-                  {{ estadoLabel(item) }}
-                </span>
-              </td>
-              <td class="detalle-cell" [attr.title]="item.detalle || item.resultadoModificacion || ''">
-                {{ item.detalle || item.resultadoModificacion || '-' }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="reportes__empty" *ngIf="!registros.length">
-        <i class="fa fa-ban"></i>
-        <p>No hay registros para los filtros seleccionados.</p>
-      </div>
-    </div>
+  <app-reportes-historial
+    *ngIf="!loading"
+    [vista]="vista"
+    [titulo]="historialTitulo"
+    [tituloTimeline]="timelineTitulo"
+    [registros]="registros"
+    [timeline]="resumen.timeline">
+  </app-reportes-historial>
 
-    <aside class="reportes__timeline-card">
-      <h4>{{ timelineTitulo }}</h4>
-      <div class="timeline" *ngIf="resumen.timeline?.length; else emptyTimeline">
-        <div class="timeline__item" *ngFor="let item of resumen.timeline">
-          <div class="timeline__time">{{ item.horaRegistro || '--:--' }}</div>
-          <div class="timeline__marker"></div>
-          <div class="timeline__content">
-            <strong>{{ item.accionRealizada || 'Movimiento' }}</strong>
-            <span class="timeline__employee">{{ nombreEmpleado(item) }}</span>
-            <span>{{ item.detalle || item.resultadoModificacion || item.moduloModificacion || '-' }}</span>
-          </div>
-        </div>
-      </div>
-      <ng-template #emptyTimeline>
-        <div class="reportes__empty reportes__empty--compact">
-          <p>Sin actividad para mostrar.</p>
-        </div>
-      </ng-template>
-    </aside>
-  </section>
-
-  <div class="pdf-overlay" *ngIf="exportAbierto" [class.is-out]="exportSaliendo" (click)="cerrarExportar()">
-    <div class="pdf-card" role="dialog" aria-modal="true" aria-labelledby="pdfTitulo" (click)="$event.stopPropagation()">
-      <div class="pdf-card__head">
-        <div>
-          <p class="pdf-card__eyebrow">Exportar</p>
-          <h3 id="pdfTitulo">Reporte en PDF</h3>
-          <p>Elegí si el reporte es de un empleado o de todos, y el rango de fechas.</p>
-        </div>
-        <button type="button" class="pdf-card__close" (click)="cerrarExportar()" aria-label="Cerrar">×</button>
-      </div>
-      <div class="pdf-card__body">
-        <div class="pdf-alcance">
-          <label>
-            <input type="radio" name="alcance" value="todos" [(ngModel)]="exportAlcance" />
-            Todos los empleados
-          </label>
-          <label>
-            <input type="radio" name="alcance" value="uno" [(ngModel)]="exportAlcance" />
-            Un empleado
-          </label>
-        </div>
-        <label class="pdf-field" *ngIf="exportAlcance === 'uno'">
-          <span>Empleado</span>
-          <select class="form-select" [(ngModel)]="exportEmpleado">
-            <option [ngValue]="null">Seleccionar empleado</option>
-            <option *ngFor="let emp of empleados" [ngValue]="emp">
-              {{ emp.nombre }} {{ emp.apellido }}
-            </option>
-          </select>
-        </label>
-        <div class="pdf-fechas">
-          <label class="pdf-field">
-            <span>Desde</span>
-            <input type="date" [(ngModel)]="exportDesde" />
-          </label>
-          <label class="pdf-field">
-            <span>Hasta</span>
-            <input type="date" [(ngModel)]="exportHasta" />
-          </label>
-        </div>
-      </div>
-      <div class="pdf-card__foot">
-        <button type="button" class="btn-ghost" [disabled]="exportando" (click)="cerrarExportar()">Cancelar</button>
-        <button type="button" class="btn-rojo" [disabled]="exportando" (click)="generarPdf()">
-          {{ exportando ? 'Generando...' : 'Descargar PDF' }}
-        </button>
-      </div>
-    </div>
-  </div>
+  <app-reportes-pdf-modal
+    [abierto]="exportAbierto"
+    [saliendo]="exportSaliendo"
+    [exportando]="exportando"
+    [empleados]="empleados"
+    [alcance]="exportAlcance"
+    [empleado]="exportEmpleado"
+    [desde]="exportDesde"
+    [hasta]="exportHasta"
+    (alcanceChange)="exportAlcance = $event"
+    (empleadoChange)="exportEmpleado = $event"
+    (desdeChange)="exportDesde = $event"
+    (hastaChange)="exportHasta = $event"
+    (cerrar)="cerrarExportar()"
+    (generar)="generarPdf()">
+  </app-reportes-pdf-modal>
 
   <div class="loader-overlay" *ngIf="loading">
     <div class="loader-text">Cargando reportes...</div>

@@ -1,0 +1,62 @@
+<section class="reportes__body">
+  <div class="reportes__table-card">
+    <h4>{{ titulo }}</h4>
+    <div class="reportes__table-wrapper">
+      <table class="table reportes__table">
+        <thead>
+          <tr>
+            <th>Empleado</th>
+            <th>Fecha</th>
+            <th>Hora</th>
+            <th>{{ vista === 'asistencia' ? 'Tipo de registro' : 'Acción' }}</th>
+            <th *ngIf="vista === 'accion'">Módulo</th>
+            <th>Estado</th>
+            <th>Detalle</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of registros">
+            <td>{{ nombreEmpleado(item) }}</td>
+            <td>{{ item.fechaDeRegistro || '-' }}</td>
+            <td>{{ item.horaRegistro || '-' }}</td>
+            <td>{{ item.accionRealizada || '-' }}</td>
+            <td *ngIf="vista === 'accion'">{{ item.moduloModificacion || '-' }}</td>
+            <td>
+              <span class="status-pill" [ngClass]="estadoClass(item)">
+                <span class="status-dot"></span>
+                {{ estadoLabel(item) }}
+              </span>
+            </td>
+            <td class="detalle-cell" [attr.title]="item.detalle || item.resultadoModificacion || ''">
+              {{ item.detalle || item.resultadoModificacion || '-' }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="reportes__empty" *ngIf="!registros.length">
+      <i class="fa fa-ban"></i>
+      <p>No hay registros para los filtros seleccionados.</p>
+    </div>
+  </div>
+
+  <aside class="reportes__timeline-card">
+    <h4>{{ tituloTimeline }}</h4>
+    <div class="timeline" *ngIf="timeline?.length; else emptyTimeline">
+      <div class="timeline__item" *ngFor="let item of timeline">
+        <div class="timeline__time">{{ item.horaRegistro || '--:--' }}</div>
+        <div class="timeline__marker"></div>
+        <div class="timeline__content">
+          <strong>{{ item.accionRealizada || 'Movimiento' }}</strong>
+          <span class="timeline__employee">{{ nombreEmpleado(item) }}</span>
+          <span>{{ item.detalle || item.resultadoModificacion || item.moduloModificacion || '-' }}</span>
+        </div>
+      </div>
+    </div>
+    <ng-template #emptyTimeline>
+      <div class="reportes__empty reportes__empty--compact">
+        <p>Sin actividad para mostrar.</p>
+      </div>
+    </ng-template>
+  </aside>
+</section>

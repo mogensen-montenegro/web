@@ -1,0 +1,30 @@
+<section class="reportes__stats">
+  <article class="stat-card">
+    <div class="stat-card__icon is-red"><i class="fa fa-file-lines"></i></div>
+    <div>
+      <span class="stat-card__label">Registros del día</span>
+      <strong>{{ resumen.registrosDelDia }} movimientos</strong>
+    </div>
+  </article>
+  <article class="stat-card">
+    <div class="stat-card__icon is-green"><i class="fa fa-arrow-right-to-bracket"></i></div>
+    <div>
+      <span class="stat-card__label">Primer ingreso</span>
+      <strong>{{ resumen.primerIngreso ? (resumen.primerIngreso + ' hs.') : '-' }}</strong>
+    </div>
+  </article>
+  <article class="stat-card">
+    <div class="stat-card__icon is-red"><i class="fa fa-arrow-right-from-bracket"></i></div>
+    <div>
+      <span class="stat-card__label">Último movimiento</span>
+      <strong>{{ resumen.ultimoMovimiento ? (resumen.ultimoMovimiento + ' hs.') : '-' }}</strong>
+    </div>
+  </article>
+  <article class="stat-card">
+    <div class="stat-card__icon is-blue"><i class="fa fa-calendar-days"></i></div>
+    <div>
+      <span class="stat-card__label">Días con actividad este mes</span>
+      <strong>{{ resumen.diasConActividad }} de {{ resumen.diasDelMes }} días</strong>
+    </div>
+  </article>
+</section>

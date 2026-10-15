@@ -1,18 +1,29 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { firstValueFrom, forkJoin, Subject, take, takeUntil } from 'rxjs';
 import Swal from 'sweetalert2';
 import { Profesores } from '../tu-personal/profesor.interface';
 import { ProfesoresService } from '../tu-personal/profesores.service';
+import { ReportesFiltrosComponent } from './reportes-filtros.component';
+import { ReportesHeroComponent } from './reportes-hero.component';
+import { ReportesHistorialComponent } from './reportes-historial.component';
 import { descargarReportePdf } from './reportes-pdf';
+import { ReportesPdfModalComponent } from './reportes-pdf-modal.component';
+import { ReportesResumenComponent } from './reportes-resumen.component';
 import { ReportesResumen, ReporteRegistro } from './reportes.interface';
 import { ReportesService } from './reportes.service';
 
 @Component({
   selector: 'app-reportes',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    ReportesHeroComponent,
+    ReportesFiltrosComponent,
+    ReportesResumenComponent,
+    ReportesHistorialComponent,
+    ReportesPdfModalComponent
+  ],
   templateUrl: './reportes.component.html',
   styleUrls: ['./reportes.component.scss']
 })
@@ -173,24 +184,6 @@ export class ReportesComponent implements OnInit, OnDestroy {
     this.mesSeleccionado = today.getMonth() + 1;
     this.anioSeleccionado = today.getFullYear();
     this.cargarDatos();
-  }
-
-  public nombreEmpleado(item: ReporteRegistro): string {
-    return item.nombre?.trim() || item.user || item.documento || '-';
-  }
-
-  public estadoLabel(item: ReporteRegistro): string {
-    if (item.estado) return item.estado;
-    if (/inactividad/i.test(item.detalle || '')) return 'Inactividad';
-    if (/reconex/i.test(item.detalle || '')) return 'Reconexión';
-    return 'Correcto';
-  }
-
-  public estadoClass(item: ReporteRegistro): string {
-    const estado = this.estadoLabel(item).toLowerCase();
-    if (estado.includes('inactiv')) return 'is-warning';
-    if (estado.includes('reconex')) return 'is-info';
-    return 'is-ok';
   }
 
   private cargarEmpleados(): void {
