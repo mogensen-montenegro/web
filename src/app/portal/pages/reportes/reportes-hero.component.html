@@ -1,0 +1,29 @@
+<section class="reportes__hero">
+  <div class="reportes__copy">
+    <span class="reportes__eyebrow">Reportes</span>
+    <h3 class="reportes__title">Reportes</h3>
+    <p class="reportes__subtitle">Controlá la actividad y asistencia de tu equipo en un solo lugar.</p>
+  </div>
+  <div class="reportes__tabs">
+    <button
+      type="button"
+      class="reportes__tab"
+      [class.is-active]="vista === 'asistencia'"
+      (click)="vistaChange.emit('asistencia')">
+      <i class="fa fa-clock"></i>
+      <span>Asistencias</span>
+    </button>
+    <button
+      type="button"
+      class="reportes__tab"
+      [class.is-active]="vista === 'accion'"
+      (click)="vistaChange.emit('accion')">
+      <i class="fa fa-list"></i>
+      <span>Acciones</span>
+    </button>
+    <button type="button" class="reportes__tab reportes__tab--pdf" (click)="exportar.emit()">
+      <i class="fa fa-file-pdf"></i>
+      <span>Reporte en PDF</span>
+    </button>
+  </div>
+</section>

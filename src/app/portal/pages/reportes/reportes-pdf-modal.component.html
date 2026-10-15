@@ -1,0 +1,49 @@
+<div class="pdf-overlay" *ngIf="abierto" [class.is-out]="saliendo" (click)="cerrar.emit()">
+  <div class="pdf-card" role="dialog" aria-modal="true" aria-labelledby="pdfTitulo" (click)="$event.stopPropagation()">
+    <div class="pdf-card__head">
+      <div>
+        <p class="pdf-card__eyebrow">Exportar</p>
+        <h3 id="pdfTitulo">Reporte en PDF</h3>
+        <p>Elegí si el reporte es de un empleado o de todos, y el rango de fechas.</p>
+      </div>
+      <button type="button" class="pdf-card__close" (click)="cerrar.emit()" aria-label="Cerrar">×</button>
+    </div>
+    <div class="pdf-card__body">
+      <div class="pdf-alcance">
+        <label>
+          <input type="radio" name="alcance" value="todos" [ngModel]="alcance" (ngModelChange)="alcanceChange.emit($event)" />
+          Todos los empleados
+        </label>
+        <label>
+          <input type="radio" name="alcance" value="uno" [ngModel]="alcance" (ngModelChange)="alcanceChange.emit($event)" />
+          Un empleado
+        </label>
+      </div>
+      <label class="pdf-field" *ngIf="alcance === 'uno'">
+        <span>Empleado</span>
+        <select class="form-select" [ngModel]="empleado" (ngModelChange)="empleadoChange.emit($event)">
+          <option [ngValue]="null">Seleccionar empleado</option>
+          <option *ngFor="let emp of empleados" [ngValue]="emp">
+            {{ emp.nombre }} {{ emp.apellido }}
+          </option>
+        </select>
+      </label>
+      <div class="pdf-fechas">
+        <label class="pdf-field">
+          <span>Desde</span>
+          <input type="date" [ngModel]="desde" (ngModelChange)="desdeChange.emit($event)" />
+        </label>
+        <label class="pdf-field">
+          <span>Hasta</span>
+          <input type="date" [ngModel]="hasta" (ngModelChange)="hastaChange.emit($event)" />
+        </label>
+      </div>
+    </div>
+    <div class="pdf-card__foot">
+      <button type="button" class="btn-ghost" [disabled]="exportando" (click)="cerrar.emit()">Cancelar</button>
+      <button type="button" class="btn-rojo" [disabled]="exportando" (click)="generar.emit()">
+        {{ exportando ? 'Generando...' : 'Descargar PDF' }}
+      </button>
+    </div>
+  </div>
+</div>
