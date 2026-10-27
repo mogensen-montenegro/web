@@ -1,10 +1,7 @@
 import {CommonModule} from '@angular/common';
-import {Component, ElementRef, OnInit, Renderer2, ViewChild,} from '@angular/core';
+import {Component, ElementRef, HostListener, OnDestroy, OnInit, Renderer2, ViewChild} from '@angular/core';
 import {Router, RouterModule} from '@angular/router';
 import {LoginService} from '../../pages/login/login-core/login.service';
-import Swal from "sweetalert2";
-import {HttpClient, HttpHeaders} from "@angular/common/http";
-import {environment} from "../../../../environments/environment";
 
 @Component({
   standalone: true,
@@ -13,77 +10,22 @@ import {environment} from "../../../../environments/environment";
   styleUrls: ['./internal-header.component.scss'],
   imports: [CommonModule, RouterModule]
 })
-export class InternalHeaderComponent implements OnInit {
+export class InternalHeaderComponent implements OnInit, OnDestroy {
   @ViewChild('menuBtn') menuBtn: ElementRef | undefined;
   @ViewChild('menuDesplegado') menuDesplegado: ElementRef | undefined;
-  public abiertoMenu: boolean = true;
-  public isSuper = false;
+  public abiertoMenu = true;
   public sessionUser = '';
-  private base_url: string = environment.baseUrl;
+  public configAbierto = false;
+  public configSaliendo = false;
+  private configTimer: ReturnType<typeof setTimeout> | null = null;
 
-  constructor(private router: Router, private render2: Renderer2, private loginService: LoginService, private http: HttpClient) {
-  }
+  constructor(
+    private router: Router,
+    private render2: Renderer2,
+    private loginService: LoginService
+  ) {}
 
-  public updatePassword(): void {
-    let userId = this.loginService.getUserId();
-    Swal.fire({
-      title: 'Cambiar Contraseña',
-      html: `
-        <div style="padding-top: 20px"><input id="swal-pass1" type="password" class="swal2-input" placeholder="Nueva Contraseña" style="width:100%; margin: 0;"></div>
-        <div style="padding-top: 20px"><input id="swal-pass2" type="password" class="swal2-input" placeholder="Confirmar Contraseña" style="width:100%; margin: 0;"></div>
-      `,
-      focusConfirm: false,
-      showCancelButton: true,
-      confirmButtonText: 'Guardar',
-      cancelButtonText: 'Cancelar',
-      preConfirm: () => {
-        const pass1 = (document.getElementById('swal-pass1') as HTMLInputElement).value;
-        const pass2 = (document.getElementById('swal-pass2') as HTMLInputElement).value;
-
-        if (!pass1 || !pass2) {
-          Swal.showValidationMessage('Ambos campos son obligatorios');
-          return false;
-        }
-
-        if (pass1 !== pass2) {
-          Swal.showValidationMessage('Las contraseñas no coinciden');
-          return false;
-        }
-
-        return pass1;
-      }
-    }).then((result) => {
-      if (result.isConfirmed && result.value) {
-        const nuevaPass = result.value;
-        const headers = new HttpHeaders()
-          .set('Content-Type', 'application/json')
-          .set('Authorization', 'Bearer ' + localStorage.getItem('token'));
-
-        this.http.put(`${this.base_url}/usuario/update/password/${userId}`, {password: nuevaPass}, {headers}).subscribe({
-          next: () => {
-            Swal.fire({
-              icon: 'success',
-              title: 'Éxito',
-              text: 'Contraseña actualizada correctamente',
-              timer: 2500,
-              timerProgressBar: true,
-              showConfirmButton: false
-            }).then();
-          },
-          error: () => {
-            Swal.fire({
-              icon: 'error',
-              title: 'Error',
-              text: 'No se pudo actualizar la contraseña'
-            }).then();
-          }
-        });
-      }
-    });
-  }
-
-  public ngOnInit(): void {
-    this.isSuper = this.loginService.hasRole(['superuser']);
+  ngOnInit(): void {
     this.sessionUser = this.loginService.getSessionUser() || '';
   }
 
@@ -91,8 +33,48 @@ export class InternalHeaderComponent implements OnInit {
     this.router.navigateByUrl('/home').then();
   }
 
-  public logout() {
+  public logout(): void {
+    this.cerrarConfig();
     this.loginService.logout();
+  }
+
+  public irACuenta(): void {
+    if (this.configTimer) {
+      clearTimeout(this.configTimer);
+      this.configTimer = null;
+    }
+    this.configAbierto = false;
+    this.configSaliendo = false;
+    void this.router.navigateByUrl('/panel/configuracion');
+  }
+
+  public toggleConfig(event?: Event): void {
+    event?.stopPropagation();
+    if (this.configAbierto) {
+      this.cerrarConfig();
+      return;
+    }
+    if (this.configTimer) {
+      clearTimeout(this.configTimer);
+      this.configTimer = null;
+    }
+    this.configSaliendo = false;
+    this.configAbierto = true;
+  }
+
+  public cerrarConfig(): void {
+    if (!this.configAbierto || this.configSaliendo) return;
+    this.configSaliendo = true;
+    this.configTimer = setTimeout(() => {
+      this.configAbierto = false;
+      this.configSaliendo = false;
+      this.configTimer = null;
+    }, 180);
+  }
+
+  @HostListener('document:click')
+  public onDocumentClick(): void {
+    this.cerrarConfig();
   }
 
   public abrirMenu(): void {
@@ -103,14 +85,15 @@ export class InternalHeaderComponent implements OnInit {
       this.render2.removeClass(this.menuDesplegado!.nativeElement, 'close');
       return;
     }
-    if (!this.abiertoMenu) {
-      this.render2.removeClass(this.menuBtn!.nativeElement, 'open');
-      this.render2.removeClass(this.menuDesplegado!.nativeElement, 'open');
-      this.render2.addClass(this.menuDesplegado!.nativeElement, 'close');
-      setTimeout(() => {
-        this.abiertoMenu = true;
-      }, 500)
-      return;
-    }
+    this.render2.removeClass(this.menuBtn!.nativeElement, 'open');
+    this.render2.removeClass(this.menuDesplegado!.nativeElement, 'open');
+    this.render2.addClass(this.menuDesplegado!.nativeElement, 'close');
+    setTimeout(() => {
+      this.abiertoMenu = true;
+    }, 500);
+  }
+
+  ngOnDestroy(): void {
+    if (this.configTimer) clearTimeout(this.configTimer);
   }
 }

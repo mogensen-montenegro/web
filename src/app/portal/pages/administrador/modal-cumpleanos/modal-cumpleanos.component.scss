@@ -75,7 +75,7 @@
 }
 
 .cumple-card__body {
-  padding: 0 1.5rem 0.75rem;
+  padding: 0 1.5rem 1.35rem;
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
@@ -208,7 +208,8 @@
 }
 
 .campo input,
-.campo textarea {
+.campo textarea,
+.campo select {
   width: 100%;
   border: 1px solid rgba(28, 31, 58, 0.12);
   border-radius: 14px;
@@ -218,10 +219,47 @@
   font: inherit;
 }
 
+.campo select {
+  appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path fill='%231c1f3a' d='M1 1l5 5 5-5'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 0.9rem center;
+  padding-right: 2.2rem;
+}
+
 .ayuda {
   margin: 0 0 0.35rem;
   color: rgba(28, 31, 58, 0.6);
   font-size: 0.9rem;
+}
+
+.imagen-adjunto {
+  margin-top: 0.35rem;
+}
+
+.imagen-adjunto img {
+  display: block;
+  width: 100%;
+  max-height: 220px;
+  object-fit: contain;
+  border-radius: 14px;
+  background: rgba(28, 31, 58, 0.03);
+  border: 1px solid rgba(28, 31, 58, 0.08);
+}
+
+.imagen-adjunto__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 0.55rem;
+}
+
+.imagen-adjunto__meta small {
+  color: rgba(28, 31, 58, 0.65);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 @keyframes cumple-fondo {

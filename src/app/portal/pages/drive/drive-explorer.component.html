@@ -1,0 +1,169 @@
+<div class="panel-page">
+  <section class="panel-page__hero">
+    <div class="panel-page__copy drive-hero">
+      <span class="panel-page__eyebrow">Google Drive</span>
+      <div class="drive-hero__row">
+        <h3 class="panel-page__title">{{ tituloActual }}</h3>
+        <div class="panel-page__actions">
+          <ng-container *ngIf="!editor">
+            <button type="button" class="btn btn-light" *ngIf="puedeAsignar" (click)="abrirPermisos()">Permisos</button>
+            <button type="button" class="btn btn-light" *ngIf="esSuperuser" (click)="irAConfig()">Credenciales</button>
+          </ng-container>
+          <ng-container *ngIf="editor">
+            <button type="button" class="btn btn-color" *ngIf="editor.kind === 'sheet' && !editor.embedUrl && puedeEditar" [disabled]="guardando" (click)="guardarPlanilla()">
+              {{ guardando ? 'Guardando...' : 'Guardar planilla' }}
+            </button>
+            <button type="button" class="btn btn-color" *ngIf="editor.kind === 'text' && puedeEditar" [disabled]="guardando" (click)="guardarTexto()">
+              {{ guardando ? 'Guardando...' : 'Guardar' }}
+            </button>
+            <button type="button" class="btn btn-light" *ngIf="editor.editUrl" (click)="trabajarAfuera()">Abrir editor</button>
+            <button type="button" class="btn btn-light" (click)="descargar(editor.item)" title="Bajar" aria-label="Bajar">
+              <i class="fa fa-download"></i>
+            </button>
+            <button type="button" class="btn btn-light is-danger" *ngIf="puedeBorrar" (click)="eliminar(editor.item)" title="Eliminar" aria-label="Eliminar">
+              <i class="fa fa-trash"></i>
+            </button>
+            <button type="button" class="btn btn-light" (click)="cerrarEditor()">Cerrar</button>
+          </ng-container>
+        </div>
+      </div>
+      <p class="panel-page__subtitle">
+        {{ editor ? 'Trabajá el archivo acá. Los cambios quedan en Drive.' : (clientEmail ? ('Vinculado como ' + clientEmail) : 'Manipulá las carpetas de Drive desde el portal.') }}
+      </p>
+    </div>
+  </section>
+
+  <section class="panel-page__content">
+    <nav class="drive-path">
+      <button type="button" (click)="irA(-1)">Inicio</button>
+      <span *ngFor="let paso of ruta; let i = index">
+        /
+        <button type="button" (click)="irA(i)">{{ paso.name }}</button>
+      </span>
+      <span *ngIf="editor"> / {{ editor.item.name }}</span>
+    </nav>
+
+    <ng-container *ngIf="!editor">
+      <div class="drive-tools" *ngIf="puedeEditar && carpetaActual">
+        <button type="button" class="drive-tool is-word" (click)="nuevoDocumento()">
+          <i class="fa fa-file-word"></i>
+          <span>Nuevo documento</span>
+        </button>
+        <button type="button" class="drive-tool is-sheet" (click)="nuevaPlanilla()">
+          <i class="fa fa-file-excel"></i>
+          <span>Nueva planilla</span>
+        </button>
+        <button type="button" class="drive-tool is-slides" (click)="nuevaPresentacion()">
+          <i class="fa fa-file-powerpoint"></i>
+          <span>Nueva presentación</span>
+        </button>
+        <button type="button" class="drive-tool is-folder" (click)="nuevaCarpeta()">
+          <i class="fa fa-folder"></i>
+          <span>Nueva carpeta</span>
+        </button>
+        <button type="button" class="drive-tool is-upload" (click)="elegirArchivo()">
+          <i class="fa fa-cloud-upload"></i>
+          <span>Subir archivo</span>
+        </button>
+        <input #fileInput type="file" hidden (change)="onFile($event)" />
+      </div>
+
+      <div class="drive-empty" *ngIf="!loading && !items.length">
+        <p *ngIf="!raices.length">Todavía no hay carpetas vinculadas. Cargá las credenciales en Configuración.</p>
+        <p *ngIf="raices.length">Esta carpeta está vacía.</p>
+      </div>
+
+      <div class="drive-grid" *ngIf="items.length">
+        <article
+          class="drive-card"
+          *ngFor="let item of items"
+          [class.is-word]="tipoArchivo(item) === 'word'"
+          [class.is-sheet]="tipoArchivo(item) === 'sheet'"
+          [class.is-slides]="tipoArchivo(item) === 'slides'"
+          (click)="abrir(item)">
+          <div
+            class="drive-card__icon"
+            [class.is-folder]="item.isFolder"
+            [class.is-word]="tipoArchivo(item) === 'word'"
+            [class.is-sheet]="tipoArchivo(item) === 'sheet'"
+            [class.is-slides]="tipoArchivo(item) === 'slides'">
+            <i class="fa" [ngClass]="icono(item)"></i>
+          </div>
+          <div class="drive-card__body">
+            <strong>{{ item.name }}</strong>
+            <span>{{ item.isFolder ? 'Carpeta' : peso(item) }}</span>
+          </div>
+          <div class="drive-card__actions" (click)="$event.stopPropagation()">
+            <button type="button" *ngIf="!item.isFolder" (click)="descargar(item, $event)" data-tip="Bajar" aria-label="Bajar">
+              <i class="fa fa-download"></i>
+            </button>
+            <button type="button" *ngIf="puedeEditar" (click)="renombrar(item, $event)" data-tip="Renombrar" aria-label="Renombrar">
+              <i class="fa fa-pencil"></i>
+            </button>
+            <button type="button" class="is-danger" *ngIf="puedeBorrar" (click)="eliminar(item, $event)" data-tip="Eliminar" aria-label="Eliminar">
+              <i class="fa fa-trash"></i>
+            </button>
+          </div>
+        </article>
+      </div>
+    </ng-container>
+
+    <div class="drive-editor" *ngIf="editor">
+      <div class="drive-sheet" *ngIf="editor.kind === 'sheet' && !editor.embedUrl">
+        <div class="drive-sheet__tabs" *ngIf="hojas.length > 1">
+          <button
+            type="button"
+            *ngFor="let hoja of hojas; let i = index"
+            [class.is-active]="i === hojaActiva"
+            (click)="hojaActiva = i">
+            {{ hoja.name }}
+          </button>
+        </div>
+        <div class="drive-sheet__table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th></th>
+                <th *ngFor="let col of columnas">{{ col }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let fila of filas; let r = index">
+                <th>{{ r + 1 }}</th>
+                <td *ngFor="let celda of fila; let c = index">
+                  <input [value]="celda" (blur)="onCell(r, c, $event)" [disabled]="!puedeEditar" />
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="drive-sheet__tools" *ngIf="puedeEditar">
+          <button type="button" (click)="agregarFila()">+ Fila</button>
+          <button type="button" (click)="agregarColumna()">+ Columna</button>
+        </div>
+      </div>
+
+      <div class="drive-doc" *ngIf="editor.kind === 'document' || editor.kind === 'presentation' || editor.kind === 'preview' || (editor.kind === 'sheet' && editor.embedUrl)">
+        <iframe
+          *ngIf="editor.embedUrl"
+          [src]="editor.embedUrl"
+          title="Editor de Drive"
+          sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads"></iframe>
+        <p>Si el documento no carga acá, tocá <strong>Abrir editor</strong> para trabajarlo y que quede registrado en el portal.</p>
+      </div>
+
+      <textarea class="drive-text" *ngIf="editor.kind === 'text'" [(ngModel)]="texto" [disabled]="!puedeEditar"></textarea>
+    </div>
+
+    <div class="loader-overlay" *ngIf="loading">
+      <div class="loader-text">Cargando Drive...</div>
+    </div>
+  </section>
+</div>
+
+<app-modal-permisos-profesor
+  *ngIf="showPermisos"
+  [profesores]="profesores"
+  (closed)="showPermisos = false"
+  (saved)="showPermisos = false; cargarPersonal()">
+</app-modal-permisos-profesor>

@@ -1,0 +1,22 @@
+.cfg-tabs {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  border-bottom: 1px solid rgba(28, 31, 58, 0.08);
+  padding: 0 0.25rem;
+}
+
+.cfg-tabs__item {
+  border: 0;
+  background: transparent;
+  color: rgba(28, 31, 58, 0.55);
+  font-weight: 700;
+  padding: 0.85rem 1rem;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.cfg-tabs__item.is-active {
+  color: #b91828;
+  box-shadow: inset 0 -3px 0 #b91828;
+}

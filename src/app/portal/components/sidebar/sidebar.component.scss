@@ -155,6 +155,20 @@ $dark: #263238;
   &:hover .color-principal {
     color: #fff;
   }
+
+  &.is-disabled {
+    opacity: 0.38;
+    cursor: not-allowed;
+  }
+
+  &.is-disabled:hover {
+    color: $sidebar-text;
+    background: transparent;
+  }
+
+  &.is-disabled:hover .color-principal {
+    color: $themecolor;
+  }
 }
 
 .sidebar-label {

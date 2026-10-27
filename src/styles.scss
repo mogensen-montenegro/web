@@ -126,3 +126,7 @@ body {
     transform: none;
   }
 }
+
+.swal2-container.cumple-swal-front {
+  z-index: 5000 !important;
+}

@@ -100,6 +100,7 @@
               <th>Documento</th>
               <th>Acción realizada</th>
               <th>Módulo</th>
+              <th>Detalle</th>
               <th>Resultado</th>
               <th>Fecha de registro</th>
               <th>Horario de registro</th>
@@ -111,6 +112,7 @@
               <td data-label="Documento">{{ dato.documento || '-' }}</td>
               <td data-label="Acción realizada">{{ dato.accionRealizada || '-' }}</td>
               <td data-label="Módulo"><b>{{ dato.moduloModificacion || '-' }}</b></td>
+              <td data-label="Detalle">{{ dato.detalle || '-' }}</td>
               <td data-label="Resultado">{{ dato.resultadoModificacion || '-' }}</td>
               <td data-label="Fecha de registro">{{ dato.registradoEnISO ? (dato.registradoEnISO | date:'dd-MM-yyyy') : (dato.fechaDeRegistro || '-') }}</td>
               <td data-label="Horario de registro">{{ dato.registradoEnISO ? (dato.registradoEnISO | date:'HH:mm') : (dato.horaRegistro || '-') }}</td>

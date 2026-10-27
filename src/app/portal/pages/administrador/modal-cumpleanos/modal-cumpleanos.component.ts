@@ -1,10 +1,12 @@
 import {CommonModule} from '@angular/common';
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, ElementRef, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {forkJoin, of, Subject, takeUntil} from 'rxjs';
 import {catchError, map} from 'rxjs/operators';
 import Swal from 'sweetalert2';
 import {LoginService} from '../../login/login-core/login.service';
+import {PlantillaEmail} from '../../plantillas-email/plantilla-email.interface';
+import {PlantillaEmailService} from '../../plantillas-email/plantilla-email.service';
 import {ProfesorPermisosService} from '../../tu-personal/profesor-permisos.service';
 import {AdministradorService} from '../core-administrador/administrador.service';
 import {EmailService} from '../service/email.service';
@@ -15,6 +17,10 @@ import {
   proximosCumpleanos
 } from './cumpleanos.service';
 
+const PLANTILLA_DEFAULT = 'default';
+const IMAGEN_CID = 'saludo-imagen';
+const IMAGEN_MAX_BYTES = 2 * 1024 * 1024;
+const IMAGEN_MIME = ['image/jpeg', 'image/png', 'image/gif'];
 const TITULO_DEFAULT = '¡Feliz cumpleaños!';
 const ASUNTO_DEFAULT = '¡Feliz cumpleaños, {{NOMBRE}}!';
 const MENSAJE_DEFAULT = `Hola {{NOMBRE}},
@@ -34,6 +40,7 @@ Mogensen Montenegro`;
 export class ModalCumpleanosComponent implements OnInit, OnDestroy {
   readonly ventanaDias = CUMPLE_VENTANA_DIAS;
   readonly variableNombre = '{{NOMBRE}}';
+  readonly plantillaDefaultId = PLANTILLA_DEFAULT;
   abierto = false;
   saludoAbierto = false;
   cargando = false;
@@ -43,6 +50,13 @@ export class ModalCumpleanosComponent implements OnInit, OnDestroy {
   titulo = TITULO_DEFAULT;
   asunto = ASUNTO_DEFAULT;
   mensaje = MENSAJE_DEFAULT;
+  plantillas: PlantillaEmail[] = [];
+  plantillaSeleccionadaId = PLANTILLA_DEFAULT;
+  cargandoPlantillas = false;
+  imagenNombre = '';
+  imagenPreview = '';
+
+  @ViewChild('imagenInput') imagenInput?: ElementRef<HTMLInputElement>;
 
   private destroy$ = new Subject<void>();
   private carga$ = new Subject<void>();
@@ -51,6 +65,7 @@ export class ModalCumpleanosComponent implements OnInit, OnDestroy {
     private cumpleanos: CumpleanosService,
     private adminSvc: AdministradorService,
     private emailSvc: EmailService,
+    private plantillaSvc: PlantillaEmailService,
     private login: LoginService,
     private permisos: ProfesorPermisosService
   ) {}
@@ -111,10 +126,60 @@ export class ModalCumpleanosComponent implements OnInit, OnDestroy {
 
   abrirSaludo(): void {
     if (!this.puedeEnviarSaludo) return;
-    this.titulo = TITULO_DEFAULT;
-    this.asunto = ASUNTO_DEFAULT;
-    this.mensaje = MENSAJE_DEFAULT;
+    this.plantillaSeleccionadaId = PLANTILLA_DEFAULT;
+    this.aplicarPlantilla();
+    this.cargarPlantillas();
     this.saludoAbierto = true;
+  }
+
+  onPlantillaChange(): void {
+    this.aplicarPlantilla();
+  }
+
+  onImagenSeleccionada(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    if (!IMAGEN_MIME.includes(file.type)) {
+      this.limpiarInputImagen();
+      this.mostrarAviso({
+        icon: 'warning',
+        title: 'Imagen no válida',
+        text: 'Podés adjuntar JPG, PNG o GIF.'
+      });
+      return;
+    }
+    if (file.size > IMAGEN_MAX_BYTES) {
+      this.limpiarInputImagen();
+      this.mostrarAviso({
+        icon: 'warning',
+        title: 'Imagen demasiado grande',
+        text: 'La imagen no puede superar los 2 MB.'
+      });
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.imagenPreview = String(reader.result || '');
+      this.imagenNombre = file.name;
+    };
+    reader.onerror = () => {
+      this.quitarImagen();
+      this.mostrarAviso({
+        icon: 'error',
+        title: 'No se pudo leer la imagen',
+        text: 'Probá con otro archivo.'
+      });
+    };
+    reader.readAsDataURL(file);
+  }
+
+  quitarImagen(): void {
+    this.imagenNombre = '';
+    this.imagenPreview = '';
+    this.limpiarInputImagen();
   }
 
   cerrarSaludo(): void {
@@ -126,6 +191,7 @@ export class ModalCumpleanosComponent implements OnInit, OnDestroy {
     if (this.enviando) return;
     this.saludoAbierto = false;
     this.abierto = false;
+    this.quitarImagen();
   }
 
   enviarSaludo(): void {
@@ -135,7 +201,7 @@ export class ModalCumpleanosComponent implements OnInit, OnDestroy {
     const destinatarios = this.seleccionados.filter((item) => item.email);
 
     if (!titulo || !asunto || mensaje.length < 5 || !destinatarios.length) {
-      Swal.fire({
+      this.mostrarAviso({
         icon: 'warning',
         title: 'Completá el saludo',
         text: 'El título, el asunto y el mensaje son necesarios para enviar.'
@@ -144,12 +210,16 @@ export class ModalCumpleanosComponent implements OnInit, OnDestroy {
     }
 
     this.enviando = true;
+    const imagen = this.imagenPreview
+      ? {nombre: this.imagenNombre || 'saludo.jpg', base64: this.imagenPreview}
+      : undefined;
     forkJoin(
       destinatarios.map((item) =>
         this.emailSvc.sendToAdmin({
           to: item.email,
           subject: this.render(asunto, item).slice(0, 150),
           html: this.htmlSaludo(titulo, mensaje, item),
+          imagen,
           meta: {adminId: item.admin._id, triggeredBy: 'cumpleanos'}
         }).pipe(
           map(() => ({ok: true, nombre: item.nombre})),
@@ -193,20 +263,64 @@ export class ModalCumpleanosComponent implements OnInit, OnDestroy {
     this.enviando = false;
     this.saludoAbierto = false;
     this.abierto = false;
+    this.quitarImagen();
   }
 
-  private mostrarAviso(options: { icon: 'success' | 'error'; title: string; text: string }): void {
+  private limpiarInputImagen(): void {
+    if (this.imagenInput?.nativeElement) {
+      this.imagenInput.nativeElement.value = '';
+    }
+  }
+
+  private mostrarAviso(options: {
+    icon: 'success' | 'error' | 'warning';
+    title: string;
+    text: string;
+  }): void {
     Swal.fire({
       icon: options.icon,
       title: options.title,
       text: options.text,
       confirmButtonText: 'Aceptar',
       confirmButtonColor: '#b91828',
+      customClass: {container: 'cumple-swal-front'},
       didOpen: () => {
         const container = Swal.getContainer();
-        if (container) container.style.zIndex = '4000';
+        if (container) container.style.zIndex = '5000';
       }
     });
+  }
+
+  private cargarPlantillas(): void {
+    this.cargandoPlantillas = true;
+    this.plantillaSvc
+      .getAll()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((list) => {
+        this.plantillas = list;
+        this.cargandoPlantillas = false;
+        if (
+          this.plantillaSeleccionadaId !== PLANTILLA_DEFAULT &&
+          !this.plantillas.some((p) => p.id === this.plantillaSeleccionadaId)
+        ) {
+          this.plantillaSeleccionadaId = PLANTILLA_DEFAULT;
+          this.aplicarPlantilla();
+        }
+      });
+  }
+
+  private aplicarPlantilla(): void {
+    if (this.plantillaSeleccionadaId === PLANTILLA_DEFAULT) {
+      this.titulo = TITULO_DEFAULT;
+      this.asunto = ASUNTO_DEFAULT;
+      this.mensaje = MENSAJE_DEFAULT;
+      return;
+    }
+    const plantilla = this.plantillas.find((p) => p.id === this.plantillaSeleccionadaId);
+    if (!plantilla) return;
+    this.titulo = plantilla.nombre || TITULO_DEFAULT;
+    this.asunto = plantilla.asunto || '';
+    this.mensaje = plantilla.body || '';
   }
 
   private abrir(automatico: boolean): void {
@@ -229,7 +343,7 @@ export class ModalCumpleanosComponent implements OnInit, OnDestroy {
         error: () => {
           this.cargando = false;
           if (!automatico) {
-            Swal.fire({icon: 'error', title: 'Error', text: 'No se pudieron cargar los cumpleaños.'});
+            this.mostrarAviso({icon: 'error', title: 'Error', text: 'No se pudieron cargar los cumpleaños.'});
           }
         }
       });
@@ -244,7 +358,10 @@ export class ModalCumpleanosComponent implements OnInit, OnDestroy {
   private htmlSaludo(titulo: string, mensaje: string, item: CumpleanoProximo): string {
     const tituloHtml = this.escape(this.render(titulo, item));
     const cuerpo = this.escape(this.render(mensaje, item)).replace(/\n/g, '<br>');
-    return `<h2 style="color:#b91828;font-family:Arial,sans-serif;">${tituloHtml}</h2><p style="font-family:Arial,sans-serif;line-height:1.5;color:#1c1f3a;">${cuerpo}</p>`;
+    const imagen = this.imagenPreview
+      ? `<p style="margin:24px 0 0;"><img src="cid:${IMAGEN_CID}" alt="" style="max-width:100%;height:auto;display:block;border:0;" /></p>`
+      : '';
+    return `<h2 style="color:#b91828;font-family:Arial,sans-serif;">${tituloHtml}</h2><p style="font-family:Arial,sans-serif;line-height:1.5;color:#1c1f3a;">${cuerpo}</p>${imagen}`;
   }
 
   private render(template: string, item: CumpleanoProximo): string {

@@ -1,0 +1,81 @@
+<section class="cfg-card" *ngIf="esSuperuser">
+  <div class="cfg-card__head">
+    <h4>Google Drive</h4>
+    <p>Vinculá una cuenta de servicio y una o más carpetas. Después las manejás desde el portal.</p>
+  </div>
+
+  <ol class="cfg-steps">
+    <li>En Google Cloud, creá un proyecto, activá <strong>Google Drive API</strong> y una <strong>cuenta de servicio</strong>.</li>
+    <li>Descargá la clave JSON de esa cuenta.</li>
+    <li>En Drive, compartí cada carpeta con el mail de la cuenta de servicio (Editor).</li>
+    <li>Pegá el JSON acá y los ID de carpeta (están en la URL: <code>drive.google.com/drive/folders/ID</code>).</li>
+  </ol>
+
+  <div class="cfg-status" *ngIf="drive.configurado">
+    <i class="fa fa-circle-check"></i>
+    <div>
+      <strong>Portal vinculado</strong>
+      <span>{{ drive.clientEmail }}</span>
+      <span *ngIf="drive.folders?.length">Carpetas: {{ nombresCarpetas(drive.folders) }}</span>
+    </div>
+  </div>
+
+  <label class="cfg-field">
+    <span>JSON de credenciales</span>
+    <textarea
+      rows="7"
+      [(ngModel)]="jsonCredencial"
+      placeholder='Pegá el JSON de la cuenta de servicio, con client_email y private_key.'></textarea>
+  </label>
+
+  <div class="cfg-field">
+    <span>Carpetas de Drive</span>
+    <div class="cfg-folders" *ngFor="let id of folderIds; let i = index">
+      <input type="text" [(ngModel)]="folderIds[i]" placeholder="ID de carpeta" />
+      <button type="button" class="btn-ghost btn-icon" (click)="quitarCarpeta(i)" *ngIf="folderIds.length > 1">×</button>
+    </div>
+    <button type="button" class="btn-link" (click)="agregarCarpeta()">+ Agregar otra carpeta</button>
+  </div>
+
+  <div class="cfg-actions">
+    <button type="button" class="btn-ghost" *ngIf="drive.configurado" [disabled]="guardandoDrive" (click)="desvincularDrive()">
+      Desvincular
+    </button>
+    <button type="button" class="btn-ghost" *ngIf="drive.configurado" (click)="irADrive()">
+      Abrir archivos
+    </button>
+    <button type="button" class="btn-rojo" [disabled]="guardandoDrive" (click)="guardarDrive()">
+      {{ guardandoDrive ? 'Conectando...' : (drive.configurado ? 'Actualizar vínculo' : 'Vincular Drive') }}
+    </button>
+  </div>
+</section>
+
+<section class="cfg-card">
+  <div class="cfg-card__head">
+    <h4>Cambiar contraseña</h4>
+    <p>Actualizá la contraseña de acceso al portal desde esta configuración general.</p>
+  </div>
+  <div class="cfg-pass">
+    <label class="cfg-field cfg-field--pass">
+      <input
+        [type]="verPass1 ? 'text' : 'password'"
+        [(ngModel)]="pass1"
+        placeholder="Escribí la contraseña" />
+      <button type="button" (click)="verPass1 = !verPass1" [attr.aria-label]="verPass1 ? 'Ocultar' : 'Mostrar'">
+        <i class="fa" [class.fa-eye]="!verPass1" [class.fa-eye-slash]="verPass1"></i>
+      </button>
+    </label>
+    <label class="cfg-field cfg-field--pass">
+      <input
+        [type]="verPass2 ? 'text' : 'password'"
+        [(ngModel)]="pass2"
+        placeholder="Repetí la contraseña" />
+      <button type="button" (click)="verPass2 = !verPass2" [attr.aria-label]="verPass2 ? 'Ocultar' : 'Mostrar'">
+        <i class="fa" [class.fa-eye]="!verPass2" [class.fa-eye-slash]="verPass2"></i>
+      </button>
+    </label>
+    <button type="button" class="btn-rojo" [disabled]="guardandoPass" (click)="guardarPassword()">
+      {{ guardandoPass ? 'Guardando...' : 'Guardar' }}
+    </button>
+  </div>
+</section>

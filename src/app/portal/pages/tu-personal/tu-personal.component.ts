@@ -40,7 +40,8 @@ export class TuPersonalComponent implements OnDestroy {
     'Generador de recibos',
     'Noticia',
     'Plantillas de Email',
-    'Prospectos'
+    'Prospectos',
+    'Archivos de Drive'
   ];
   public anios: string[] = Array.from({ length: new Date().getFullYear() - 2024 + 1 }, (_, i) => (2024 + i).toString());
   public meses: number[] = Array.from({ length: 12 }, (_, i) => i + 1);

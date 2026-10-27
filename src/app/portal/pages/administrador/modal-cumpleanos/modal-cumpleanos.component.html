@@ -60,12 +60,23 @@
       <div>
         <p class="cumple-card__eyebrow">Email</p>
         <h3 id="saludoTitulo">Enviar saludo</h3>
-        <p>El título, el asunto y el mensaje se pueden editar antes de enviar.</p>
+        <p>Elegí una plantilla o editá el saludo antes de enviar.</p>
       </div>
       <button type="button" class="cumple-card__close" (click)="cerrarSaludo()" aria-label="Cerrar">×</button>
     </div>
 
     <div class="cumple-card__body">
+      <label class="campo">
+        <span>Plantilla</span>
+        <select [(ngModel)]="plantillaSeleccionadaId" (ngModelChange)="onPlantillaChange()">
+          <option [ngValue]="plantillaDefaultId">Saludo de cumpleaños</option>
+          <option *ngFor="let p of plantillas" [ngValue]="p.id">{{ p.nombre }}</option>
+        </select>
+      </label>
+      <p class="ayuda" *ngIf="cargandoPlantillas">Cargando plantillas...</p>
+      <p class="ayuda" *ngIf="!cargandoPlantillas && !plantillas.length">
+        No hay plantillas cargadas en Plantillas de Email. Se usa el saludo de cumpleaños y se puede editar.
+      </p>
       <label class="campo">
         <span>Título</span>
         <input type="text" [(ngModel)]="titulo" maxlength="120" />
@@ -78,6 +89,24 @@
         <span>Mensaje</span>
         <textarea rows="8" [(ngModel)]="mensaje"></textarea>
       </label>
+      <div class="campo">
+        <span>Imagen</span>
+        <input
+          #imagenInput
+          type="file"
+          accept="image/jpeg,image/png,image/gif"
+          [disabled]="enviando"
+          (change)="onImagenSeleccionada($event)"
+        />
+        <p class="ayuda" *ngIf="!imagenPreview">Opcional. Se muestra debajo del texto del email. JPG, PNG o GIF, hasta 2 MB.</p>
+        <div class="imagen-adjunto" *ngIf="imagenPreview">
+          <img [src]="imagenPreview" alt="Vista previa de la imagen del saludo" />
+          <div class="imagen-adjunto__meta">
+            <small>{{ imagenNombre }}</small>
+            <button type="button" class="cumple-link" [disabled]="enviando" (click)="quitarImagen()">Quitar imagen</button>
+          </div>
+        </div>
+      </div>
       <p class="ayuda">Podés usar {{ variableNombre }} y se reemplaza por cada persona.</p>
       <p class="ayuda">Se envía a: {{ nombresSeleccionados }}.</p>
     </div>

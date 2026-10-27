@@ -7,6 +7,7 @@ import { LoginService } from "../../pages/login/login-core/login.service";
 import { ArchivosNuevosService } from "../../pages/archivos/archivos-core/archivos-nuevos.service";
 import { ProspectosNuevosService } from "../../../core/prospecto/prospectos-nuevos.service";
 import { ProfesorPermisosService } from "../../pages/tu-personal/profesor-permisos.service";
+import { ConfiguracionService } from "../../pages/configuracion/configuracion.service";
 
 const STORAGE_KEY = 'sidebarCollapsed';
 
@@ -22,19 +23,30 @@ export class SidebarComponent implements OnInit {
 
   public navigationItems: SidebarConfig[] = GYM_ROUTES_CONFIG;
   public collapsed = false;
+  public driveOn = false;
 
   constructor(
     private cdRef: ChangeDetectorRef,
     private authService: LoginService,
     public archivosNuevosSrv: ArchivosNuevosService,
     public prospectosNuevosSrv: ProspectosNuevosService,
-    private profesorPermisosSrv: ProfesorPermisosService
+    private profesorPermisosSrv: ProfesorPermisosService,
+    public configuracionService: ConfiguracionService
   ) {}
 
   ngOnInit(): void {
     this.collapsed = localStorage.getItem(STORAGE_KEY) === '1';
     this.collapsedChange.emit(this.collapsed);
+    this.configuracionService.driveHabilitado$.subscribe((value) => {
+      this.driveOn = value;
+      this.cdRef.markForCheck();
+    });
+    this.configuracionService.refrescarDrive();
     this.cdRef.detectChanges();
+  }
+
+  public driveHabilitado(item: SidebarConfig): boolean {
+    return item.id !== 'drive' || this.driveOn;
   }
 
   public toggle(): void {

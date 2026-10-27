@@ -6,6 +6,8 @@ export type PersonalModuloId =
   | 'noticia'
   | 'plantillas-email'
   | 'prospectos'
+  | 'drive'
+  | 'driveBorrar'
   | 'addProf';
 
 export type PersonalPermisosModulos = Record<PersonalModuloId, boolean>;

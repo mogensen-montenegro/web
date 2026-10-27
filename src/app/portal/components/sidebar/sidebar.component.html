@@ -20,6 +20,7 @@
           [ngClass]="{'pt-3': item.id !== 'home' && item.id !== 'userMessage'}"
           [attr.title]="collapsed ? item.name : null">
           <a
+            *ngIf="driveHabilitado(item); else driveOff"
             class="sidebar-link has-arrow waves-effect waves-dark"
             [routerLink]="item.url"
             routerLinkActive="active">
@@ -38,6 +39,16 @@
               </ng-container>
             </ng-container>
           </a>
+          <ng-template #driveOff>
+            <span
+              class="sidebar-link is-disabled"
+              title="Cargá las credenciales de Drive en Configuración">
+              <div class="icon-wrap">
+                <i class="fa color-principal" [ngClass]="item.icon"></i>
+              </div>
+              <span class="select-option sidebar-label">{{ item.name }}</span>
+            </span>
+          </ng-template>
         </li>
       </ul>
     </nav>

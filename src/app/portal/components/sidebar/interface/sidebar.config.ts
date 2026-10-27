@@ -63,5 +63,12 @@ export const GYM_ROUTES_CONFIG: SidebarConfig[] = [
     url: '/panel/reportes',
     icon: 'fa-chart-line',
     roles: ['superuser']
+  },
+  {
+    id: 'drive',
+    name: 'Archivos de Drive',
+    url: '/panel/drive',
+    icon: 'fa-cloud',
+    roles: ['superuser', 'admin', 'personal']
   }
 ]

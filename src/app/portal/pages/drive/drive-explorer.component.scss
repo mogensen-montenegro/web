@@ -1,0 +1,377 @@
+.drive-hero {
+  max-width: none;
+  width: 100%;
+}
+
+.drive-hero__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.drive-path {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+  color: rgba(28, 31, 58, 0.55);
+  font-weight: 600;
+}
+
+.drive-path button {
+  border: 0;
+  background: transparent;
+  color: #b91828;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+}
+
+.drive-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.drive-tool {
+  width: 112px;
+  min-height: 112px;
+  padding: 0.85rem 0.55rem 0.7rem;
+  border: 1px solid rgba(28, 31, 58, 0.1);
+  border-radius: 16px;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  cursor: pointer;
+  color: #1c1f3a;
+}
+
+.drive-tool i {
+  font-size: 1.45rem;
+}
+
+.drive-tool span {
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.drive-tool.is-word {
+  background: #eaf3fb;
+  border-color: rgba(43, 87, 154, 0.16);
+  color: #2b579a;
+}
+
+.drive-tool.is-sheet {
+  background: #e8f6ee;
+  border-color: rgba(33, 115, 70, 0.16);
+  color: #217346;
+}
+
+.drive-tool.is-slides {
+  background: #fdeee8;
+  border-color: rgba(196, 62, 28, 0.16);
+  color: #c43e1c;
+}
+
+.drive-tool.is-folder {
+  background: rgba(185, 24, 40, 0.08);
+  border-color: rgba(185, 24, 40, 0.16);
+  color: #b91828;
+}
+
+.drive-tool.is-upload {
+  background: rgba(28, 31, 58, 0.05);
+  color: #1c1f3a;
+}
+
+.drive-tool:hover {
+  transform: translateY(-1px);
+}
+
+.drive-empty {
+  padding: 2rem 1rem;
+  text-align: center;
+  color: rgba(28, 31, 58, 0.6);
+}
+
+.drive-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.drive-card {
+  border: 1px solid rgba(28, 31, 58, 0.08);
+  border-radius: 20px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  cursor: pointer;
+  background: #fff;
+  overflow: visible;
+}
+
+.drive-card:hover {
+  border-color: rgba(185, 24, 40, 0.35);
+}
+
+.drive-card.is-word {
+  background: #eaf3fb;
+  border-color: rgba(43, 87, 154, 0.16);
+}
+
+.drive-card.is-word:hover {
+  border-color: rgba(43, 87, 154, 0.45);
+}
+
+.drive-card.is-sheet {
+  background: #e8f6ee;
+  border-color: rgba(33, 115, 70, 0.16);
+}
+
+.drive-card.is-sheet:hover {
+  border-color: rgba(33, 115, 70, 0.45);
+}
+
+.drive-card.is-slides {
+  background: #fdeee8;
+  border-color: rgba(196, 62, 28, 0.16);
+}
+
+.drive-card.is-slides:hover {
+  border-color: rgba(196, 62, 28, 0.45);
+}
+
+.drive-card__icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(28, 31, 58, 0.06);
+  color: #1c1f3a;
+}
+
+.drive-card__icon.is-folder {
+  background: rgba(185, 24, 40, 0.1);
+  color: #b91828;
+}
+
+.drive-card__icon.is-word {
+  background: #d4e6f7;
+  color: #2b579a;
+}
+
+.drive-card__icon.is-sheet {
+  background: #cfe9d8;
+  color: #217346;
+}
+
+.drive-card__icon.is-slides {
+  background: #f8d5c8;
+  color: #c43e1c;
+}
+
+.drive-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.drive-card__body strong {
+  color: #1c1f3a;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.drive-card__body span {
+  color: rgba(28, 31, 58, 0.55);
+  font-size: 0.85rem;
+}
+
+.drive-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.drive-card__actions button,
+.drive-sheet__tools button {
+  border: 1px solid rgba(28, 31, 58, 0.12);
+  background: #fff;
+  border-radius: 999px;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  color: #1c1f3a;
+}
+
+.drive-card__actions button {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.92rem;
+}
+
+.drive-card__actions button::after {
+  content: attr(data-tip);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%) translateY(4px);
+  padding: 0.28rem 0.55rem;
+  border-radius: 8px;
+  background: #1c1f3a;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s ease, transform 0.12s ease;
+  z-index: 3;
+}
+
+.drive-card__actions button:hover::after {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.drive-card__actions .is-danger {
+  color: #b91828;
+  border-color: rgba(185, 24, 40, 0.28);
+}
+
+.drive-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-height: 62vh;
+}
+
+.drive-sheet,
+.drive-doc {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-height: 58vh;
+}
+
+.drive-sheet__tabs {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.drive-sheet__tabs button {
+  border: 0;
+  background: rgba(28, 31, 58, 0.06);
+  border-radius: 999px;
+  padding: 0.3rem 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.drive-sheet__tabs .is-active {
+  background: #b91828;
+  color: #fff;
+}
+
+.drive-sheet__table-wrap {
+  overflow: auto;
+  border: 1px solid rgba(28, 31, 58, 0.08);
+  border-radius: 12px;
+  max-height: 58vh;
+}
+
+.drive-sheet table {
+  border-collapse: collapse;
+  min-width: 100%;
+  background: #fff;
+}
+
+.drive-sheet th,
+.drive-sheet td {
+  border: 1px solid rgba(28, 31, 58, 0.1);
+  min-width: 92px;
+  padding: 0.35rem 0.45rem;
+  font-size: 0.85rem;
+}
+
+.drive-sheet th {
+  background: #f6f7fb;
+  color: rgba(28, 31, 58, 0.65);
+  font-weight: 700;
+  text-align: center;
+}
+
+.drive-sheet td {
+  padding: 0;
+}
+
+.drive-sheet input {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 0.35rem 0.45rem;
+  font: inherit;
+  min-width: 92px;
+}
+
+.drive-sheet input:focus {
+  outline: 2px solid rgba(185, 24, 40, 0.35);
+}
+
+.drive-doc iframe {
+  width: 100%;
+  min-height: 72vh;
+  height: calc(100vh - 280px);
+  border: 1px solid rgba(28, 31, 58, 0.08);
+  border-radius: 16px;
+  background: #fff;
+}
+
+.drive-doc p,
+.drive-sheet__tools {
+  color: rgba(28, 31, 58, 0.6);
+  font-size: 0.9rem;
+}
+
+.drive-sheet__tools {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.drive-text {
+  width: 100%;
+  min-height: 58vh;
+  border: 1px solid rgba(28, 31, 58, 0.08);
+  border-radius: 16px;
+  padding: 1rem;
+  font: inherit;
+  resize: vertical;
+}
+
+.loader-overlay {
+  position: relative;
+  padding: 1.5rem;
+  text-align: center;
+  color: #b91828;
+  font-weight: 700;
+}
