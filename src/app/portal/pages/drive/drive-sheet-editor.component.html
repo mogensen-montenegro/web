@@ -79,10 +79,11 @@
     <nav class="drive-sheet__tabs">
       <button
         type="button"
-        *ngFor="let item of hojasFiltradas"
+        *ngFor="let item of hojasFiltradas; trackBy: trackHoja"
         [class.is-active]="item.index === hojaActiva"
         [title]="item.hoja.name"
-        (click)="activarHoja(item.index)">
+        (mousedown)="activarHoja(item.index, $event)"
+        (click)="activarHoja(item.index, $event)">
         {{ item.hoja.name }}
       </button>
     </nav>
@@ -91,40 +92,42 @@
 
   <div class="drive-sheet__table-wrap" (scroll)="onScroll($event)">
     <p class="drive-sheet__loading" *ngIf="cargando">Leyendo la planilla...</p>
-    <table *ngIf="!cargando">
-      <thead>
-        <tr>
-          <th></th>
-          <th *ngFor="let col of columnas">{{ col }}</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngIf="padTop" class="drive-sheet__pad"><td [attr.colspan]="columnas.length + 1" [style.height.px]="padTop"></td></tr>
-        <tr *ngFor="let item of filasVisibles; trackBy: trackFila">
-          <th>{{ item.r + 1 }}</th>
-          <td
-            *ngFor="let celda of item.row; let c = index"
-            [class.is-sel]="esSeleccionada(item.r, c)"
-            [style.background]="celda.fill || null"
-            (mousedown)="iniciarSeleccion(item.r, c, $event)"
-            (mouseenter)="extenderSeleccion(item.r, c)">
-            <input
-              [ngModel]="celda.v"
-              (ngModelChange)="cambiarValorCelda(celda, $event)"
-              (focus)="iniciarSeleccion(item.r, c, $event)"
-              [disabled]="!puedeEditar"
-              [style.font-weight]="celda.bold ? '700' : '400'"
-              [style.font-style]="celda.italic ? 'italic' : 'normal'"
-              [style.text-decoration]="celda.underline ? 'underline' : 'none'"
-              [style.color]="celda.color"
-              [style.font-family]="celda.font"
-              [style.font-size.px]="celda.size"
-              [style.text-align]="celda.align" />
-          </td>
-        </tr>
-        <tr *ngIf="padBottom" class="drive-sheet__pad"><td [attr.colspan]="columnas.length + 1" [style.height.px]="padBottom"></td></tr>
-      </tbody>
-    </table>
+    <ng-container *ngFor="let hojaId of [hojaActiva]">
+      <table *ngIf="!cargando">
+        <thead>
+          <tr>
+            <th></th>
+            <th *ngFor="let col of columnas">{{ col }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="padTop" class="drive-sheet__pad"><td [attr.colspan]="columnas.length + 1" [style.height.px]="padTop"></td></tr>
+          <tr *ngFor="let item of filasVisibles; trackBy: trackFila">
+            <th>{{ item.r + 1 }}</th>
+            <td
+              *ngFor="let celda of item.row; let c = index"
+              [class.is-sel]="esSeleccionada(item.r, c)"
+              [style.background]="celda.fill || null"
+              (mousedown)="iniciarSeleccion(item.r, c, $event)"
+              (mouseenter)="extenderSeleccion(item.r, c)">
+              <input
+                [ngModel]="celda.v"
+                (ngModelChange)="cambiarValorCelda(celda, $event)"
+                (focus)="iniciarSeleccion(item.r, c, $event)"
+                [disabled]="!puedeEditar"
+                [style.font-weight]="celda.bold ? '700' : '400'"
+                [style.font-style]="celda.italic ? 'italic' : 'normal'"
+                [style.text-decoration]="celda.underline ? 'underline' : 'none'"
+                [style.color]="celda.color"
+                [style.font-family]="celda.font"
+                [style.font-size.px]="celda.size"
+                [style.text-align]="celda.align" />
+            </td>
+          </tr>
+          <tr *ngIf="padBottom" class="drive-sheet__pad"><td [attr.colspan]="columnas.length + 1" [style.height.px]="padBottom"></td></tr>
+        </tbody>
+      </table>
+    </ng-container>
   </div>
   <div class="drive-sheet__tools" *ngIf="puedeEditar && !cargando">
     <button type="button" (click)="agregarFila()">+ Fila</button>

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, HostListener, Input, Output } from '@angular/core';
+import { Component, EventEmitter, HostListener, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CeldaHoja, DRIVE_COLORES, DRIVE_FUENTES, HojaDrive, PaletaFmt, SeleccionHoja, celdaVacia } from './drive.models';
 
@@ -13,15 +13,14 @@ const FILAS_VENTANA = 42;
   templateUrl: './drive-sheet-editor.component.html',
   styleUrls: ['./drive-sheet-editor.component.scss']
 })
-export class DriveSheetEditorComponent {
+export class DriveSheetEditorComponent implements OnChanges {
   @Input() hojas: HojaDrive[] = [];
   @Input() puedeEditar = false;
   @Input() cargando = false;
   @Input() aviso = '';
+  @Input() hojaActiva = 0;
   @Output() changed = new EventEmitter<void>();
   @Output() hojaChange = new EventEmitter<number>();
-
-  public hojaActiva = 0;
   public busquedaHoja = '';
   public filaInicio = 0;
   public paleta: PaletaFmt = null;
@@ -29,6 +28,13 @@ export class DriveSheetEditorComponent {
   public readonly fuentes = DRIVE_FUENTES;
   public readonly colores = DRIVE_COLORES;
   private arrastrando = false;
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['hojaActiva']) {
+      this.filaInicio = 0;
+      this.sel = { r1: 0, c1: 0, r2: 0, c2: 0 };
+    }
+  }
 
   public get filas(): CeldaHoja[][] {
     return this.hojas[this.hojaActiva]?.rows || [];
@@ -101,12 +107,18 @@ export class DriveSheetEditorComponent {
     if (!visibles.some((item) => item.index === this.hojaActiva)) this.activarHoja(visibles[0].index);
   }
 
-  public activarHoja(index: number): void {
-    this.hojaActiva = index;
+  public activarHoja(index: number, event?: Event): void {
+    event?.preventDefault();
+    event?.stopPropagation();
+    if (index === this.hojaActiva) return;
     this.filaInicio = 0;
     this.sel = { r1: 0, c1: 0, r2: 0, c2: 0 };
     this.paleta = null;
     this.hojaChange.emit(index);
+  }
+
+  public trackHoja(_: number, item: { index: number }): number {
+    return item.index;
   }
 
   public onScroll(event: Event): void {
@@ -186,8 +198,8 @@ export class DriveSheetEditorComponent {
     this.aplicarEstiloHoja({ size });
   }
 
-  public trackFila(_: number, item: { r: number }): number {
-    return item.r;
+  public trackFila(_: number, item: { r: number }): string {
+    return `${this.hojaActiva}:${item.r}`;
   }
 
   private normalizar(value: string): string {

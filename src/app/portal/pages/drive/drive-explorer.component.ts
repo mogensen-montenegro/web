@@ -61,6 +61,7 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
   public carpetaActual: string | null = null;
   public editor: DriveEditor | null = null;
   public hojas: HojaDrive[] = [];
+  public hojaActiva = 0;
   public texto = '';
   public vista: 'grid' | 'list' = 'list';
   public busqueda = '';
@@ -171,13 +172,30 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
     this.marcarCambio();
   }
 
+  public seleccionarHoja(index: number): void {
+    const n = Number(index);
+    if (!Number.isFinite(n) || n === this.hojaActiva) return;
+    this.hojaActiva = n;
+    this.cdr.detectChanges();
+    setTimeout(() => this.asegurarHoja(n), 0);
+  }
+
   public asegurarHoja(index: number): void {
     const hoja = this.hojas[index];
-    if (!hoja || hoja.cargada) return;
-    const ws = this.libro?.Sheets[hoja.name] || {};
-    hoja.rows = this.filasDesdeSheet(ws);
-    hoja.cargada = true;
+    if (!hoja) return;
+    if (!hoja.cargada) {
+      hoja.rows = this.filasDesdeSheet(this.worksheetDe(index, hoja.name));
+      hoja.cargada = true;
+    }
     this.cdr.detectChanges();
+  }
+
+  private worksheetDe(index: number, name: string): XLSX.WorkSheet {
+    if (!this.libro) return {};
+    const porNombre = name ? this.libro.Sheets[name] : undefined;
+    if (porNombre) return porNombre;
+    const clave = this.libro.SheetNames[index];
+    return (clave && this.libro.Sheets[clave]) || {};
   }
 
   public onRichHtml(html: string): void {
@@ -586,6 +604,7 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
     this.registrarCierre();
     this.editor = null;
     this.hojas = [];
+    this.hojaActiva = 0;
     this.libro = null;
     this.texto = '';
     this.modificado = false;
@@ -631,6 +650,7 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
       this.libro = wb;
       const nombres = wb.SheetNames?.length ? wb.SheetNames : ['Hoja1'];
       this.hojas = nombres.map((name) => ({ name, rows: [], cargada: false }));
+      this.hojaActiva = 0;
       this.asegurarHoja(0);
     } catch (err) {
       console.error(err);
