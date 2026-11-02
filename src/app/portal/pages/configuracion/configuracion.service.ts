@@ -11,10 +11,13 @@ export interface DriveFolder {
 
 export interface DriveConfig {
   configurado: boolean;
+  conectado?: boolean;
+  hasClient?: boolean;
   clientEmail: string;
+  connectedEmail?: string;
   folderId: string;
   folders: DriveFolder[];
-  projectId?: string;
+  oauthClientId?: string;
   actualizadoEn?: string | null;
 }
 
@@ -84,10 +87,20 @@ export class ConfiguracionService {
     }).pipe(tap((response) => this.setDriveHabilitado(!!response?.drive?.configurado)));
   }
 
-  public guardarDrive(payload: { jsonCredencial: string; folderIds: string[] }): Observable<ConfiguracionResponse> {
+  public guardarDrive(payload: {
+    oauthClientId: string;
+    oauthClientSecret?: string;
+    folderIds: string[];
+  }): Observable<ConfiguracionResponse> {
     return this.http.put<ConfiguracionResponse>(`${this.baseUrl}/configuracion/drive`, payload, {
       headers: this.headers()
     }).pipe(tap((response) => this.setDriveHabilitado(!!response?.drive?.configurado)));
+  }
+
+  public iniciarOAuthDrive(): Observable<{ ok: boolean; url: string }> {
+    return this.http.get<{ ok: boolean; url: string }>(`${this.baseUrl}/configuracion/drive/oauth/start`, {
+      headers: this.headers()
+    });
   }
 
   public desvincularDrive(): Observable<{ ok: boolean; msj: string }> {

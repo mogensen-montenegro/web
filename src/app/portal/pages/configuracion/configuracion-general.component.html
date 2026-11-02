@@ -1,31 +1,53 @@
 <section class="cfg-card" *ngIf="esSuperuser">
   <div class="cfg-card__head">
     <h4>Google Drive</h4>
-    <p>Vinculá una cuenta de servicio y una o más carpetas. Después las manejás desde el portal.</p>
+    <p>Conectá la cuenta Gmail de la oficina. Los empleados trabajan desde el portal y queda registro de cada movimiento.</p>
   </div>
 
   <ol class="cfg-steps">
-    <li>En Google Cloud, creá un proyecto, activá <strong>Google Drive API</strong> y una <strong>cuenta de servicio</strong>.</li>
-    <li>Descargá la clave JSON de esa cuenta.</li>
-    <li>En Drive, compartí cada carpeta con el mail de la cuenta de servicio (Editor).</li>
-    <li>Pegá el JSON acá y los ID de carpeta (están en la URL: <code>drive.google.com/drive/folders/ID</code>).</li>
+    <li>En Google Cloud, creá un proyecto y activá <strong>Google Drive API</strong>.</li>
+    <li>En <strong>Acceso a los datos</strong> agregá el permiso/scope de Drive:
+      <code>https://www.googleapis.com/auth/drive</code>
+    </li>
+    <li>Configurá OAuth (External) y agregá como usuario de prueba el Gmail de la oficina.</li>
+    <li>Creá un cliente <strong>Aplicación web</strong> con redirect:
+      <code>https://seguros-back.vercel.app/api/configuracion/drive/oauth/callback</code>
+    </li>
+    <li>Pegá Client ID, Client Secret e IDs de carpeta, guardá y tocá <strong>Conectar con Google</strong> con esa cuenta (tiene que pedir acceso a Drive).</li>
   </ol>
 
-  <div class="cfg-status" *ngIf="drive.configurado">
+  <div class="cfg-status" *ngIf="drive.conectado">
     <i class="fa fa-circle-check"></i>
     <div>
-      <strong>Portal vinculado</strong>
-      <span>{{ drive.clientEmail }}</span>
+      <strong>Conectado</strong>
+      <span>{{ drive.connectedEmail || drive.clientEmail }}</span>
       <span *ngIf="drive.folders?.length">Carpetas: {{ nombresCarpetas(drive.folders) }}</span>
     </div>
   </div>
 
+  <div class="cfg-status cfg-status--warn" *ngIf="drive.hasClient && !drive.conectado">
+    <i class="fa fa-circle-exclamation"></i>
+    <div>
+      <strong>Falta conectar Google</strong>
+      <span>Ya hay Client ID guardado. Tocá Conectar con Google con la cuenta de la oficina.</span>
+    </div>
+  </div>
+
   <label class="cfg-field">
-    <span>JSON de credenciales</span>
-    <textarea
-      rows="7"
-      [(ngModel)]="jsonCredencial"
-      placeholder='Pegá el JSON de la cuenta de servicio, con client_email y private_key.'></textarea>
+    <span>Client ID</span>
+    <input
+      type="text"
+      [(ngModel)]="oauthClientId"
+      placeholder="xxxxx.apps.googleusercontent.com" />
+  </label>
+
+  <label class="cfg-field">
+    <span>Client Secret{{ drive.hasClient ? ' (dejar vacío para no cambiarlo)' : '' }}</span>
+    <input
+      type="password"
+      [(ngModel)]="oauthClientSecret"
+      placeholder="GOCSPX-..."
+      autocomplete="off" />
   </label>
 
   <div class="cfg-field">
@@ -35,17 +57,26 @@
       <button type="button" class="btn-ghost btn-icon" (click)="quitarCarpeta(i)" *ngIf="folderIds.length > 1">×</button>
     </div>
     <button type="button" class="btn-link" (click)="agregarCarpeta()">+ Agregar otra carpeta</button>
+    <small>El ID está en la URL: <code>drive.google.com/drive/folders/ID</code></small>
   </div>
 
   <div class="cfg-actions">
-    <button type="button" class="btn-ghost" *ngIf="drive.configurado" [disabled]="guardandoDrive" (click)="desvincularDrive()">
+    <button type="button" class="btn-ghost" *ngIf="drive.hasClient || drive.conectado" [disabled]="guardandoDrive" (click)="desvincularDrive()">
       Desvincular
     </button>
     <button type="button" class="btn-ghost" *ngIf="drive.configurado" (click)="irADrive()">
       Abrir archivos
     </button>
+    <button
+      type="button"
+      class="btn-ghost"
+      *ngIf="drive.hasClient || (oauthClientId.trim() && oauthClientSecret.trim())"
+      [disabled]="conectandoGoogle || guardandoDrive"
+      (click)="conectarGoogle()">
+      {{ conectandoGoogle ? 'Redirigiendo...' : (drive.conectado ? 'Reconectar con Google' : 'Conectar con Google') }}
+    </button>
     <button type="button" class="btn-rojo" [disabled]="guardandoDrive" (click)="guardarDrive()">
-      {{ guardandoDrive ? 'Conectando...' : (drive.configurado ? 'Actualizar vínculo' : 'Vincular Drive') }}
+      {{ guardandoDrive ? 'Guardando...' : 'Guardar' }}
     </button>
   </div>
 </section>

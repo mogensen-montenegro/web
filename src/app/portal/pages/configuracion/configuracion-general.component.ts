@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import Swal from 'sweetalert2';
 import { ConfiguracionService, DriveConfig, DriveFolder } from './configuracion.service';
 
@@ -15,10 +15,21 @@ import { ConfiguracionService, DriveConfig, DriveFolder } from './configuracion.
 export class ConfiguracionGeneralComponent implements OnInit {
   @Input() esSuperuser = false;
 
-  public drive: DriveConfig = { configurado: false, clientEmail: '', folderId: '', folders: [] };
-  public jsonCredencial = '';
+  public drive: DriveConfig = {
+    configurado: false,
+    conectado: false,
+    hasClient: false,
+    clientEmail: '',
+    connectedEmail: '',
+    folderId: '',
+    folders: [],
+    oauthClientId: ''
+  };
+  public oauthClientId = '';
+  public oauthClientSecret = '';
   public folderIds: string[] = [''];
   public guardandoDrive = false;
+  public conectandoGoogle = false;
 
   public pass1 = '';
   public pass2 = '';
@@ -28,11 +39,13 @@ export class ConfiguracionGeneralComponent implements OnInit {
 
   constructor(
     private configuracionService: ConfiguracionService,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
     this.cargarDrive();
+    this.leerResultadoOAuth();
   }
 
   public agregarCarpeta(): void {
@@ -46,8 +59,14 @@ export class ConfiguracionGeneralComponent implements OnInit {
 
   public guardarDrive(): void {
     const ids = this.folderIds.map((id) => id.trim()).filter(Boolean);
-    if (!this.jsonCredencial.trim()) {
-      void this.aviso('warning', 'Falta el JSON', 'Pegá el archivo de credenciales de la cuenta de servicio.');
+    const clientId = this.oauthClientId.trim() || this.drive.oauthClientId || '';
+    const secret = this.oauthClientSecret.trim();
+    if (!clientId) {
+      void this.aviso('warning', 'Falta el Client ID', 'Pegá el Client ID del cliente OAuth de Google.');
+      return;
+    }
+    if (!secret && !this.drive.hasClient) {
+      void this.aviso('warning', 'Falta el Client Secret', 'Pegá el Client Secret del cliente OAuth de Google.');
       return;
     }
     if (!ids.length) {
@@ -55,28 +74,113 @@ export class ConfiguracionGeneralComponent implements OnInit {
       return;
     }
     this.guardandoDrive = true;
-    this.configuracionService.guardarDrive({ jsonCredencial: this.jsonCredencial.trim(), folderIds: ids }).subscribe({
-      next: (response) => {
-        this.drive = response.drive;
-        this.folderIds = (response.drive.folders || []).map((folder) => folder.id);
-        this.jsonCredencial = '';
-        this.guardandoDrive = false;
-        void this.aviso('success', 'Drive vinculado', 'El portal ya puede listar, subir y borrar archivos de esas carpetas.');
-      },
-      error: (err) => {
-        this.guardandoDrive = false;
-        void this.aviso('error', 'No se pudo vincular', err?.error?.msj || 'Revisá el JSON, las carpetas y que estén compartidas con el mail de la cuenta de servicio.');
-      }
-    });
+    this.configuracionService
+      .guardarDrive({
+        oauthClientId: clientId,
+        oauthClientSecret: secret || undefined,
+        folderIds: ids
+      })
+      .subscribe({
+        next: (response) => {
+          this.aplicarDrive(response.drive);
+          this.oauthClientSecret = '';
+          this.guardandoDrive = false;
+          void this.aviso(
+            'success',
+            response.drive.conectado ? 'Drive actualizado' : 'Credenciales guardadas',
+            response.drive.conectado
+              ? 'El portal ya puede listar, crear y subir archivos con esa cuenta.'
+              : 'Ahora tocá Conectar con Google e ingresá con la cuenta de la oficina.'
+          );
+        },
+        error: (err) => {
+          this.guardandoDrive = false;
+          void this.aviso(
+            'error',
+            'No se pudo guardar',
+            err?.error?.msj || 'Revisá el Client ID, el Secret y los IDs de carpeta.'
+          );
+        }
+      });
+  }
+
+  public conectarGoogle(): void {
+    const ids = this.folderIds.map((id) => id.trim()).filter(Boolean);
+    const clientId = this.oauthClientId.trim() || this.drive.oauthClientId || '';
+    const secret = this.oauthClientSecret.trim();
+    const necesitaGuardar = !this.drive.hasClient || !!secret || ids.join(',') !== (this.drive.folders || []).map((f) => f.id).join(',');
+
+    this.conectandoGoogle = true;
+    const iniciar = () => {
+      this.configuracionService.iniciarOAuthDrive().subscribe({
+        next: (response) => {
+          if (!response?.url) {
+            this.conectandoGoogle = false;
+            void this.aviso('error', 'No se pudo iniciar', 'Google no devolvió la URL de autorización.');
+            return;
+          }
+          window.location.href = response.url;
+        },
+        error: (err) => {
+          this.conectandoGoogle = false;
+          void this.aviso(
+            'error',
+            'No se pudo conectar',
+            err?.error?.msj || 'Guardá primero el Client ID y el Client Secret.'
+          );
+        }
+      });
+    };
+
+    if (!necesitaGuardar) {
+      iniciar();
+      return;
+    }
+    if (!clientId || (!secret && !this.drive.hasClient) || !ids.length) {
+      this.conectandoGoogle = false;
+      void this.aviso(
+        'warning',
+        'Faltan datos',
+        'Completá Client ID, Client Secret y al menos una carpeta antes de conectar.'
+      );
+      return;
+    }
+    this.configuracionService
+      .guardarDrive({
+        oauthClientId: clientId,
+        oauthClientSecret: secret || undefined,
+        folderIds: ids
+      })
+      .subscribe({
+        next: (response) => {
+          this.aplicarDrive(response.drive);
+          this.oauthClientSecret = '';
+          iniciar();
+        },
+        error: (err) => {
+          this.conectandoGoogle = false;
+          void this.aviso('error', 'No se pudo guardar', err?.error?.msj || 'Revisá las credenciales y las carpetas.');
+        }
+      });
   }
 
   public desvincularDrive(): void {
     this.guardandoDrive = true;
     this.configuracionService.desvincularDrive().subscribe({
       next: () => {
-        this.drive = { configurado: false, clientEmail: '', folderId: '', folders: [] };
+        this.drive = {
+          configurado: false,
+          conectado: false,
+          hasClient: false,
+          clientEmail: '',
+          connectedEmail: '',
+          folderId: '',
+          folders: [],
+          oauthClientId: ''
+        };
         this.folderIds = [''];
-        this.jsonCredencial = '';
+        this.oauthClientId = '';
+        this.oauthClientSecret = '';
         this.guardandoDrive = false;
         void this.aviso('success', 'Drive desvinculado', 'Se quitaron las credenciales de Google Drive.');
       },
@@ -123,16 +227,44 @@ export class ConfiguracionGeneralComponent implements OnInit {
     return (folders || []).map((folder) => folder.name || folder.id).join(', ');
   }
 
+  private aplicarDrive(drive: DriveConfig | undefined): void {
+    this.drive = {
+      configurado: !!drive?.configurado,
+      conectado: !!drive?.conectado,
+      hasClient: !!drive?.hasClient,
+      clientEmail: drive?.connectedEmail || drive?.clientEmail || '',
+      connectedEmail: drive?.connectedEmail || drive?.clientEmail || '',
+      folderId: drive?.folderId || '',
+      folders: drive?.folders || [],
+      oauthClientId: drive?.oauthClientId || '',
+      actualizadoEn: drive?.actualizadoEn || null
+    };
+    this.oauthClientId = this.drive.oauthClientId || '';
+    this.folderIds = this.drive.folders.length ? this.drive.folders.map((folder) => folder.id) : [''];
+  }
+
   private cargarDrive(): void {
     this.configuracionService.obtener().subscribe({
-      next: (response) => {
-        this.drive = {
-          ...response?.drive,
-          folders: response?.drive?.folders || []
-        };
-        this.folderIds = this.drive.folders.length ? this.drive.folders.map((folder) => folder.id) : [''];
-      },
+      next: (response) => this.aplicarDrive(response?.drive),
       error: () => undefined
+    });
+  }
+
+  private leerResultadoOAuth(): void {
+    const params = this.route.snapshot.queryParamMap;
+    const drive = params.get('drive');
+    if (!drive) return;
+    if (drive === 'ok') {
+      void this.aviso('success', 'Google conectado', 'El portal ya opera con la cuenta de Drive de la oficina.');
+      this.cargarDrive();
+    } else if (drive === 'error') {
+      const msj = params.get('msj') || 'No se pudo conectar Google Drive.';
+      void this.aviso('error', 'No se pudo conectar', msj);
+    }
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {},
+      replaceUrl: true
     });
   }
 

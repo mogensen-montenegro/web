@@ -41,6 +41,14 @@
   margin-top: 0.2rem;
 }
 
+.cfg-status--warn {
+  background: rgba(185, 24, 40, 0.08);
+}
+
+.cfg-status--warn i {
+  color: #b91828;
+}
+
 .cfg-status div {
   display: flex;
   flex-direction: column;
@@ -107,6 +115,13 @@
 .cfg-field span {
   font-size: 0.85rem;
   color: rgba(28, 31, 58, 0.7);
+}
+
+.cfg-field small {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: rgba(28, 31, 58, 0.55);
+  line-height: 1.4;
 }
 
 .cfg-field input,

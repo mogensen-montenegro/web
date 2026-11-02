@@ -919,6 +919,7 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
   private textoError(err: unknown, fallback: string): string {
     const raw = String((err as { error?: { msj?: string } })?.error?.msj || '').trim();
     if (!raw) return fallback;
+    if (/[áéíóúñ¿¡]/i.test(raw) && !/https?:\/\//i.test(raw)) return raw;
     if (/https?:\/\/|service account|storage quota|developers\.google|googleapis|leverage shared|oauth delegation/i.test(raw)) {
       return fallback;
     }
