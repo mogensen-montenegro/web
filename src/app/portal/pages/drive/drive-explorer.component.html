@@ -128,7 +128,10 @@
         *ngIf="editor.kind === 'sheet' && !editor.embedUrl"
         [hojas]="hojas"
         [puedeEditar]="puedeEditar"
-        (changed)="onEditorChange()">
+        [cargando]="loading"
+        [aviso]="avisoPlanilla"
+        (changed)="onEditorChange()"
+        (hojaChange)="asegurarHoja($event)">
       </app-drive-sheet-editor>
 
       <div class="drive-doc" *ngIf="editor.kind === 'document' || editor.kind === 'presentation' || editor.kind === 'preview' || (editor.kind === 'sheet' && editor.embedUrl)">
@@ -148,7 +151,7 @@
       </app-drive-word-editor>
     </div>
 
-    <div class="loader-overlay" *ngIf="loading && items.length">
+    <div class="loader-overlay" *ngIf="loading && !editor && items.length">
       <div class="loader-text">Cargando Drive...</div>
     </div>
   </section>

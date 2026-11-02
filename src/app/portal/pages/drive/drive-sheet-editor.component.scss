@@ -7,24 +7,99 @@
   min-height: 58vh;
 }
 
+.drive-sheet__aviso,
+.drive-sheet__loading {
+  margin: 0;
+  padding: 0.7rem 0.9rem;
+  border-radius: 10px;
+  background: #fff3cd;
+  color: #8a6d12;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.drive-sheet__loading {
+  background: rgba(185, 24, 40, 0.06);
+  color: #b91828;
+  text-align: center;
+}
+
+.drive-sheet__nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem 0.85rem;
+}
+
+.drive-sheet__search {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  max-width: 280px;
+  height: 36px;
+  padding: 0 0.85rem;
+  border: 1px solid rgba(28, 31, 58, 0.14);
+  border-radius: 999px;
+  background: #fff;
+  color: rgba(28, 31, 58, 0.45);
+}
+
+.drive-sheet__search input {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  color: #1c1f3a;
+  outline: none;
+}
+
+.drive-sheet__count {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: rgba(28, 31, 58, 0.45);
+}
+
 .drive-sheet__tabs {
   display: flex;
-  gap: 0.35rem;
-  flex-wrap: wrap;
+  gap: 0.1rem;
+  overflow-x: auto;
+  flex-wrap: nowrap;
+  flex: 1 1 100%;
+  border-bottom: 1px solid rgba(28, 31, 58, 0.12);
 }
 
 .drive-sheet__tabs button {
   border: 0;
-  background: rgba(28, 31, 58, 0.06);
-  border-radius: 999px;
-  padding: 0.3rem 0.8rem;
-  font-weight: 700;
+  background: transparent;
+  padding: 0.7rem 0.95rem;
+  font-weight: 600;
   cursor: pointer;
+  white-space: nowrap;
+  color: #6b7280;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+
+.drive-sheet__tabs button:hover {
+  color: #1c1f3a;
 }
 
 .drive-sheet__tabs .is-active {
-  background: #b91828;
-  color: #fff;
+  color: #b91828;
+  font-weight: 700;
+  border-bottom-color: #b91828;
+}
+
+.drive-sheet__empty {
+  flex: 1 1 100%;
+  margin: 0.15rem 0 0;
+  color: rgba(28, 31, 58, 0.55);
+  font-size: 0.9rem;
+}
+
+.drive-sheet__pad td {
+  border: 0;
+  padding: 0;
 }
 
 .drive-sheet__table-wrap {
@@ -53,6 +128,16 @@
   color: rgba(28, 31, 58, 0.65);
   font-weight: 700;
   text-align: center;
+}
+
+.drive-sheet thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.drive-sheet tbody tr {
+  height: 34px;
 }
 
 .drive-sheet td {

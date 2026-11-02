@@ -3,6 +3,9 @@ import { Component, EventEmitter, HostListener, Input, Output } from '@angular/c
 import { FormsModule } from '@angular/forms';
 import { CeldaHoja, DRIVE_COLORES, DRIVE_FUENTES, HojaDrive, PaletaFmt, SeleccionHoja, celdaVacia } from './drive.models';
 
+const ALTO_FILA = 34;
+const FILAS_VENTANA = 42;
+
 @Component({
   selector: 'app-drive-sheet-editor',
   standalone: true,
@@ -13,9 +16,14 @@ import { CeldaHoja, DRIVE_COLORES, DRIVE_FUENTES, HojaDrive, PaletaFmt, Seleccio
 export class DriveSheetEditorComponent {
   @Input() hojas: HojaDrive[] = [];
   @Input() puedeEditar = false;
+  @Input() cargando = false;
+  @Input() aviso = '';
   @Output() changed = new EventEmitter<void>();
+  @Output() hojaChange = new EventEmitter<number>();
 
   public hojaActiva = 0;
+  public busquedaHoja = '';
+  public filaInicio = 0;
   public paleta: PaletaFmt = null;
   public sel: SeleccionHoja | null = { r1: 0, c1: 0, r2: 0, c2: 0 };
   public readonly fuentes = DRIVE_FUENTES;
@@ -33,6 +41,29 @@ export class DriveSheetEditorComponent {
 
   public get estiloCelda(): CeldaHoja {
     return this.celdasSeleccionadas()[0] || celdaVacia();
+  }
+
+  public get hojasFiltradas(): Array<{ hoja: HojaDrive; index: number }> {
+    const q = this.normalizar(this.busquedaHoja);
+    return this.hojas
+      .map((hoja, index) => ({ hoja, index }))
+      .filter((item) => !q || this.normalizar(item.hoja.name).includes(q));
+  }
+
+  public get filasVisibles(): Array<{ row: CeldaHoja[]; r: number }> {
+    const start = this.filaInicio;
+    const end = Math.min(this.filas.length, start + FILAS_VENTANA);
+    const out: Array<{ row: CeldaHoja[]; r: number }> = [];
+    for (let r = start; r < end; r++) out.push({ row: this.filas[r], r });
+    return out;
+  }
+
+  public get padTop(): number {
+    return this.filaInicio * ALTO_FILA;
+  }
+
+  public get padBottom(): number {
+    return Math.max(0, (this.filas.length - this.filaInicio - this.filasVisibles.length) * ALTO_FILA);
   }
 
   @HostListener('document:mouseup')
@@ -63,10 +94,24 @@ export class DriveSheetEditorComponent {
     }
   }
 
+  public onBusquedaHoja(value: string): void {
+    this.busquedaHoja = value;
+    const visibles = this.hojasFiltradas;
+    if (!visibles.length) return;
+    if (!visibles.some((item) => item.index === this.hojaActiva)) this.activarHoja(visibles[0].index);
+  }
+
   public activarHoja(index: number): void {
     this.hojaActiva = index;
+    this.filaInicio = 0;
     this.sel = { r1: 0, c1: 0, r2: 0, c2: 0 };
     this.paleta = null;
+    this.hojaChange.emit(index);
+  }
+
+  public onScroll(event: Event): void {
+    const wrap = event.target as HTMLElement;
+    this.filaInicio = Math.max(0, Math.floor(wrap.scrollTop / ALTO_FILA) - 6);
   }
 
   public esSeleccionada(row: number, col: number): boolean {
@@ -139,6 +184,17 @@ export class DriveSheetEditorComponent {
   public setTamanioHoja(value: string | number): void {
     const size = Math.min(72, Math.max(8, Number(value) || 11));
     this.aplicarEstiloHoja({ size });
+  }
+
+  public trackFila(_: number, item: { r: number }): number {
+    return item.r;
+  }
+
+  private normalizar(value: string): string {
+    return String(value || '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
   }
 
   private columna(index: number): string {

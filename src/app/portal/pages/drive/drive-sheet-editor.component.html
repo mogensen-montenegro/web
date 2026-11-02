@@ -1,5 +1,6 @@
 <div class="drive-sheet">
-  <div class="drive-fmt" *ngIf="puedeEditar">
+  <p class="drive-sheet__aviso" *ngIf="aviso">{{ aviso }}</p>
+  <div class="drive-fmt" *ngIf="puedeEditar && !cargando">
     <select
       class="drive-fmt__select"
       [ngModel]="estiloCelda.font"
@@ -63,17 +64,34 @@
       <i class="fa fa-align-right"></i>
     </button>
   </div>
-  <div class="drive-sheet__tabs" *ngIf="hojas.length > 1">
-    <button
-      type="button"
-      *ngFor="let hoja of hojas; let i = index"
-      [class.is-active]="i === hojaActiva"
-      (click)="activarHoja(i)">
-      {{ hoja.name }}
-    </button>
+
+  <div class="drive-sheet__nav" *ngIf="hojas.length > 1 && !cargando">
+    <label class="drive-sheet__search">
+      <i class="fa fa-search"></i>
+      <input
+        type="search"
+        [ngModel]="busquedaHoja"
+        (ngModelChange)="onBusquedaHoja($event)"
+        placeholder="Buscar hoja..."
+        aria-label="Buscar hoja del Excel">
+    </label>
+    <span class="drive-sheet__count">{{ hojasFiltradas.length }} de {{ hojas.length }}</span>
+    <nav class="drive-sheet__tabs">
+      <button
+        type="button"
+        *ngFor="let item of hojasFiltradas"
+        [class.is-active]="item.index === hojaActiva"
+        [title]="item.hoja.name"
+        (click)="activarHoja(item.index)">
+        {{ item.hoja.name }}
+      </button>
+    </nav>
+    <p class="drive-sheet__empty" *ngIf="!hojasFiltradas.length">Ninguna hoja coincide con “{{ busquedaHoja.trim() }}”.</p>
   </div>
-  <div class="drive-sheet__table-wrap">
-    <table>
+
+  <div class="drive-sheet__table-wrap" (scroll)="onScroll($event)">
+    <p class="drive-sheet__loading" *ngIf="cargando">Leyendo la planilla...</p>
+    <table *ngIf="!cargando">
       <thead>
         <tr>
           <th></th>
@@ -81,18 +99,19 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let fila of filas; let r = index">
-          <th>{{ r + 1 }}</th>
+        <tr *ngIf="padTop" class="drive-sheet__pad"><td [attr.colspan]="columnas.length + 1" [style.height.px]="padTop"></td></tr>
+        <tr *ngFor="let item of filasVisibles; trackBy: trackFila">
+          <th>{{ item.r + 1 }}</th>
           <td
-            *ngFor="let celda of fila; let c = index"
-            [class.is-sel]="esSeleccionada(r, c)"
+            *ngFor="let celda of item.row; let c = index"
+            [class.is-sel]="esSeleccionada(item.r, c)"
             [style.background]="celda.fill || null"
-            (mousedown)="iniciarSeleccion(r, c, $event)"
-            (mouseenter)="extenderSeleccion(r, c)">
+            (mousedown)="iniciarSeleccion(item.r, c, $event)"
+            (mouseenter)="extenderSeleccion(item.r, c)">
             <input
               [ngModel]="celda.v"
               (ngModelChange)="cambiarValorCelda(celda, $event)"
-              (focus)="iniciarSeleccion(r, c, $event)"
+              (focus)="iniciarSeleccion(item.r, c, $event)"
               [disabled]="!puedeEditar"
               [style.font-weight]="celda.bold ? '700' : '400'"
               [style.font-style]="celda.italic ? 'italic' : 'normal'"
@@ -103,10 +122,11 @@
               [style.text-align]="celda.align" />
           </td>
         </tr>
+        <tr *ngIf="padBottom" class="drive-sheet__pad"><td [attr.colspan]="columnas.length + 1" [style.height.px]="padBottom"></td></tr>
       </tbody>
     </table>
   </div>
-  <div class="drive-sheet__tools" *ngIf="puedeEditar">
+  <div class="drive-sheet__tools" *ngIf="puedeEditar && !cargando">
     <button type="button" (click)="agregarFila()">+ Fila</button>
     <button type="button" (click)="agregarColumna()">+ Columna</button>
   </div>

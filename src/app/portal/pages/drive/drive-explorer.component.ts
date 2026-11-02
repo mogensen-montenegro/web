@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { Router } from '@angular/router';
@@ -66,6 +66,8 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
   public busqueda = '';
   public extrasBusqueda: DriveItem[] = [];
   public previews: Record<string, string> = {};
+  public avisoPlanilla = '';
+  private libro: XLSX.WorkBook | null = null;
   private openedAt: string | null = null;
   private heartbeat?: ReturnType<typeof setInterval>;
   private listadoPedido = 0;
@@ -78,7 +80,8 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
     private permisos: ProfesorPermisosService,
     private profesoresService: ProfesoresService,
     private sanitizer: DomSanitizer,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -166,6 +169,15 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
 
   public onEditorChange(): void {
     this.marcarCambio();
+  }
+
+  public asegurarHoja(index: number): void {
+    const hoja = this.hojas[index];
+    if (!hoja || hoja.cargada) return;
+    const ws = this.libro?.Sheets[hoja.name] || {};
+    hoja.rows = this.filasDesdeSheet(ws);
+    hoja.cargada = true;
+    this.cdr.detectChanges();
   }
 
   public onRichHtml(html: string): void {
@@ -447,7 +459,10 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
     if (!this.editor) return Promise.resolve(false);
     const wb = XLSX.utils.book_new();
     this.hojas.forEach((hoja) => {
-      XLSX.utils.book_append_sheet(wb, this.sheetDesdeHoja(hoja), hoja.name.slice(0, 31) || 'Hoja');
+      const ws = hoja.cargada || !this.libro?.Sheets[hoja.name]
+        ? this.sheetDesdeHoja(hoja)
+        : this.libro.Sheets[hoja.name];
+      XLSX.utils.book_append_sheet(wb, ws, hoja.name.slice(0, 31) || 'Hoja');
     });
     const buffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array', cellStyles: true });
     const file = new File(
@@ -571,8 +586,10 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
     this.registrarCierre();
     this.editor = null;
     this.hojas = [];
+    this.libro = null;
     this.texto = '';
     this.modificado = false;
+    this.avisoPlanilla = '';
   }
 
   private registrarCierre(sync = false, stop = true): void {
@@ -587,18 +604,43 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
 
   private cargarPlanilla(item: DriveItem): void {
     this.loading = true;
+    this.avisoPlanilla = '';
+    this.hojas = [];
     this.drive.descargar(item.id).subscribe({
-      next: async (blob) => {
-        const buffer = await blob.arrayBuffer();
-        const wb = XLSX.read(buffer, { type: 'array', cellStyles: true });
-        this.hojas = wb.SheetNames.map((name) => this.hojaDesdeSheet(name, wb.Sheets[name]));
-        this.loading = false;
+      next: (blob) => {
+        void this.parsearPlanilla(blob);
       },
       error: (err) => {
         this.loading = false;
+        this.cdr.markForCheck();
         void this.aviso('error', 'No se pudo abrir la planilla', this.textoError(err, 'No se pudo abrir la planilla. Probá de nuevo.'));
       }
     });
+  }
+
+  private async parsearPlanilla(blob: Blob): Promise<void> {
+    try {
+      const buffer = await blob.arrayBuffer();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      let wb: XLSX.WorkBook;
+      try {
+        wb = XLSX.read(buffer, { type: 'array', cellStyles: true });
+      } catch {
+        wb = XLSX.read(buffer, { type: 'array' });
+      }
+      this.libro = wb;
+      const nombres = wb.SheetNames?.length ? wb.SheetNames : ['Hoja1'];
+      this.hojas = nombres.map((name) => ({ name, rows: [], cargada: false }));
+      this.asegurarHoja(0);
+    } catch (err) {
+      console.error(err);
+      this.libro = null;
+      this.hojas = [{ name: 'Hoja1', rows: this.padGrid([]), cargada: true }];
+      this.avisoPlanilla = 'No se pudo leer la planilla. Probá de nuevo.';
+    } finally {
+      this.loading = false;
+      this.cdr.detectChanges();
+    }
   }
 
   private cargarTexto(item: DriveItem): void {
@@ -624,17 +666,33 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
     return next;
   }
 
-  private hojaDesdeSheet(name: string, ws: XLSX.WorkSheet): HojaDrive {
-    const range = XLSX.utils.decode_range(ws['!ref'] || 'A1');
+  private filasDesdeSheet(ws: XLSX.WorkSheet): CeldaHoja[][] {
+    const celdas = new Map<string, CeldaHoja>();
+    let maxR = 0;
+    let maxC = 0;
+    Object.keys(ws || {}).forEach((key) => {
+      if (!key || key.charAt(0) === '!') return;
+      let addr: { r: number; c: number };
+      try {
+        addr = XLSX.utils.decode_cell(key);
+      } catch {
+        return;
+      }
+      maxR = Math.max(maxR, addr.r);
+      maxC = Math.max(maxC, addr.c);
+      celdas.set(`${addr.r}:${addr.c}`, this.celdaDesdeXlsx(ws[key]));
+    });
+    const rowCount = Math.max(maxR + 1, 16);
+    const colCount = Math.max(maxC + 1, 8);
     const rows: CeldaHoja[][] = [];
-    for (let r = 0; r <= range.e.r; r++) {
+    for (let r = 0; r < rowCount; r++) {
       const row: CeldaHoja[] = [];
-      for (let c = 0; c <= range.e.c; c++) {
-        row.push(this.celdaDesdeXlsx(ws[XLSX.utils.encode_cell({ r, c })]));
+      for (let c = 0; c < colCount; c++) {
+        row.push(celdas.get(`${r}:${c}`) || celdaVacia());
       }
       rows.push(row);
     }
-    return { name, rows: this.padGrid(rows) };
+    return rows;
   }
 
   private celdaDesdeXlsx(cell: XLSX.CellObject | undefined): CeldaHoja {

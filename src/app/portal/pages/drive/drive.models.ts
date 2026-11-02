@@ -19,6 +19,7 @@ export interface CeldaHoja {
 export interface HojaDrive {
   name: string;
   rows: CeldaHoja[][];
+  cargada?: boolean;
 }
 
 export interface SeleccionHoja {
