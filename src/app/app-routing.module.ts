@@ -24,7 +24,7 @@ import {PanelProfesorComponent} from './portal/pages/tu-personal/panel-profesor/
 import {ReportesComponent} from './portal/pages/reportes/reportes.component';
 import {ConfiguracionComponent} from './portal/pages/configuracion/configuracion.component';
 import {DriveExplorerComponent} from './portal/pages/drive/drive-explorer.component';
-import {DriveGuard} from './portal/pages/drive/drive.guard';
+import {DriveDirtyGuard, DriveGuard} from './portal/pages/drive/drive.guard';
 import {AuthGuard} from "./portal/pages/login/login-core/auth.guard";
 import {RoleGuard} from "./portal/pages/login/login-core/role.guard";
 import {RedirectGuard} from "./portal/pages/login/login-core/redirect.guard";
@@ -133,6 +133,7 @@ const routes: Routes = [
         path: 'drive',
         component: DriveExplorerComponent,
         canActivate: [RoleGuard, DriveGuard],
+        canDeactivate: [DriveDirtyGuard],
         data: {roles: ['superuser', 'personal', 'admin'], sidebarId: 'drive'}
       }
     ]

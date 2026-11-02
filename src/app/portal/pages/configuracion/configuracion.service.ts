@@ -31,6 +31,9 @@ export interface DriveItem {
   size: number;
   modifiedTime: string | null;
   webViewLink: string | null;
+  parentId?: string | null;
+  path?: string;
+  hasThumbnail?: boolean;
 }
 
 export type DriveEditorKind = 'sheet' | 'document' | 'presentation' | 'preview' | 'text' | 'download' | 'folder';
@@ -43,6 +46,7 @@ export interface DriveOpenResponse {
   editUrl: string | null;
   converted?: boolean;
   openedAt?: string | null;
+  texto?: string | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -145,6 +149,13 @@ export class ConfiguracionService {
     });
   }
 
+  public miniatura(id: string): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}/drive/items/${id}/thumbnail`, {
+      headers: this.headers(),
+      responseType: 'blob'
+    });
+  }
+
   public descargar(id: string): Observable<Blob> {
     return this.http.get(`${this.baseUrl}/drive/items/${id}/download`, {
       headers: this.headers(),
@@ -152,10 +163,12 @@ export class ConfiguracionService {
     });
   }
 
-  public abrirArchivo(id: string): Observable<DriveOpenResponse> {
-    return this.http.post<DriveOpenResponse>(`${this.baseUrl}/drive/items/${id}/abrir`, {}, {
-      headers: this.headers()
-    });
+  public abrirArchivo(id: string, parentId?: string | null): Observable<DriveOpenResponse> {
+    return this.http.post<DriveOpenResponse>(
+      `${this.baseUrl}/drive/items/${id}/abrir`,
+      { parentId: parentId || null },
+      { headers: this.headers() }
+    );
   }
 
   public cerrarArchivo(id: string, openedAt?: string | null): Observable<{ ok: boolean; edito?: boolean }> {
@@ -180,10 +193,10 @@ export class ConfiguracionService {
     });
   }
 
-  public crearDocumento(parentId: string, name: string): Observable<{ ok: boolean; item: DriveItem }> {
+  public crearDocumento(parentId: string, name: string, contenido?: string): Observable<{ ok: boolean; item: DriveItem }> {
     return this.http.post<{ ok: boolean; item: DriveItem }>(
       `${this.baseUrl}/drive/documentos`,
-      { parentId, name },
+      { parentId, name, contenido: contenido || '' },
       { headers: this.headers() }
     );
   }
@@ -192,6 +205,31 @@ export class ConfiguracionService {
     return this.http.post<{ ok: boolean; item: DriveItem }>(
       `${this.baseUrl}/drive/planillas`,
       { parentId, name },
+      { headers: this.headers() }
+    );
+  }
+
+  public buscar(q: string, folderId?: string | null): Observable<{ ok: boolean; items: DriveItem[] }> {
+    const params: Record<string, string> = { q };
+    if (folderId) params['folderId'] = folderId;
+    return this.http.get<{ ok: boolean; items: DriveItem[] }>(`${this.baseUrl}/drive/buscar`, {
+      headers: this.headers(),
+      params
+    });
+  }
+
+  public mover(id: string, parentId: string): Observable<{ ok: boolean; item: DriveItem }> {
+    return this.http.post<{ ok: boolean; item: DriveItem }>(
+      `${this.baseUrl}/drive/items/${id}/mover`,
+      { parentId },
+      { headers: this.headers() }
+    );
+  }
+
+  public guardarDocumento(id: string, html: string): Observable<{ ok: boolean; item: DriveItem }> {
+    return this.http.put<{ ok: boolean; item: DriveItem }>(
+      `${this.baseUrl}/drive/items/${id}/documento`,
+      { html },
       { headers: this.headers() }
     );
   }

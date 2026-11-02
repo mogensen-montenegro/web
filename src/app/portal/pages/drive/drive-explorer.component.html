@@ -3,45 +3,98 @@
     <div class="panel-page__copy drive-hero">
       <span class="panel-page__eyebrow">Google Drive</span>
       <div class="drive-hero__row">
-        <h3 class="panel-page__title">{{ tituloActual }}</h3>
-        <div class="panel-page__actions">
-          <ng-container *ngIf="!editor">
-            <button type="button" class="btn btn-light" *ngIf="puedeAsignar" (click)="abrirPermisos()">Permisos</button>
-            <button type="button" class="btn btn-light" *ngIf="esSuperuser" (click)="irAConfig()">Credenciales</button>
-          </ng-container>
-          <ng-container *ngIf="editor">
-            <button type="button" class="btn btn-color" *ngIf="editor.kind === 'sheet' && !editor.embedUrl && puedeEditar" [disabled]="guardando" (click)="guardarPlanilla()">
-              {{ guardando ? 'Guardando...' : 'Guardar planilla' }}
-            </button>
-            <button type="button" class="btn btn-color" *ngIf="editor.kind === 'text' && puedeEditar" [disabled]="guardando" (click)="guardarTexto()">
-              {{ guardando ? 'Guardando...' : 'Guardar' }}
-            </button>
-            <button type="button" class="btn btn-light" *ngIf="editor.editUrl" (click)="trabajarAfuera()">Abrir editor</button>
-            <button type="button" class="btn btn-light" (click)="descargar(editor.item)" title="Bajar" aria-label="Bajar">
-              <i class="fa fa-download"></i>
-            </button>
-            <button type="button" class="btn btn-light is-danger" *ngIf="puedeBorrar" (click)="eliminar(editor.item)" title="Eliminar" aria-label="Eliminar">
-              <i class="fa fa-trash"></i>
-            </button>
-            <button type="button" class="btn btn-light" (click)="cerrarEditor()">Cerrar</button>
-          </ng-container>
+        <h3 class="panel-page__title">
+          {{ tituloActual }}
+          <span class="drive-dirty-pill" *ngIf="modificado">Sin guardar</span>
+        </h3>
+        <div class="panel-page__actions" *ngIf="!editor">
+          <button type="button" class="btn btn-light drive-back" *ngIf="puedeRegresar" (click)="regresar()">
+            <i class="fa fa-arrow-left"></i>
+            Regresar
+          </button>
+          <button type="button" class="btn btn-light" *ngIf="puedeAsignar" (click)="abrirPermisos()">Permisos</button>
+          <button type="button" class="btn btn-light" *ngIf="esSuperuser" (click)="irAConfig()">Credenciales</button>
         </div>
       </div>
       <p class="panel-page__subtitle">
-        {{ editor ? 'Trabajá el archivo acá. Los cambios quedan en Drive.' : (clientEmail ? ('Vinculado como ' + clientEmail) : 'Manipulá las carpetas de Drive desde el portal.') }}
+        {{ editor
+          ? (editor.kind === 'preview'
+            ? 'Vista previa del archivo. Los PDF e imágenes se ven acá; para el resto, tocá Abrir editor.'
+            : (editor.kind === 'sheet' && !editor.embedUrl
+              ? 'Editá la planilla acá y tocá Guardar planilla. Los cambios quedan en Drive.'
+              : (editor.kind === 'text'
+                ? 'Editá el documento acá y tocá Guardar. El formato queda en el archivo de Drive.'
+                : 'Trabajá el archivo acá. Los cambios quedan en Drive.')))
+          : (clientEmail ? ('Vinculado como ' + clientEmail) : 'Manipulá las carpetas de Drive desde el portal.') }}
+      </p>
+      <p class="drive-unsaved" *ngIf="editor && modificado">
+        Este archivo se modificó. Tocá Guardar para que los cambios queden en Drive.
       </p>
     </div>
   </section>
 
   <section class="panel-page__content">
-    <nav class="drive-path">
-      <button type="button" (click)="irA(-1)">Inicio</button>
-      <span *ngFor="let paso of ruta; let i = index">
-        /
-        <button type="button" (click)="irA(i)">{{ paso.name }}</button>
-      </span>
-      <span *ngIf="editor"> / {{ editor.item.name }}</span>
-    </nav>
+    <div class="drive-nav">
+      <div class="drive-nav__row">
+        <div class="drive-nav__trail">
+          <button type="button" class="drive-back" *ngIf="puedeRegresar" (click)="regresar()">
+            <i class="fa fa-arrow-left"></i>
+            Regresar
+          </button>
+          <nav class="drive-path">
+            <button type="button" (click)="irA(-1)">Inicio</button>
+            <span *ngFor="let paso of ruta; let i = index">
+              /
+              <button type="button" (click)="irA(i)">{{ paso.name }}</button>
+            </span>
+            <span *ngIf="editor"> / {{ editor.item.name }}</span>
+          </nav>
+        </div>
+        <label class="drive-search" *ngIf="!editor">
+          <i class="fa fa-search"></i>
+          <input
+            type="search"
+            [ngModel]="busqueda"
+            (ngModelChange)="onBusqueda($event)"
+            placeholder="Buscar archivos..."
+            aria-label="Buscar en Drive">
+        </label>
+        <div class="drive-view" *ngIf="!editor">
+          <button
+            type="button"
+            [class.is-active]="vista === 'list'"
+            (click)="cambiarVista('list')"
+            title="Vista de lista"
+            aria-label="Vista de lista">
+            <i class="fa fa-list"></i>
+          </button>
+          <button
+            type="button"
+            [class.is-active]="vista === 'grid'"
+            (click)="cambiarVista('grid')"
+            title="Vista de tarjetas"
+            aria-label="Vista de tarjetas">
+            <i class="fa fa-th-large"></i>
+          </button>
+        </div>
+      </div>
+      <div class="panel-page__actions drive-nav__actions" *ngIf="editor">
+        <button type="button" class="btn btn-color" *ngIf="editor.kind === 'sheet' && !editor.embedUrl && puedeEditar" [disabled]="guardando || !modificado" (click)="guardarPlanilla()">
+          {{ guardando ? 'Guardando...' : 'Guardar planilla' }}
+        </button>
+        <button type="button" class="btn btn-color" *ngIf="editor.kind === 'text' && puedeEditar" [disabled]="guardando || !modificado" (click)="guardarTexto()">
+          {{ guardando ? 'Guardando...' : 'Guardar' }}
+        </button>
+        <button type="button" class="btn btn-light" *ngIf="editor.editUrl" (click)="trabajarAfuera()">Abrir editor</button>
+        <button type="button" class="btn btn-light" (click)="descargar(editor.item)" title="Bajar" aria-label="Bajar">
+          <i class="fa fa-download"></i>
+        </button>
+        <button type="button" class="btn btn-light is-danger" *ngIf="puedeBorrar" (click)="eliminar(editor.item)" title="Eliminar" aria-label="Eliminar">
+          <i class="fa fa-trash"></i>
+        </button>
+        <button type="button" class="btn btn-light" (click)="cerrarEditor()">Cerrar</button>
+      </div>
+    </div>
 
     <ng-container *ngIf="!editor">
       <div class="drive-tools" *ngIf="puedeEditar && carpetaActual">
@@ -68,54 +121,220 @@
         <input #fileInput type="file" hidden (change)="onFile($event)" />
       </div>
 
-      <div class="drive-empty" *ngIf="!loading && !items.length">
-        <p *ngIf="!raices.length">Todavía no hay carpetas vinculadas. Cargá las credenciales en Configuración.</p>
-        <p *ngIf="raices.length">Esta carpeta está vacía.</p>
+      <article class="drive-empty-card is-loading" *ngIf="loading && !items.length">
+        <div class="drive-empty-card__icon">
+          <i class="fa fa-cloud"></i>
+        </div>
+        <div class="drive-empty-card__body">
+          <strong>Cargando Drive</strong>
+          <p>Estamos trayendo el contenido de esta carpeta.</p>
+        </div>
+      </article>
+
+      <article class="drive-empty-card" *ngIf="!loading && !items.length && !raices.length">
+        <div class="drive-empty-card__icon">
+          <i class="fa fa-link"></i>
+        </div>
+        <div class="drive-empty-card__body">
+          <strong>Drive todavía no está vinculado</strong>
+          <p>Cargá las credenciales en Configuración y compartí las carpetas con la cuenta de servicio como Editor.</p>
+        </div>
+      </article>
+
+      <article class="drive-empty-card" *ngIf="!loading && busqueda.trim() && !visibles.length">
+        <div class="drive-empty-card__icon">
+          <i class="fa fa-search"></i>
+        </div>
+        <div class="drive-empty-card__body">
+          <strong>Sin resultados</strong>
+          <p>No encontramos nada con “{{ busqueda.trim() }}”.</p>
+        </div>
+      </article>
+
+      <article class="drive-empty-card" *ngIf="!loading && !items.length && raices.length && !busqueda.trim()">
+        <div class="drive-empty-card__icon">
+          <i class="fa fa-folder-open"></i>
+        </div>
+        <div class="drive-empty-card__body">
+          <strong>Esta carpeta está vacía</strong>
+          <p *ngIf="puedeEditar">
+            Todavía no hay archivos ni subcarpetas en {{ tituloActual }}.
+            Creá un documento, una planilla o subí un archivo para empezar a trabajar acá.
+          </p>
+          <p *ngIf="!puedeEditar">
+            Todavía no hay archivos ni subcarpetas en {{ tituloActual }}.
+          </p>
+        </div>
+      </article>
+
+      <div class="drive-boards" *ngIf="!loading && visibles.length && vista === 'grid'">
+        <div class="drive-grid drive-grid--folders" *ngIf="carpetas.length">
+          <ng-container *ngFor="let item of carpetas">
+            <ng-container *ngTemplateOutlet="tarjeta; context: { item: item }"></ng-container>
+          </ng-container>
+        </div>
+        <div class="drive-grid drive-grid--files" *ngIf="archivos.length">
+          <ng-container *ngFor="let item of archivos">
+            <ng-container *ngTemplateOutlet="tarjeta; context: { item: item }"></ng-container>
+          </ng-container>
+        </div>
       </div>
 
-      <div class="drive-grid" *ngIf="items.length">
+      <ng-template #tarjeta let-item="item">
         <article
           class="drive-card"
-          *ngFor="let item of items"
+          [class.is-file]="!item.isFolder"
           [class.is-word]="tipoArchivo(item) === 'word'"
           [class.is-sheet]="tipoArchivo(item) === 'sheet'"
           [class.is-slides]="tipoArchivo(item) === 'slides'"
           (click)="abrir(item)">
-          <div
-            class="drive-card__icon"
-            [class.is-folder]="item.isFolder"
-            [class.is-word]="tipoArchivo(item) === 'word'"
-            [class.is-sheet]="tipoArchivo(item) === 'sheet'"
-            [class.is-slides]="tipoArchivo(item) === 'slides'">
-            <i class="fa" [ngClass]="icono(item)"></i>
+          <div class="drive-card__top">
+            <div class="drive-card__heading">
+              <div
+                class="drive-card__icon"
+                [class.is-folder]="item.isFolder"
+                [class.is-word]="tipoArchivo(item) === 'word'"
+                [class.is-sheet]="tipoArchivo(item) === 'sheet'"
+                [class.is-slides]="tipoArchivo(item) === 'slides'">
+                <i class="fa" [ngClass]="icono(item)"></i>
+              </div>
+              <span class="drive-card__copy">
+                <strong [attr.title]="item.path || item.name">{{ item.name }}</strong>
+                <small class="drive-card__path" *ngIf="item.path">{{ item.path }}</small>
+              </span>
+            </div>
+            <ng-container *ngTemplateOutlet="acciones; context: { item: item }"></ng-container>
           </div>
-          <div class="drive-card__body">
-            <strong>{{ item.name }}</strong>
-            <span>{{ item.isFolder ? 'Carpeta' : peso(item) }}</span>
-          </div>
-          <div class="drive-card__actions" (click)="$event.stopPropagation()">
-            <button type="button" *ngIf="!item.isFolder" (click)="descargar(item, $event)" data-tip="Bajar" aria-label="Bajar">
-              <i class="fa fa-download"></i>
-            </button>
-            <button type="button" *ngIf="puedeEditar" (click)="renombrar(item, $event)" data-tip="Renombrar" aria-label="Renombrar">
-              <i class="fa fa-pencil"></i>
-            </button>
-            <button type="button" class="is-danger" *ngIf="puedeBorrar" (click)="eliminar(item, $event)" data-tip="Eliminar" aria-label="Eliminar">
-              <i class="fa fa-trash"></i>
-            </button>
+          <div class="drive-card__preview" *ngIf="!item.isFolder">
+            <img *ngIf="previews[item.id]" [src]="previews[item.id]" [alt]="item.name" />
+            <div class="drive-card__preview-fallback" *ngIf="!previews[item.id]">
+              <i class="fa" [ngClass]="icono(item)"></i>
+            </div>
           </div>
         </article>
+      </ng-template>
+
+      <div class="drive-list" *ngIf="!loading && visibles.length && vista === 'list'">
+        <div class="drive-list__head">
+          <span>Nombre</span>
+          <span>Modificado</span>
+          <span>Tamaño</span>
+          <span></span>
+        </div>
+        <article
+          class="drive-list__row"
+          *ngFor="let item of visibles"
+          (click)="abrir(item)">
+          <span class="drive-list__name">
+            <span
+              class="drive-card__icon"
+              [class.is-folder]="item.isFolder"
+              [class.is-word]="tipoArchivo(item) === 'word'"
+              [class.is-sheet]="tipoArchivo(item) === 'sheet'"
+              [class.is-slides]="tipoArchivo(item) === 'slides'">
+              <i class="fa" [ngClass]="icono(item)"></i>
+            </span>
+            <span class="drive-card__copy">
+              <strong>{{ item.name }}</strong>
+              <small class="drive-card__path" *ngIf="item.path">{{ item.path }}</small>
+            </span>
+          </span>
+          <span class="drive-list__meta">{{ fecha(item) }}</span>
+          <span class="drive-list__meta">{{ peso(item) }}</span>
+          <ng-container *ngTemplateOutlet="acciones; context: { item: item }"></ng-container>
+        </article>
       </div>
+
+      <ng-template #acciones let-item="item">
+        <div class="drive-card__actions" (click)="$event.stopPropagation()">
+          <button type="button" *ngIf="!item.isFolder" (click)="descargar(item, $event)" data-tip="Bajar" aria-label="Bajar">
+            <i class="fa fa-download"></i>
+          </button>
+          <button type="button" *ngIf="puedeEditar" (click)="renombrar(item, $event)" data-tip="Renombrar" aria-label="Renombrar">
+            <i class="fa fa-pencil"></i>
+          </button>
+          <button type="button" *ngIf="puedeEditar && !esRaiz(item)" (click)="mover(item, $event)" data-tip="Mover" aria-label="Mover">
+            <i class="fa fa-share"></i>
+          </button>
+          <button type="button" class="is-danger" *ngIf="puedeBorrar" (click)="eliminar(item, $event)" data-tip="Eliminar" aria-label="Eliminar">
+            <i class="fa fa-trash"></i>
+          </button>
+        </div>
+      </ng-template>
     </ng-container>
 
     <div class="drive-editor" *ngIf="editor">
       <div class="drive-sheet" *ngIf="editor.kind === 'sheet' && !editor.embedUrl">
+        <div class="drive-fmt" *ngIf="puedeEditar">
+          <select
+            class="drive-fmt__select"
+            [ngModel]="estiloCelda.font"
+            (ngModelChange)="aplicarEstiloHoja({ font: $event })"
+            aria-label="Tipo de fuente">
+            <option *ngFor="let fuente of fuentes" [value]="fuente">{{ fuente }}</option>
+          </select>
+          <div class="drive-fmt__size">
+            <button type="button" (click)="cambiarTamanioHoja(-1)" title="Reducir tamaño">−</button>
+            <input
+              type="number"
+              min="8"
+              max="72"
+              [value]="estiloCelda.size"
+              (change)="setTamanioHoja($any($event.target).value)"
+              aria-label="Tamaño de fuente">
+            <button type="button" (click)="cambiarTamanioHoja(1)" title="Aumentar tamaño">+</button>
+          </div>
+          <span class="drive-fmt__sep"></span>
+          <button type="button" [class.is-on]="estiloCelda.bold" (click)="toggleEstiloHoja('bold')" title="Negrita"><b>B</b></button>
+          <button type="button" [class.is-on]="estiloCelda.italic" (click)="toggleEstiloHoja('italic')" title="Cursiva"><i>I</i></button>
+          <button type="button" [class.is-on]="estiloCelda.underline" (click)="toggleEstiloHoja('underline')" title="Subrayado"><u>U</u></button>
+          <span class="drive-fmt__sep"></span>
+          <div class="drive-fmt__swatch">
+            <button type="button" class="drive-fmt__tone" (click)="togglePaleta('color', $event)" title="Color de texto">
+              <span class="drive-fmt__letter">A</span>
+              <span class="drive-fmt__bar" [style.background]="estiloCelda.color"></span>
+            </button>
+            <div class="drive-fmt__pop" *ngIf="paleta === 'color'" (click)="$event.stopPropagation()">
+              <button
+                type="button"
+                *ngFor="let color of colores"
+                [style.background]="color"
+                [title]="color"
+                (click)="aplicarEstiloHoja({ color: color })"></button>
+            </div>
+          </div>
+          <div class="drive-fmt__swatch">
+            <button type="button" class="drive-fmt__tone" (click)="togglePaleta('fill', $event)" title="Color de resaltado">
+              <i class="fa fa-pencil"></i>
+              <span class="drive-fmt__bar" [style.background]="estiloCelda.fill || '#fff59d'"></span>
+            </button>
+            <div class="drive-fmt__pop" *ngIf="paleta === 'fill'" (click)="$event.stopPropagation()">
+              <button type="button" class="is-clear" (click)="aplicarEstiloHoja({ fill: '' })">Sin color</button>
+              <button
+                type="button"
+                *ngFor="let color of colores"
+                [style.background]="color"
+                [title]="color"
+                (click)="aplicarEstiloHoja({ fill: color })"></button>
+            </div>
+          </div>
+          <span class="drive-fmt__sep"></span>
+          <button type="button" [class.is-on]="estiloCelda.align === 'left'" (click)="aplicarEstiloHoja({ align: 'left' })" title="Alinear a la izquierda">
+            <i class="fa fa-align-left"></i>
+          </button>
+          <button type="button" [class.is-on]="estiloCelda.align === 'center'" (click)="aplicarEstiloHoja({ align: 'center' })" title="Centrar">
+            <i class="fa fa-align-center"></i>
+          </button>
+          <button type="button" [class.is-on]="estiloCelda.align === 'right'" (click)="aplicarEstiloHoja({ align: 'right' })" title="Alinear a la derecha">
+            <i class="fa fa-align-right"></i>
+          </button>
+        </div>
         <div class="drive-sheet__tabs" *ngIf="hojas.length > 1">
           <button
             type="button"
             *ngFor="let hoja of hojas; let i = index"
             [class.is-active]="i === hojaActiva"
-            (click)="hojaActiva = i">
+            (click)="activarHoja(i)">
             {{ hoja.name }}
           </button>
         </div>
@@ -130,8 +349,24 @@
             <tbody>
               <tr *ngFor="let fila of filas; let r = index">
                 <th>{{ r + 1 }}</th>
-                <td *ngFor="let celda of fila; let c = index">
-                  <input [value]="celda" (blur)="onCell(r, c, $event)" [disabled]="!puedeEditar" />
+                <td
+                  *ngFor="let celda of fila; let c = index"
+                  [class.is-sel]="esSeleccionada(r, c)"
+                  [style.background]="celda.fill || null"
+                  (mousedown)="iniciarSeleccion(r, c, $event)"
+                  (mouseenter)="extenderSeleccion(r, c)">
+                  <input
+                    [ngModel]="celda.v"
+                    (ngModelChange)="cambiarValorCelda(celda, $event)"
+                    (focus)="iniciarSeleccion(r, c, $event)"
+                    [disabled]="!puedeEditar"
+                    [style.font-weight]="celda.bold ? '700' : '400'"
+                    [style.font-style]="celda.italic ? 'italic' : 'normal'"
+                    [style.text-decoration]="celda.underline ? 'underline' : 'none'"
+                    [style.color]="celda.color"
+                    [style.font-family]="celda.font"
+                    [style.font-size.px]="celda.size"
+                    [style.text-align]="celda.align" />
                 </td>
               </tr>
             </tbody>
@@ -152,10 +387,79 @@
         <p>Si el documento no carga acá, tocá <strong>Abrir editor</strong> para trabajarlo y que quede registrado en el portal.</p>
       </div>
 
-      <textarea class="drive-text" *ngIf="editor.kind === 'text'" [(ngModel)]="texto" [disabled]="!puedeEditar"></textarea>
+      <div class="drive-rich" *ngIf="editor.kind === 'text'">
+        <div class="drive-fmt" *ngIf="puedeEditar">
+          <select class="drive-fmt__select" [ngModel]="richFmt.font" (change)="aplicarFuente($event)" aria-label="Tipo de fuente">
+            <option *ngFor="let fuente of fuentes" [value]="fuente">{{ fuente }}</option>
+          </select>
+          <div class="drive-fmt__size">
+            <button type="button" (click)="cambiarTamanioRich(-1)" title="Reducir tamaño">−</button>
+            <input
+              type="number"
+              min="8"
+              max="72"
+              [value]="richFmt.size"
+              (change)="setTamanioRich($any($event.target).value)"
+              aria-label="Tamaño de fuente">
+            <button type="button" (click)="cambiarTamanioRich(1)" title="Aumentar tamaño">+</button>
+          </div>
+          <span class="drive-fmt__sep"></span>
+          <button type="button" [class.is-on]="richFmt.bold" (click)="aplicarFormato('bold')" title="Negrita"><b>B</b></button>
+          <button type="button" [class.is-on]="richFmt.italic" (click)="aplicarFormato('italic')" title="Cursiva"><i>I</i></button>
+          <button type="button" [class.is-on]="richFmt.underline" (click)="aplicarFormato('underline')" title="Subrayado"><u>U</u></button>
+          <span class="drive-fmt__sep"></span>
+          <div class="drive-fmt__swatch">
+            <button type="button" class="drive-fmt__tone" (click)="togglePaleta('color', $event)" title="Color de texto">
+              <span class="drive-fmt__letter">A</span>
+              <span class="drive-fmt__bar" [style.background]="richFmt.color"></span>
+            </button>
+            <div class="drive-fmt__pop" *ngIf="paleta === 'color'" (click)="$event.stopPropagation()">
+              <button
+                type="button"
+                *ngFor="let color of colores"
+                [style.background]="color"
+                [title]="color"
+                (click)="aplicarColorRich(color)"></button>
+            </div>
+          </div>
+          <div class="drive-fmt__swatch">
+            <button type="button" class="drive-fmt__tone" (click)="togglePaleta('fill', $event)" title="Color de resaltado">
+              <i class="fa fa-pencil"></i>
+              <span class="drive-fmt__bar" [style.background]="richFmt.fill || '#fff59d'"></span>
+            </button>
+            <div class="drive-fmt__pop" *ngIf="paleta === 'fill'" (click)="$event.stopPropagation()">
+              <button type="button" class="is-clear" (click)="aplicarColorRich('transparent', true)">Sin color</button>
+              <button
+                type="button"
+                *ngFor="let color of colores"
+                [style.background]="color"
+                [title]="color"
+                (click)="aplicarColorRich(color, true)"></button>
+            </div>
+          </div>
+          <span class="drive-fmt__sep"></span>
+          <button type="button" [class.is-on]="richFmt.align === 'left'" (click)="aplicarAlineacionRich('left')" title="Alinear a la izquierda">
+            <i class="fa fa-align-left"></i>
+          </button>
+          <button type="button" [class.is-on]="richFmt.align === 'center'" (click)="aplicarAlineacionRich('center')" title="Centrar">
+            <i class="fa fa-align-center"></i>
+          </button>
+          <button type="button" [class.is-on]="richFmt.align === 'right'" (click)="aplicarAlineacionRich('right')" title="Alinear a la derecha">
+            <i class="fa fa-align-right"></i>
+          </button>
+        </div>
+        <div
+          #richEditor
+          class="drive-rich__editor"
+          [attr.contenteditable]="puedeEditar"
+          (input)="onRichInput()"
+          (keyup)="syncRichFmt()"
+          (mouseup)="syncRichFmt()">
+        </div>
+      </div>
     </div>
 
-    <div class="loader-overlay" *ngIf="loading">
+    <div class="loader-overlay" *ngIf="loading && items.length">
       <div class="loader-text">Cargando Drive...</div>
     </div>
   </section>

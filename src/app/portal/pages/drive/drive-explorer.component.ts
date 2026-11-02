@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
-import * as XLSX from 'xlsx';
+import * as XLSX from 'xlsx-js-style';
 import {
   ConfiguracionService,
   DriveEditorKind,
@@ -17,11 +17,38 @@ import { Profesores } from '../tu-personal/profesor.interface';
 import { ProfesorPermisosService } from '../tu-personal/profesor-permisos.service';
 import { ProfesoresService } from '../tu-personal/profesores.service';
 
+type AlineacionTexto = 'left' | 'center' | 'right';
+type PaletaFmt = 'color' | 'fill' | null;
+
 interface DriveEditor {
   item: DriveItem;
   kind: DriveEditorKind;
   embedUrl: SafeResourceUrl | null;
   editUrl: string | null;
+}
+
+interface CeldaHoja {
+  v: string;
+  bold: boolean;
+  italic: boolean;
+  underline: boolean;
+  font: string;
+  size: number;
+  color: string;
+  fill: string;
+  align: AlineacionTexto;
+}
+
+interface HojaDrive {
+  name: string;
+  rows: CeldaHoja[][];
+}
+
+interface SeleccionHoja {
+  r1: number;
+  c1: number;
+  r2: number;
+  c2: number;
 }
 
 @Component({
@@ -33,9 +60,11 @@ interface DriveEditor {
 })
 export class DriveExplorerComponent implements OnInit, OnDestroy {
   @ViewChild('fileInput') fileInput?: ElementRef<HTMLInputElement>;
+  @ViewChild('richEditor') richEditor?: ElementRef<HTMLDivElement>;
 
   public loading = false;
   public guardando = false;
+  public modificado = false;
   public puedeEditar = false;
   public puedeBorrar = false;
   public puedeAsignar = false;
@@ -48,11 +77,30 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
   public ruta: DriveFolder[] = [];
   public carpetaActual: string | null = null;
   public editor: DriveEditor | null = null;
-  public hojas: Array<{ name: string; rows: string[][] }> = [];
+  public hojas: HojaDrive[] = [];
   public hojaActiva = 0;
   public texto = '';
+  public vista: 'grid' | 'list' = 'list';
+  public busqueda = '';
+  public extrasBusqueda: DriveItem[] = [];
+  public previews: Record<string, string> = {};
+  public paleta: PaletaFmt = null;
+  public sel: SeleccionHoja | null = null;
+  public readonly fuentes = ['Arial', 'Calibri', 'Georgia', 'Times New Roman', 'Verdana', 'Courier New', 'Trebuchet MS'];
+  public readonly colores = [
+    '#000000', '#434343', '#666666', '#999999', '#b7b7b7', '#cccccc', '#d9d9d9', '#ffffff',
+    '#980000', '#ff0000', '#ff9900', '#ffff00', '#00ff00', '#00ffff', '#4a86e2', '#0000ff',
+    '#9900ff', '#ff00ff', '#e6b8af', '#f4cccc', '#fce5cd', '#fff2cc', '#d9ead3', '#cfe2f3',
+    '#c9daf8', '#d9d2e9', '#ead1dc'
+  ];
+  public richFmt = this.fmtBase();
   private openedAt: string | null = null;
   private heartbeat?: ReturnType<typeof setInterval>;
+  private listadoPedido = 0;
+  private buscarPedido = 0;
+  private buscarTimer?: ReturnType<typeof setTimeout>;
+  private arrastrando = false;
+  private ignorarCambio = false;
 
   constructor(
     private drive: ConfiguracionService,
@@ -68,17 +116,58 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
     this.puedeBorrar = this.permisos.canDeleteDrive();
     this.puedeAsignar = this.loginService.hasRole(['superuser', 'admin']);
     this.esSuperuser = this.loginService.hasRole(['superuser']);
+    const vistaGuardada = localStorage.getItem('driveVista');
+    if (vistaGuardada === 'list' || vistaGuardada === 'grid') this.vista = vistaGuardada;
     this.cargarRaices();
     if (this.puedeAsignar) this.cargarPersonal();
   }
 
   ngOnDestroy(): void {
+    if (this.buscarTimer) clearTimeout(this.buscarTimer);
+    this.limpiarPreviews();
     this.registrarCierre(true);
   }
 
-  @HostListener('window:beforeunload')
-  public onBeforeUnload(): void {
+  @HostListener('window:beforeunload', ['$event'])
+  public onBeforeUnload(event: BeforeUnloadEvent): void {
     this.registrarCierre(true);
+    if (!this.modificado) return;
+    event.preventDefault();
+    event.returnValue = '';
+  }
+
+  @HostListener('document:mouseup')
+  public onMouseUp(): void {
+    this.arrastrando = false;
+  }
+
+  @HostListener('document:click', ['$event'])
+  public onDocClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement | null;
+    if (!target?.closest('.drive-fmt__swatch')) this.paleta = null;
+  }
+
+  @HostListener('document:selectionchange')
+  public onSelectionChange(): void {
+    this.syncRichFmt();
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  public onDocKey(event: KeyboardEvent): void {
+    if (!this.editor || !this.puedeEditar || this.editor.embedUrl) return;
+    if (!(event.ctrlKey || event.metaKey)) return;
+    if (this.editor.kind !== 'sheet') return;
+    const key = event.key.toLowerCase();
+    if (key === 'b') {
+      event.preventDefault();
+      this.toggleEstiloHoja('bold');
+    } else if (key === 'i') {
+      event.preventDefault();
+      this.toggleEstiloHoja('italic');
+    } else if (key === 'u') {
+      event.preventDefault();
+      this.toggleEstiloHoja('underline');
+    }
   }
 
   public get tituloActual(): string {
@@ -87,13 +176,82 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
     return this.ruta[this.ruta.length - 1].name;
   }
 
-  public get filas(): string[][] {
+  public get puedeRegresar(): boolean {
+    return this.ruta.length > 0 || !!this.editor;
+  }
+
+  public get visibles(): DriveItem[] {
+    const q = this.busqueda.trim().toLowerCase();
+    const local = this.items.filter((item) => !q || (item.name || '').toLowerCase().includes(q));
+    const extra = this.extrasBusqueda.filter((item) => !this.items.some((actual) => actual.id === item.id));
+    return [...local, ...extra];
+  }
+
+  public get carpetas(): DriveItem[] {
+    return this.visibles.filter((item) => item.isFolder);
+  }
+
+  public get archivos(): DriveItem[] {
+    return this.visibles.filter((item) => !item.isFolder);
+  }
+
+  public esRaiz(item: DriveItem): boolean {
+    return this.raices.some((raiz) => raiz.id === item.id);
+  }
+
+  public async regresar(): Promise<void> {
+    if (this.editor) {
+      await this.cerrarEditor();
+      return;
+    }
+    await this.irA(this.ruta.length - 2);
+  }
+
+  public puedeSalir(): boolean | Promise<boolean> {
+    if (!this.modificado) return true;
+    return this.resolverCambios();
+  }
+
+  public cambiarVista(vista: 'grid' | 'list'): void {
+    this.vista = vista;
+    localStorage.setItem('driveVista', vista);
+  }
+
+  public onBusqueda(value: string): void {
+    this.busqueda = value;
+    if (this.buscarTimer) clearTimeout(this.buscarTimer);
+    const q = value.trim();
+    if (q.length < 2) {
+      this.extrasBusqueda = [];
+      return;
+    }
+    this.buscarTimer = setTimeout(() => this.buscarRemoto(q), 350);
+  }
+
+  public fecha(item: DriveItem): string {
+    if (!item.modifiedTime) return '—';
+    const fecha = new Date(item.modifiedTime);
+    if (Number.isNaN(fecha.getTime())) return '—';
+    return fecha.toLocaleString('es-AR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+
+  public get filas(): CeldaHoja[][] {
     return this.hojas[this.hojaActiva]?.rows || [];
   }
 
   public get columnas(): string[] {
     const count = this.filas[0]?.length || 0;
     return Array.from({ length: count }, (_, i) => this.columna(i));
+  }
+
+  public get estiloCelda(): CeldaHoja {
+    return this.celdasSeleccionadas()[0] || this.celdaVacia();
   }
 
   public irAConfig(): void {
@@ -135,20 +293,22 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
 
   public abrir(item: DriveItem): void {
     if (item.isFolder) {
+      this.limpiarBusqueda();
       this.drive.abrirArchivo(item.id).subscribe({ error: () => undefined });
       this.ruta = [...this.ruta, { id: item.id, name: item.name }];
       this.carpetaActual = item.id;
-      this.cargarItems(item.id);
+      this.cargarItems(item.id, true);
       return;
     }
+    if (item.parentId && !this.carpetaActual) this.carpetaActual = item.parentId;
     this.loading = true;
-    this.drive.abrirArchivo(item.id).subscribe({
+    this.drive.abrirArchivo(item.id, this.carpetaActual).subscribe({
       next: (response) => {
         this.loading = false;
         if (response.kind === 'folder') {
           this.ruta = [...this.ruta, { id: response.item.id, name: response.item.name }];
           this.carpetaActual = response.item.id;
-          this.cargarItems(response.item.id);
+          this.cargarItems(response.item.id, true);
           return;
         }
         if (response.converted) this.cargarItems(this.carpetaActual || undefined);
@@ -167,39 +327,42 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
         this.openedAt = response.openedAt || response.item.modifiedTime || new Date().toISOString();
         this.iniciarHeartbeat();
         if (response.kind === 'sheet' && !response.embedUrl) this.cargarPlanilla(response.item);
-        if (response.kind === 'text') this.cargarTexto(response.item);
+        if (response.kind === 'text') {
+          if (response.texto != null) {
+            this.texto = response.texto;
+            this.pintarRich();
+          } else this.cargarTexto(response.item);
+        }
       },
       error: (err) => {
         this.loading = false;
-        void this.aviso('error', 'No se pudo abrir', err?.error?.msj || 'Probá de nuevo.');
+        void this.aviso('error', 'No se pudo abrir', this.textoError(err, 'No se pudo abrir el archivo. Probá de nuevo.'));
       }
     });
   }
 
-  public cerrarEditor(): void {
-    this.registrarCierre();
-    this.editor = null;
-    this.hojas = [];
-    this.hojaActiva = 0;
-    this.texto = '';
-    this.cargarItems(this.carpetaActual || undefined);
+  public async cerrarEditor(): Promise<void> {
+    if (!(await this.resolverCambios())) return;
+    this.salirDelEditor();
   }
 
   public trabajarAfuera(): void {
     if (this.editor?.editUrl) window.open(this.editor.editUrl, '_blank', 'noopener');
   }
 
-  public irA(index: number): void {
-    if (this.editor) this.cerrarEditor();
+  public async irA(index: number): Promise<void> {
+    if (!(await this.resolverCambios())) return;
+    if (this.editor) this.limpiarEditor();
+    this.limpiarBusqueda();
     if (index < 0) {
       this.ruta = [];
       this.carpetaActual = null;
-      this.cargarItems();
+      this.cargarItems(undefined, true);
       return;
     }
     this.ruta = this.ruta.slice(0, index + 1);
     this.carpetaActual = this.ruta[this.ruta.length - 1].id;
-    this.cargarItems(this.carpetaActual);
+    this.cargarItems(this.carpetaActual, true);
   }
 
   public async nuevaCarpeta(): Promise<void> {
@@ -211,7 +374,7 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
     if (!name) return;
     this.drive.crearCarpeta(this.carpetaActual, name).subscribe({
       next: () => this.cargarItems(this.carpetaActual || undefined),
-      error: (err) => this.aviso('error', 'No se pudo crear', err?.error?.msj || 'Probá de nuevo.')
+      error: (err) => this.aviso('error', 'No se pudo crear', this.textoError(err, 'No se pudo crear la carpeta. Probá de nuevo.'))
     });
   }
 
@@ -231,7 +394,7 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.loading = false;
-        void this.aviso('error', 'No se pudo crear', err?.error?.msj || 'Probá de nuevo.');
+        void this.aviso('error', 'No se pudo crear', this.textoError(err, 'No se pudo crear el documento. Probá de nuevo.'));
       }
     });
   }
@@ -243,8 +406,18 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
     }
     const name = await this.pedirNombre('Nueva planilla', 'Planilla');
     if (!name) return;
+    const fileName = name.toLowerCase().endsWith('.xlsx') ? name : `${name}.xlsx`;
+    const wb = XLSX.utils.book_new();
+    const rows = Array.from({ length: 16 }, () => Array(8).fill(''));
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), 'Hoja1');
+    const buffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+    const file = new File(
+      [buffer],
+      fileName,
+      { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }
+    );
     this.loading = true;
-    this.drive.crearPlanilla(this.carpetaActual, name).subscribe({
+    this.drive.subirArchivo(this.carpetaActual, file).subscribe({
       next: (response) => {
         this.loading = false;
         this.cargarItems(this.carpetaActual || undefined);
@@ -252,7 +425,7 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.loading = false;
-        void this.aviso('error', 'No se pudo crear', err?.error?.msj || 'Probá de nuevo.');
+        void this.aviso('error', 'No se pudo crear', this.textoError(err, 'No se pudo crear la planilla. Probá de nuevo.'));
       }
     });
   }
@@ -273,7 +446,7 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.loading = false;
-        void this.aviso('error', 'No se pudo crear', err?.error?.msj || 'Probá de nuevo.');
+        void this.aviso('error', 'No se pudo crear', this.textoError(err, 'No se pudo crear la presentación. Probá de nuevo.'));
       }
     });
   }
@@ -299,7 +472,7 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.loading = false;
-        void this.aviso('error', 'No se pudo subir', err?.error?.msj || 'El archivo no puede superar 25 MB.');
+        void this.aviso('error', 'No se pudo subir', this.textoError(err, 'No se pudo subir el archivo. Revisá que no supere 25 MB.'));
       }
     });
   }
@@ -319,7 +492,39 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
     if (!result.isConfirmed || !name || name === item.name) return;
     this.drive.renombrar(item.id, name).subscribe({
       next: () => this.cargarItems(this.carpetaActual || undefined),
-      error: (err) => this.aviso('error', 'No se pudo renombrar', err?.error?.msj || 'Probá de nuevo.')
+      error: (err) => this.aviso('error', 'No se pudo renombrar', this.textoError(err, 'No se pudo renombrar. Probá de nuevo.'))
+    });
+  }
+
+  public async mover(item: DriveItem, event: Event): Promise<void> {
+    event.stopPropagation();
+    const destinos = this.destinosMover(item);
+    if (!destinos.length) {
+      void this.aviso('info', 'Sin destino', 'No hay otra carpeta vinculada para mover este archivo.');
+      return;
+    }
+    const result = await Swal.fire({
+      title: `Mover ${item.name}`,
+      input: 'select',
+      inputOptions: destinos.reduce((acc, destino) => {
+        acc[destino.id] = destino.name;
+        return acc;
+      }, {} as Record<string, string>),
+      inputPlaceholder: 'Elegí la carpeta destino',
+      showCancelButton: true,
+      confirmButtonText: 'Mover',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#b91828'
+    });
+    const parentId = String(result.value || '').trim();
+    if (!result.isConfirmed || !parentId) return;
+    this.drive.mover(item.id, parentId).subscribe({
+      next: () => {
+        void this.aviso('success', 'Movido', `${item.name} quedó en la carpeta elegida.`);
+        this.cargarItems(this.carpetaActual || undefined);
+        if (this.busqueda.trim().length >= 2) this.buscarRemoto(this.busqueda.trim());
+      },
+      error: (err) => this.aviso('error', 'No se pudo mover', this.textoError(err, 'No se pudo mover. Probá de nuevo.'))
     });
   }
 
@@ -337,10 +542,12 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
       if (!result.isConfirmed) return;
       this.drive.eliminar(item.id).subscribe({
         next: () => {
-          if (this.editor?.item.id === item.id) this.cerrarEditor();
-          else this.cargarItems(this.carpetaActual || undefined);
+          if (this.editor?.item.id === item.id) {
+            this.modificado = false;
+            this.salirDelEditor();
+          } else this.cargarItems(this.carpetaActual || undefined);
         },
-        error: (err) => this.aviso('error', 'No se pudo eliminar', err?.error?.msj || 'No tenés permiso para borrar.')
+        error: (err) => this.aviso('error', 'No se pudo eliminar', this.textoError(err, 'No se pudo eliminar. Puede que no tengas permiso para borrar.'))
       });
     });
   }
@@ -356,67 +563,255 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
         a.click();
         URL.revokeObjectURL(url);
       },
-      error: (err) => this.aviso('error', 'No se pudo descargar', err?.error?.msj || 'Probá de nuevo.')
+      error: (err) => this.aviso('error', 'No se pudo descargar', this.textoError(err, 'No se pudo descargar el archivo. Probá de nuevo.'))
     });
   }
 
-  public onCell(row: number, col: number, event: Event): void {
-    const value = (event.target as HTMLInputElement).value;
-    if (!this.hojas[this.hojaActiva]) return;
-    this.hojas[this.hojaActiva].rows[row][col] = value;
+  public activarHoja(index: number): void {
+    this.hojaActiva = index;
+    this.sel = { r1: 0, c1: 0, r2: 0, c2: 0 };
+    this.paleta = null;
+  }
+
+  public esSeleccionada(row: number, col: number): boolean {
+    if (!this.sel) return false;
+    const r1 = Math.min(this.sel.r1, this.sel.r2);
+    const r2 = Math.max(this.sel.r1, this.sel.r2);
+    const c1 = Math.min(this.sel.c1, this.sel.c2);
+    const c2 = Math.max(this.sel.c1, this.sel.c2);
+    return row >= r1 && row <= r2 && col >= c1 && col <= c2;
+  }
+
+  public iniciarSeleccion(row: number, col: number, event: MouseEvent | FocusEvent): void {
+    this.paleta = null;
+    if (event instanceof MouseEvent && event.shiftKey && this.sel) {
+      this.sel = { ...this.sel, r2: row, c2: col };
+      return;
+    }
+    if (event instanceof FocusEvent && this.arrastrando) return;
+    this.sel = { r1: row, c1: col, r2: row, c2: col };
+    this.arrastrando = event instanceof MouseEvent && event.button === 0;
+  }
+
+  public extenderSeleccion(row: number, col: number): void {
+    if (!this.arrastrando || !this.sel) return;
+    this.sel = { ...this.sel, r2: row, c2: col };
   }
 
   public agregarFila(): void {
     const cols = this.filas[0]?.length || 8;
-    this.hojas[this.hojaActiva].rows = [...this.filas, Array(cols).fill('')];
+    this.hojas[this.hojaActiva].rows = [...this.filas, Array.from({ length: cols }, () => this.celdaVacia())];
+    this.marcarCambio();
   }
 
   public agregarColumna(): void {
-    this.hojas[this.hojaActiva].rows = this.filas.map((row) => [...row, '']);
+    this.hojas[this.hojaActiva].rows = this.filas.map((row) => [...row, this.celdaVacia()]);
+    this.marcarCambio();
   }
 
-  public guardarPlanilla(): void {
-    if (!this.editor) return;
+  public cambiarValorCelda(celda: CeldaHoja, value: string): void {
+    if (celda.v === value) return;
+    celda.v = value;
+    this.marcarCambio();
+  }
+
+  public togglePaleta(tipo: Exclude<PaletaFmt, null>, event: Event): void {
+    event.stopPropagation();
+    this.paleta = this.paleta === tipo ? null : tipo;
+  }
+
+  public aplicarEstiloHoja(patch: Partial<CeldaHoja>): void {
+    this.celdasSeleccionadas().forEach((celda) => Object.assign(celda, patch));
+    this.paleta = null;
+    this.marcarCambio();
+  }
+
+  public toggleEstiloHoja(clave: 'bold' | 'italic' | 'underline'): void {
+    const celdas = this.celdasSeleccionadas();
+    const next = !celdas.every((celda) => celda[clave]);
+    celdas.forEach((celda) => {
+      celda[clave] = next;
+    });
+    this.marcarCambio();
+  }
+
+  public cambiarTamanioHoja(delta: number): void {
+    const size = Math.min(72, Math.max(8, (this.estiloCelda.size || 11) + delta));
+    this.aplicarEstiloHoja({ size });
+  }
+
+  public setTamanioHoja(value: string | number): void {
+    const size = Math.min(72, Math.max(8, Number(value) || 11));
+    this.aplicarEstiloHoja({ size });
+  }
+
+  public guardarPlanilla(silencioso = false): Promise<boolean> {
+    if (!this.editor) return Promise.resolve(false);
     const wb = XLSX.utils.book_new();
     this.hojas.forEach((hoja) => {
-      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(hoja.rows), hoja.name.slice(0, 31) || 'Hoja');
+      XLSX.utils.book_append_sheet(wb, this.sheetDesdeHoja(hoja), hoja.name.slice(0, 31) || 'Hoja');
     });
-    const buffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+    const buffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array', cellStyles: true });
     const file = new File(
       [buffer],
       this.editor.item.name.toLowerCase().endsWith('.xlsx') ? this.editor.item.name : `${this.editor.item.name}.xlsx`,
       { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }
     );
     this.guardando = true;
-    this.drive.guardarContenido(this.editor.item.id, file).subscribe({
-      next: () => {
-        this.guardando = false;
-        this.openedAt = new Date().toISOString();
-        void this.aviso('success', 'Guardado', 'La planilla quedó actualizada en Drive.');
-      },
-      error: (err) => {
-        this.guardando = false;
-        void this.aviso('error', 'No se pudo guardar', err?.error?.msj || 'Probá de nuevo.');
-      }
+    return new Promise((resolve) => {
+      this.drive.guardarContenido(this.editor!.item.id, file).subscribe({
+        next: () => {
+          this.guardando = false;
+          this.modificado = false;
+          this.openedAt = new Date().toISOString();
+          if (!silencioso) void this.aviso('success', 'Guardado', 'La planilla quedó actualizada en Drive.');
+          resolve(true);
+        },
+        error: (err) => {
+          this.guardando = false;
+          void this.aviso('error', 'No se pudo guardar', this.textoError(err, 'No se pudo guardar la planilla. Probá de nuevo.'));
+          resolve(false);
+        }
+      });
     });
   }
 
-  public guardarTexto(): void {
-    if (!this.editor) return;
-    const file = new File([this.texto], this.editor.item.name, {
-      type: this.editor.item.mimeType || 'text/plain'
+  public aplicarFormato(comando: string): void {
+    this.richEditor?.nativeElement.focus();
+    const conCss = comando !== 'bold' && comando !== 'italic' && comando !== 'underline';
+    document.execCommand('styleWithCSS', false, conCss ? 'true' : 'false');
+    document.execCommand(comando, false);
+    this.onRichInput();
+    this.syncRichFmt();
+  }
+
+  public aplicarFuente(event: Event): void {
+    const value = (event.target as HTMLSelectElement).value;
+    this.richFmt.font = value;
+    this.richEditor?.nativeElement.focus();
+    document.execCommand('fontName', false, value);
+    this.onRichInput();
+  }
+
+  public aplicarAlineacionRich(align: AlineacionTexto): void {
+    const cmd = align === 'center' ? 'justifyCenter' : align === 'right' ? 'justifyRight' : 'justifyLeft';
+    this.richFmt.align = align;
+    this.aplicarFormato(cmd);
+  }
+
+  public aplicarColorRich(color: string, fill = false): void {
+    this.richEditor?.nativeElement.focus();
+    document.execCommand('styleWithCSS', false, 'true');
+    document.execCommand(fill ? 'hiliteColor' : 'foreColor', false, color);
+    if (fill) this.richFmt.fill = color;
+    else this.richFmt.color = color;
+    this.paleta = null;
+    this.onRichInput();
+  }
+
+  public cambiarTamanioRich(delta: number): void {
+    this.setTamanioRich((this.richFmt.size || 15) + delta);
+  }
+
+  public setTamanioRich(value: string | number): void {
+    const size = Math.min(72, Math.max(8, Number(value) || 15));
+    this.richFmt.size = size;
+    this.richEditor?.nativeElement.focus();
+    document.execCommand('fontSize', false, '7');
+    this.richEditor?.nativeElement.querySelectorAll('font[size="7"]').forEach((font) => {
+      const span = document.createElement('span');
+      span.style.fontSize = `${size}px`;
+      while (font.firstChild) span.appendChild(font.firstChild);
+      font.parentNode?.replaceChild(span, font);
     });
-    this.guardando = true;
-    this.drive.guardarContenido(this.editor.item.id, file).subscribe({
-      next: () => {
-        this.guardando = false;
-        this.openedAt = new Date().toISOString();
-        void this.aviso('success', 'Guardado', 'El archivo quedó actualizado.');
-      },
-      error: (err) => {
-        this.guardando = false;
-        void this.aviso('error', 'No se pudo guardar', err?.error?.msj || 'Probá de nuevo.');
+    this.onRichInput();
+  }
+
+  public onRichInput(): void {
+    this.texto = this.richEditor?.nativeElement.innerHTML || '';
+    this.syncRichFmt();
+    if (!this.ignorarCambio) this.marcarCambio();
+  }
+
+  public syncRichFmt(): void {
+    if (this.editor?.kind !== 'text') return;
+    const root = this.richEditor?.nativeElement;
+    const sel = document.getSelection();
+    if (!root || !sel || !sel.anchorNode || !root.contains(sel.anchorNode)) return;
+    this.richFmt.bold = document.queryCommandState('bold');
+    this.richFmt.italic = document.queryCommandState('italic');
+    this.richFmt.underline = document.queryCommandState('underline');
+    const node = sel.anchorNode instanceof Element ? sel.anchorNode : sel.anchorNode.parentElement;
+    if (!node) return;
+    const cs = window.getComputedStyle(node);
+    this.richFmt.font = (cs.fontFamily.split(',')[0] || 'Arial').replace(/['"]/g, '').trim();
+    this.richFmt.size = Math.round(parseFloat(cs.fontSize)) || 15;
+    this.richFmt.color = this.rgbToHex(cs.color) || this.richFmt.color;
+    this.richFmt.align = cs.textAlign === 'center' || cs.textAlign === 'right' ? cs.textAlign : 'left';
+    const bg = this.rgbToHex(cs.backgroundColor);
+    this.richFmt.fill = bg && bg !== '#ffffff' && bg !== '#000000' ? bg : '';
+  }
+
+  private escapeHtml(value: string): string {
+    return String(value || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
+  private pintarRich(): void {
+    setTimeout(() => {
+      const el = this.richEditor?.nativeElement;
+      if (!el) {
+        setTimeout(() => this.pintarRich(), 50);
+        return;
       }
+      this.ignorarCambio = true;
+      const html = this.sanitizarHtml(this.texto || '');
+      if (/<[a-z][\s\S]*>/i.test(html)) {
+        el.innerHTML = html || '<p><br></p>';
+      } else {
+        el.innerHTML = (this.texto || '')
+          .split('\n')
+          .map((line) => `<p>${this.escapeHtml(line) || '<br>'}</p>`)
+          .join('');
+      }
+      setTimeout(() => {
+        this.ignorarCambio = false;
+      }, 0);
+    }, 0);
+  }
+
+  public guardarTexto(silencioso = false): Promise<boolean> {
+    if (!this.editor) return Promise.resolve(false);
+    this.ignorarCambio = true;
+    this.onRichInput();
+    this.ignorarCambio = false;
+    const esWord = /\.docx?$/i.test(this.editor.item.name || '') || (this.editor.item.mimeType || '').includes('word');
+    this.guardando = true;
+    const request = esWord
+      ? this.drive.guardarDocumento(this.editor.item.id, this.sanitizarHtml(this.texto))
+      : this.drive.guardarContenido(
+          this.editor.item.id,
+          new File([this.richEditor?.nativeElement.innerText || this.texto], this.editor.item.name, {
+            type: this.editor.item.mimeType || 'text/plain'
+          })
+        );
+    return new Promise((resolve) => {
+      request.subscribe({
+        next: () => {
+          this.guardando = false;
+          this.modificado = false;
+          this.openedAt = new Date().toISOString();
+          if (!silencioso) void this.aviso('success', 'Guardado', 'El archivo quedó actualizado en Drive.');
+          resolve(true);
+        },
+        error: (err) => {
+          this.guardando = false;
+          void this.aviso('error', 'No se pudo guardar', this.textoError(err, 'No se pudo guardar el documento. Probá de nuevo.'));
+          resolve(false);
+        }
+      });
     });
   }
 
@@ -450,6 +845,58 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
     }
   }
 
+  private marcarCambio(): void {
+    if (!this.editor || !this.puedeEditar || this.editor.embedUrl) return;
+    this.modificado = true;
+  }
+
+  private async resolverCambios(): Promise<boolean> {
+    if (!this.modificado || !this.editor) return true;
+    const result = await Swal.fire({
+      title: 'Hay cambios sin guardar',
+      text: 'Si salís ahora, se pierden los cambios de este archivo.',
+      icon: 'warning',
+      showDenyButton: true,
+      showCancelButton: true,
+      confirmButtonText: 'Guardar',
+      denyButtonText: 'Salir sin guardar',
+      cancelButtonText: 'Seguir editando',
+      confirmButtonColor: '#b91828',
+      denyButtonColor: '#6b7280'
+    });
+    if (result.isConfirmed) {
+      if (this.editor.kind === 'sheet' && !this.editor.embedUrl) return this.guardarPlanilla(true);
+      if (this.editor.kind === 'text') return this.guardarTexto(true);
+      this.modificado = false;
+      return true;
+    }
+    if (result.isDenied) {
+      this.modificado = false;
+      return true;
+    }
+    return false;
+  }
+
+  private salirDelEditor(): void {
+    this.modificado = false;
+    this.limpiarEditor();
+    this.cargarItems(this.carpetaActual || undefined);
+  }
+
+  private limpiarEditor(): void {
+    this.registrarCierre();
+    this.editor = null;
+    this.hojas = [];
+    this.hojaActiva = 0;
+    this.texto = '';
+    this.sel = null;
+    this.paleta = null;
+    this.arrastrando = false;
+    this.modificado = false;
+    this.ignorarCambio = false;
+    this.richFmt = this.fmtBase();
+  }
+
   private registrarCierre(sync = false, stop = true): void {
     const editor = this.editor;
     const openedAt = this.openedAt;
@@ -465,17 +912,15 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
     this.drive.descargar(item.id).subscribe({
       next: async (blob) => {
         const buffer = await blob.arrayBuffer();
-        const wb = XLSX.read(buffer, { type: 'array' });
-        this.hojas = wb.SheetNames.map((name) => ({
-          name,
-          rows: this.padGrid(XLSX.utils.sheet_to_json(wb.Sheets[name], { header: 1, raw: false }) as string[][])
-        }));
+        const wb = XLSX.read(buffer, { type: 'array', cellStyles: true });
+        this.hojas = wb.SheetNames.map((name) => this.hojaDesdeSheet(name, wb.Sheets[name]));
         this.hojaActiva = 0;
+        this.sel = { r1: 0, c1: 0, r2: 0, c2: 0 };
         this.loading = false;
       },
       error: (err) => {
         this.loading = false;
-        void this.aviso('error', 'No se pudo abrir la planilla', err?.error?.msj || 'Probá de nuevo.');
+        void this.aviso('error', 'No se pudo abrir la planilla', this.textoError(err, 'No se pudo abrir la planilla. Probá de nuevo.'));
       }
     });
   }
@@ -486,6 +931,7 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
       next: async (blob) => {
         this.texto = await blob.text();
         this.loading = false;
+        this.pintarRich();
       },
       error: () => {
         this.texto = '';
@@ -494,14 +940,160 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
     });
   }
 
-  private padGrid(rows: string[][], minRows = 16, minCols = 8): string[][] {
+  private padGrid(rows: CeldaHoja[][], minRows = 16, minCols = 8): CeldaHoja[][] {
     const cols = Math.max(minCols, ...rows.map((row) => row?.length || 0), 1);
-    const next = (rows.length ? rows : [['']]).map((row) => {
-      const cells = Array.from({ length: cols }, (_, i) => (row?.[i] == null ? '' : String(row[i])));
-      return cells;
-    });
-    while (next.length < minRows) next.push(Array(cols).fill(''));
+    const next = (rows.length ? rows : [[this.celdaVacia()]]).map((row) =>
+      Array.from({ length: cols }, (_, i) => (row?.[i] ? { ...this.celdaVacia(), ...row[i] } : this.celdaVacia()))
+    );
+    while (next.length < minRows) next.push(Array.from({ length: cols }, () => this.celdaVacia()));
     return next;
+  }
+
+  private celdaVacia(): CeldaHoja {
+    return {
+      v: '',
+      bold: false,
+      italic: false,
+      underline: false,
+      font: 'Arial',
+      size: 11,
+      color: '#000000',
+      fill: '',
+      align: 'left'
+    };
+  }
+
+  private fmtBase(): CeldaHoja {
+    return { ...this.celdaVacia(), size: 15 };
+  }
+
+  private celdasSeleccionadas(): CeldaHoja[] {
+    if (!this.sel) return [];
+    const r1 = Math.min(this.sel.r1, this.sel.r2);
+    const r2 = Math.max(this.sel.r1, this.sel.r2);
+    const c1 = Math.min(this.sel.c1, this.sel.c2);
+    const c2 = Math.max(this.sel.c1, this.sel.c2);
+    const out: CeldaHoja[] = [];
+    for (let r = r1; r <= r2; r++) {
+      for (let c = c1; c <= c2; c++) {
+        const celda = this.filas[r]?.[c];
+        if (celda) out.push(celda);
+      }
+    }
+    return out;
+  }
+
+  private hojaDesdeSheet(name: string, ws: XLSX.WorkSheet): HojaDrive {
+    const range = XLSX.utils.decode_range(ws['!ref'] || 'A1');
+    const rows: CeldaHoja[][] = [];
+    for (let r = 0; r <= range.e.r; r++) {
+      const row: CeldaHoja[] = [];
+      for (let c = 0; c <= range.e.c; c++) {
+        row.push(this.celdaDesdeXlsx(ws[XLSX.utils.encode_cell({ r, c })]));
+      }
+      rows.push(row);
+    }
+    return { name, rows: this.padGrid(rows) };
+  }
+
+  private celdaDesdeXlsx(cell: XLSX.CellObject | undefined): CeldaHoja {
+    const base = this.celdaVacia();
+    if (!cell) return base;
+    const style = (cell as { s?: {
+      font?: { bold?: boolean; italic?: boolean; underline?: boolean | object; name?: string; sz?: number; color?: { rgb?: string } };
+      fill?: { fgColor?: { rgb?: string }; bgColor?: { rgb?: string } };
+      alignment?: { horizontal?: string };
+    } }).s || {};
+    const font = style.font || {};
+    const fill = style.fill || {};
+    const alignment = style.alignment || {};
+    const value = cell.w != null ? String(cell.w) : cell.v != null ? String(cell.v) : '';
+    const fillColor = this.fromArgb(fill.fgColor?.rgb || fill.bgColor?.rgb);
+    return {
+      v: value,
+      bold: !!font.bold,
+      italic: !!font.italic,
+      underline: !!font.underline,
+      font: String(font.name || 'Arial'),
+      size: Number(font.sz) || 11,
+      color: this.fromArgb(font.color?.rgb) || '#000000',
+      fill: fillColor === '#ffffff' ? '' : fillColor,
+      align: alignment.horizontal === 'center' || alignment.horizontal === 'right' ? alignment.horizontal : 'left'
+    };
+  }
+
+  private sheetDesdeHoja(hoja: HojaDrive): XLSX.WorkSheet {
+    const ws: XLSX.WorkSheet = {};
+    let maxR = 0;
+    let maxC = 0;
+    hoja.rows.forEach((row, r) => {
+      row.forEach((celda, c) => {
+        if (!this.celdaTieneDato(celda)) return;
+        maxR = Math.max(maxR, r);
+        maxC = Math.max(maxC, c);
+        ws[XLSX.utils.encode_cell({ r, c })] = {
+          v: celda.v,
+          t: 's',
+          s: {
+            font: {
+              name: celda.font,
+              sz: celda.size,
+              bold: celda.bold,
+              italic: celda.italic,
+              underline: celda.underline,
+              color: { rgb: this.toArgb(celda.color || '#000000') }
+            },
+            fill: celda.fill
+              ? { patternType: 'solid', fgColor: { rgb: this.toArgb(celda.fill) } }
+              : undefined,
+            alignment: { horizontal: celda.align, vertical: 'center', wrapText: true }
+          }
+        };
+      });
+    });
+    ws['!ref'] = XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: Math.max(maxR, 0), c: Math.max(maxC, 0) } });
+    return ws;
+  }
+
+  private celdaTieneDato(celda: CeldaHoja): boolean {
+    return !!(
+      celda.v ||
+      celda.bold ||
+      celda.italic ||
+      celda.underline ||
+      celda.fill ||
+      celda.align !== 'left' ||
+      celda.size !== 11 ||
+      celda.font !== 'Arial' ||
+      (celda.color && celda.color !== '#000000')
+    );
+  }
+
+  private toArgb(hex: string): string {
+    const raw = String(hex || '').replace('#', '');
+    const full = raw.length === 3 ? raw.split('').map((ch) => ch + ch).join('') : raw.padStart(6, '0');
+    return `FF${full.slice(-6).toUpperCase()}`;
+  }
+
+  private fromArgb(rgb?: string): string {
+    if (!rgb) return '';
+    let h = String(rgb).replace('#', '');
+    if (h.length === 8) h = h.slice(-6);
+    if (h.length === 6) return `#${h.toLowerCase()}`;
+    return '';
+  }
+
+  private rgbToHex(value: string): string {
+    const m = String(value || '').match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i);
+    if (m) {
+      const hex = (n: number) => n.toString(16).padStart(2, '0');
+      return `#${hex(+m[1])}${hex(+m[2])}${hex(+m[3])}`;
+    }
+    if (/^#([0-9a-f]{3})$/i.test(value)) {
+      return `#${value[1]}${value[1]}${value[2]}${value[2]}${value[3]}${value[3]}`.toLowerCase();
+    }
+    if (/^#([0-9a-f]{6})$/i.test(value)) return value.toLowerCase();
+    return '';
   }
 
   public cargarPersonal(): void {
@@ -525,22 +1117,48 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.loading = false;
-        void this.aviso('info', 'Drive no vinculado', err?.error?.msj || 'Cargá las credenciales en Configuración.');
+        void this.aviso('info', 'Drive no vinculado', this.textoError(err, 'Cargá las credenciales en Configuración.'));
       }
     });
   }
 
-  private cargarItems(folderId?: string): void {
+  private limpiarPreviews(): void {
+    Object.values(this.previews).forEach((url) => URL.revokeObjectURL(url));
+    this.previews = {};
+  }
+
+  private cargarMiniaturas(items: DriveItem[], pedido: number): void {
+    this.limpiarPreviews();
+    for (const item of items) {
+      if (item.isFolder || !item.hasThumbnail) continue;
+      this.drive.miniatura(item.id).subscribe({
+        next: (blob) => {
+          if (pedido !== this.listadoPedido) return;
+          if (!blob || (blob.type && blob.type.includes('json'))) return;
+          this.previews = { ...this.previews, [item.id]: URL.createObjectURL(blob) };
+        },
+        error: () => undefined
+      });
+    }
+  }
+
+  private cargarItems(folderId?: string, reset = false): void {
+    const pedido = ++this.listadoPedido;
     this.loading = true;
+    if (reset) this.items = [];
     this.drive.listarItems(folderId).subscribe({
       next: (response) => {
+        if (pedido !== this.listadoPedido) return;
         this.items = response.items || [];
         this.loading = false;
+        this.cargarMiniaturas(this.items, pedido);
       },
       error: (err) => {
+        if (pedido !== this.listadoPedido) return;
         this.loading = false;
         this.items = [];
-        void this.aviso('error', 'No se pudo listar', err?.error?.msj || 'Revisá el vínculo con Drive.');
+        this.limpiarPreviews();
+        void this.aviso('error', 'No se pudo listar', this.textoError(err, 'No se pudo listar Drive. Revisá que las carpetas sigan compartidas con el portal.'));
       }
     });
   }
@@ -558,6 +1176,58 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
     const name = String(result.value || '').trim();
     if (!result.isConfirmed || !name) return null;
     return name;
+  }
+
+  private buscarRemoto(q: string): void {
+    const pedido = ++this.buscarPedido;
+    this.drive.buscar(q, this.carpetaActual).subscribe({
+      next: (response) => {
+        if (pedido !== this.buscarPedido) return;
+        this.extrasBusqueda = response.items || [];
+        this.cargarMiniaturas(this.extrasBusqueda, this.listadoPedido);
+      },
+      error: () => {
+        if (pedido !== this.buscarPedido) return;
+        this.extrasBusqueda = [];
+      }
+    });
+  }
+
+  private limpiarBusqueda(): void {
+    this.busqueda = '';
+    this.extrasBusqueda = [];
+    if (this.buscarTimer) clearTimeout(this.buscarTimer);
+  }
+
+  private destinosMover(item: DriveItem): Array<{ id: string; name: string }> {
+    const actual = item.parentId || this.carpetaActual || '';
+    const seen = new Set<string>([item.id, actual]);
+    const out: Array<{ id: string; name: string }> = [];
+    const push = (id: string, name: string) => {
+      if (!id || seen.has(id)) return;
+      seen.add(id);
+      out.push({ id, name });
+    };
+    this.raices.forEach((raiz) => push(raiz.id, raiz.name));
+    this.items.filter((actualItem) => actualItem.isFolder).forEach((folder) => push(folder.id, folder.name));
+    return out;
+  }
+
+  private sanitizarHtml(html: string): string {
+    return String(html || '')
+      .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, '')
+      .replace(/<iframe[\s\S]*?>[\s\S]*?<\/iframe>/gi, '')
+      .replace(/\son\w+="[^"]*"/gi, '')
+      .replace(/\son\w+='[^']*'/gi, '');
+  }
+
+  private textoError(err: unknown, fallback: string): string {
+    const raw = String((err as { error?: { msj?: string } })?.error?.msj || '').trim();
+    if (!raw) return fallback;
+    if (/https?:\/\/|service account|storage quota|developers\.google|googleapis|leverage shared|oauth delegation/i.test(raw)) {
+      return fallback;
+    }
+    return raw;
   }
 
   private aviso(icon: 'success' | 'error' | 'warning' | 'info', title: string, text: string): Promise<unknown> {
