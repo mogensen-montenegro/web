@@ -1,0 +1,14 @@
+<div class="drive-card__actions" [class.is-compact]="compact" (click)="$event.stopPropagation()">
+  <button type="button" *ngIf="!item.isFolder" (click)="bajar.emit(item)" data-tip="Bajar" aria-label="Bajar">
+    <i class="fa fa-download"></i>
+  </button>
+  <button type="button" *ngIf="puedeEditar" (click)="renombrar.emit(item)" data-tip="Renombrar" aria-label="Renombrar">
+    <i class="fa fa-pencil"></i>
+  </button>
+  <button type="button" *ngIf="puedeEditar && !esRaiz" (click)="mover.emit(item)" data-tip="Mover" aria-label="Mover">
+    <i class="fa fa-share"></i>
+  </button>
+  <button type="button" class="is-danger" *ngIf="puedeBorrar" (click)="borrar.emit(item)" data-tip="Eliminar" aria-label="Eliminar">
+    <i class="fa fa-trash"></i>
+  </button>
+</div>

@@ -1,0 +1,97 @@
+@import './drive-fmt';
+
+.drive-sheet {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-height: 58vh;
+}
+
+.drive-sheet__tabs {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.drive-sheet__tabs button {
+  border: 0;
+  background: rgba(28, 31, 58, 0.06);
+  border-radius: 999px;
+  padding: 0.3rem 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.drive-sheet__tabs .is-active {
+  background: #b91828;
+  color: #fff;
+}
+
+.drive-sheet__table-wrap {
+  overflow: auto;
+  border: 1px solid rgba(28, 31, 58, 0.08);
+  border-radius: 12px;
+  max-height: 58vh;
+}
+
+.drive-sheet table {
+  border-collapse: collapse;
+  min-width: 100%;
+  background: #fff;
+}
+
+.drive-sheet th,
+.drive-sheet td {
+  border: 1px solid rgba(28, 31, 58, 0.1);
+  min-width: 92px;
+  padding: 0.35rem 0.45rem;
+  font-size: 0.85rem;
+}
+
+.drive-sheet th {
+  background: #f6f7fb;
+  color: rgba(28, 31, 58, 0.65);
+  font-weight: 700;
+  text-align: center;
+}
+
+.drive-sheet td {
+  padding: 0;
+}
+
+.drive-sheet td.is-sel {
+  outline: 2px solid #1a73e8;
+  outline-offset: -2px;
+  background: rgba(26, 115, 232, 0.08);
+}
+
+.drive-sheet input {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 0.35rem 0.45rem;
+  font: inherit;
+  min-width: 92px;
+}
+
+.drive-sheet input:focus {
+  outline: none;
+}
+
+.drive-sheet__tools {
+  display: flex;
+  gap: 0.4rem;
+  color: rgba(28, 31, 58, 0.6);
+  font-size: 0.9rem;
+}
+
+.drive-sheet__tools button {
+  border: 1px solid rgba(28, 31, 58, 0.12);
+  background: #fff;
+  border-radius: 999px;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  color: #1c1f3a;
+}

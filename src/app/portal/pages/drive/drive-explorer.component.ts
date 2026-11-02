@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { Router } from '@angular/router';
@@ -16,9 +16,10 @@ import { ModalPermisosProfesorComponent } from '../tu-personal/modal-permisos-pr
 import { Profesores } from '../tu-personal/profesor.interface';
 import { ProfesorPermisosService } from '../tu-personal/profesor-permisos.service';
 import { ProfesoresService } from '../tu-personal/profesores.service';
-
-type AlineacionTexto = 'left' | 'center' | 'right';
-type PaletaFmt = 'color' | 'fill' | null;
+import { DriveBrowserComponent } from './drive-browser.component';
+import { DriveSheetEditorComponent } from './drive-sheet-editor.component';
+import { DriveWordEditorComponent } from './drive-word-editor.component';
+import { CeldaHoja, HojaDrive, celdaVacia } from './drive.models';
 
 interface DriveEditor {
   item: DriveItem;
@@ -27,40 +28,22 @@ interface DriveEditor {
   editUrl: string | null;
 }
 
-interface CeldaHoja {
-  v: string;
-  bold: boolean;
-  italic: boolean;
-  underline: boolean;
-  font: string;
-  size: number;
-  color: string;
-  fill: string;
-  align: AlineacionTexto;
-}
-
-interface HojaDrive {
-  name: string;
-  rows: CeldaHoja[][];
-}
-
-interface SeleccionHoja {
-  r1: number;
-  c1: number;
-  r2: number;
-  c2: number;
-}
-
 @Component({
   selector: 'app-drive-explorer',
   standalone: true,
-  imports: [CommonModule, FormsModule, ModalPermisosProfesorComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ModalPermisosProfesorComponent,
+    DriveBrowserComponent,
+    DriveSheetEditorComponent,
+    DriveWordEditorComponent
+  ],
   templateUrl: './drive-explorer.component.html',
   styleUrls: ['./drive-explorer.component.scss']
 })
 export class DriveExplorerComponent implements OnInit, OnDestroy {
-  @ViewChild('fileInput') fileInput?: ElementRef<HTMLInputElement>;
-  @ViewChild('richEditor') richEditor?: ElementRef<HTMLDivElement>;
+  @ViewChild(DriveWordEditorComponent) wordEditor?: DriveWordEditorComponent;
 
   public loading = false;
   public guardando = false;
@@ -78,29 +61,16 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
   public carpetaActual: string | null = null;
   public editor: DriveEditor | null = null;
   public hojas: HojaDrive[] = [];
-  public hojaActiva = 0;
   public texto = '';
   public vista: 'grid' | 'list' = 'list';
   public busqueda = '';
   public extrasBusqueda: DriveItem[] = [];
   public previews: Record<string, string> = {};
-  public paleta: PaletaFmt = null;
-  public sel: SeleccionHoja | null = null;
-  public readonly fuentes = ['Arial', 'Calibri', 'Georgia', 'Times New Roman', 'Verdana', 'Courier New', 'Trebuchet MS'];
-  public readonly colores = [
-    '#000000', '#434343', '#666666', '#999999', '#b7b7b7', '#cccccc', '#d9d9d9', '#ffffff',
-    '#980000', '#ff0000', '#ff9900', '#ffff00', '#00ff00', '#00ffff', '#4a86e2', '#0000ff',
-    '#9900ff', '#ff00ff', '#e6b8af', '#f4cccc', '#fce5cd', '#fff2cc', '#d9ead3', '#cfe2f3',
-    '#c9daf8', '#d9d2e9', '#ead1dc'
-  ];
-  public richFmt = this.fmtBase();
   private openedAt: string | null = null;
   private heartbeat?: ReturnType<typeof setInterval>;
   private listadoPedido = 0;
   private buscarPedido = 0;
   private buscarTimer?: ReturnType<typeof setTimeout>;
-  private arrastrando = false;
-  private ignorarCambio = false;
 
   constructor(
     private drive: ConfiguracionService,
@@ -136,40 +106,6 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
     event.returnValue = '';
   }
 
-  @HostListener('document:mouseup')
-  public onMouseUp(): void {
-    this.arrastrando = false;
-  }
-
-  @HostListener('document:click', ['$event'])
-  public onDocClick(event: MouseEvent): void {
-    const target = event.target as HTMLElement | null;
-    if (!target?.closest('.drive-fmt__swatch')) this.paleta = null;
-  }
-
-  @HostListener('document:selectionchange')
-  public onSelectionChange(): void {
-    this.syncRichFmt();
-  }
-
-  @HostListener('document:keydown', ['$event'])
-  public onDocKey(event: KeyboardEvent): void {
-    if (!this.editor || !this.puedeEditar || this.editor.embedUrl) return;
-    if (!(event.ctrlKey || event.metaKey)) return;
-    if (this.editor.kind !== 'sheet') return;
-    const key = event.key.toLowerCase();
-    if (key === 'b') {
-      event.preventDefault();
-      this.toggleEstiloHoja('bold');
-    } else if (key === 'i') {
-      event.preventDefault();
-      this.toggleEstiloHoja('italic');
-    } else if (key === 'u') {
-      event.preventDefault();
-      this.toggleEstiloHoja('underline');
-    }
-  }
-
   public get tituloActual(): string {
     if (this.editor) return this.editor.item.name;
     if (!this.ruta.length) return 'Carpetas vinculadas';
@@ -195,16 +131,8 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
     return this.visibles.filter((item) => !item.isFolder);
   }
 
-  public esRaiz(item: DriveItem): boolean {
-    return this.raices.some((raiz) => raiz.id === item.id);
-  }
-
-  public async regresar(): Promise<void> {
-    if (this.editor) {
-      await this.cerrarEditor();
-      return;
-    }
-    await this.irA(this.ruta.length - 2);
+  public get raicesIds(): string[] {
+    return this.raices.map((raiz) => raiz.id);
   }
 
   public puedeSalir(): boolean | Promise<boolean> {
@@ -228,32 +156,6 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
     this.buscarTimer = setTimeout(() => this.buscarRemoto(q), 350);
   }
 
-  public fecha(item: DriveItem): string {
-    if (!item.modifiedTime) return '—';
-    const fecha = new Date(item.modifiedTime);
-    if (Number.isNaN(fecha.getTime())) return '—';
-    return fecha.toLocaleString('es-AR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  }
-
-  public get filas(): CeldaHoja[][] {
-    return this.hojas[this.hojaActiva]?.rows || [];
-  }
-
-  public get columnas(): string[] {
-    const count = this.filas[0]?.length || 0;
-    return Array.from({ length: count }, (_, i) => this.columna(i));
-  }
-
-  public get estiloCelda(): CeldaHoja {
-    return this.celdasSeleccionadas()[0] || this.celdaVacia();
-  }
-
   public irAConfig(): void {
     void this.router.navigateByUrl('/panel/configuracion');
   }
@@ -262,33 +164,21 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
     this.showPermisos = true;
   }
 
-  public tipoArchivo(item: DriveItem): 'folder' | 'word' | 'sheet' | 'slides' | 'file' {
-    if (item.isFolder) return 'folder';
-    const mime = item.mimeType || '';
-    const name = item.name || '';
-    if (mime.includes('spreadsheet') || mime.includes('excel') || /\.xlsx?$/i.test(name) || /\.csv$/i.test(name)) {
-      return 'sheet';
-    }
-    if (mime.includes('presentation') || mime.includes('powerpoint') || /\.pptx?$/i.test(name)) {
-      return 'slides';
-    }
-    if (mime.includes('document') || mime.includes('word') || /\.docx?$/i.test(name)) {
-      return 'word';
-    }
-    return 'file';
+  public onEditorChange(): void {
+    this.marcarCambio();
   }
 
-  public icono(item: DriveItem): string {
-    const tipo = this.tipoArchivo(item);
-    if (tipo === 'folder') return 'fa-folder';
-    if (tipo === 'sheet') return 'fa-file-excel';
-    if (tipo === 'slides') return 'fa-file-powerpoint';
-    if (tipo === 'word') return 'fa-file-word';
-    const mime = item.mimeType || '';
-    const name = item.name || '';
-    if (mime.includes('pdf') || /\.pdf$/i.test(name)) return 'fa-file-pdf';
-    if (mime.startsWith('image/')) return 'fa-file-image';
-    return 'fa-file-lines';
+  public onRichHtml(html: string): void {
+    this.texto = html;
+    this.marcarCambio();
+  }
+
+  public async regresar(): Promise<void> {
+    if (this.editor) {
+      await this.cerrarEditor();
+      return;
+    }
+    await this.irA(this.ruta.length - 2);
   }
 
   public abrir(item: DriveItem): void {
@@ -328,10 +218,8 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
         this.iniciarHeartbeat();
         if (response.kind === 'sheet' && !response.embedUrl) this.cargarPlanilla(response.item);
         if (response.kind === 'text') {
-          if (response.texto != null) {
-            this.texto = response.texto;
-            this.pintarRich();
-          } else this.cargarTexto(response.item);
+          if (response.texto != null) this.texto = response.texto;
+          else this.cargarTexto(response.item);
         }
       },
       error: (err) => {
@@ -451,14 +339,6 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
     });
   }
 
-  public elegirArchivo(): void {
-    if (!this.carpetaActual) {
-      void this.aviso('warning', 'Elegí una carpeta', 'Entrá a una carpeta vinculada para subir archivos.');
-      return;
-    }
-    this.fileInput?.nativeElement.click();
-  }
-
   public onFile(event: Event): void {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
@@ -477,8 +357,7 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
     });
   }
 
-  public async renombrar(item: DriveItem, event: Event): Promise<void> {
-    event.stopPropagation();
+  public async renombrar(item: DriveItem): Promise<void> {
     const result = await Swal.fire({
       title: 'Renombrar',
       input: 'text',
@@ -496,8 +375,7 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
     });
   }
 
-  public async mover(item: DriveItem, event: Event): Promise<void> {
-    event.stopPropagation();
+  public async mover(item: DriveItem): Promise<void> {
     const destinos = this.destinosMover(item);
     if (!destinos.length) {
       void this.aviso('info', 'Sin destino', 'No hay otra carpeta vinculada para mover este archivo.');
@@ -528,8 +406,7 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
     });
   }
 
-  public eliminar(item: DriveItem, event?: Event): void {
-    event?.stopPropagation();
+  public eliminar(item: DriveItem): void {
     void Swal.fire({
       title: `¿Eliminar ${item.name}?`,
       text: 'Se mueve a la papelera de Drive.',
@@ -552,8 +429,7 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
     });
   }
 
-  public descargar(item: DriveItem, event?: Event): void {
-    event?.stopPropagation();
+  public descargar(item: DriveItem): void {
     this.drive.descargar(item.id).subscribe({
       next: (blob) => {
         const url = URL.createObjectURL(blob);
@@ -565,84 +441,6 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
       },
       error: (err) => this.aviso('error', 'No se pudo descargar', this.textoError(err, 'No se pudo descargar el archivo. Probá de nuevo.'))
     });
-  }
-
-  public activarHoja(index: number): void {
-    this.hojaActiva = index;
-    this.sel = { r1: 0, c1: 0, r2: 0, c2: 0 };
-    this.paleta = null;
-  }
-
-  public esSeleccionada(row: number, col: number): boolean {
-    if (!this.sel) return false;
-    const r1 = Math.min(this.sel.r1, this.sel.r2);
-    const r2 = Math.max(this.sel.r1, this.sel.r2);
-    const c1 = Math.min(this.sel.c1, this.sel.c2);
-    const c2 = Math.max(this.sel.c1, this.sel.c2);
-    return row >= r1 && row <= r2 && col >= c1 && col <= c2;
-  }
-
-  public iniciarSeleccion(row: number, col: number, event: MouseEvent | FocusEvent): void {
-    this.paleta = null;
-    if (event instanceof MouseEvent && event.shiftKey && this.sel) {
-      this.sel = { ...this.sel, r2: row, c2: col };
-      return;
-    }
-    if (event instanceof FocusEvent && this.arrastrando) return;
-    this.sel = { r1: row, c1: col, r2: row, c2: col };
-    this.arrastrando = event instanceof MouseEvent && event.button === 0;
-  }
-
-  public extenderSeleccion(row: number, col: number): void {
-    if (!this.arrastrando || !this.sel) return;
-    this.sel = { ...this.sel, r2: row, c2: col };
-  }
-
-  public agregarFila(): void {
-    const cols = this.filas[0]?.length || 8;
-    this.hojas[this.hojaActiva].rows = [...this.filas, Array.from({ length: cols }, () => this.celdaVacia())];
-    this.marcarCambio();
-  }
-
-  public agregarColumna(): void {
-    this.hojas[this.hojaActiva].rows = this.filas.map((row) => [...row, this.celdaVacia()]);
-    this.marcarCambio();
-  }
-
-  public cambiarValorCelda(celda: CeldaHoja, value: string): void {
-    if (celda.v === value) return;
-    celda.v = value;
-    this.marcarCambio();
-  }
-
-  public togglePaleta(tipo: Exclude<PaletaFmt, null>, event: Event): void {
-    event.stopPropagation();
-    this.paleta = this.paleta === tipo ? null : tipo;
-  }
-
-  public aplicarEstiloHoja(patch: Partial<CeldaHoja>): void {
-    this.celdasSeleccionadas().forEach((celda) => Object.assign(celda, patch));
-    this.paleta = null;
-    this.marcarCambio();
-  }
-
-  public toggleEstiloHoja(clave: 'bold' | 'italic' | 'underline'): void {
-    const celdas = this.celdasSeleccionadas();
-    const next = !celdas.every((celda) => celda[clave]);
-    celdas.forEach((celda) => {
-      celda[clave] = next;
-    });
-    this.marcarCambio();
-  }
-
-  public cambiarTamanioHoja(delta: number): void {
-    const size = Math.min(72, Math.max(8, (this.estiloCelda.size || 11) + delta));
-    this.aplicarEstiloHoja({ size });
-  }
-
-  public setTamanioHoja(value: string | number): void {
-    const size = Math.min(72, Math.max(8, Number(value) || 11));
-    this.aplicarEstiloHoja({ size });
   }
 
   public guardarPlanilla(silencioso = false): Promise<boolean> {
@@ -676,124 +474,17 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
     });
   }
 
-  public aplicarFormato(comando: string): void {
-    this.richEditor?.nativeElement.focus();
-    const conCss = comando !== 'bold' && comando !== 'italic' && comando !== 'underline';
-    document.execCommand('styleWithCSS', false, conCss ? 'true' : 'false');
-    document.execCommand(comando, false);
-    this.onRichInput();
-    this.syncRichFmt();
-  }
-
-  public aplicarFuente(event: Event): void {
-    const value = (event.target as HTMLSelectElement).value;
-    this.richFmt.font = value;
-    this.richEditor?.nativeElement.focus();
-    document.execCommand('fontName', false, value);
-    this.onRichInput();
-  }
-
-  public aplicarAlineacionRich(align: AlineacionTexto): void {
-    const cmd = align === 'center' ? 'justifyCenter' : align === 'right' ? 'justifyRight' : 'justifyLeft';
-    this.richFmt.align = align;
-    this.aplicarFormato(cmd);
-  }
-
-  public aplicarColorRich(color: string, fill = false): void {
-    this.richEditor?.nativeElement.focus();
-    document.execCommand('styleWithCSS', false, 'true');
-    document.execCommand(fill ? 'hiliteColor' : 'foreColor', false, color);
-    if (fill) this.richFmt.fill = color;
-    else this.richFmt.color = color;
-    this.paleta = null;
-    this.onRichInput();
-  }
-
-  public cambiarTamanioRich(delta: number): void {
-    this.setTamanioRich((this.richFmt.size || 15) + delta);
-  }
-
-  public setTamanioRich(value: string | number): void {
-    const size = Math.min(72, Math.max(8, Number(value) || 15));
-    this.richFmt.size = size;
-    this.richEditor?.nativeElement.focus();
-    document.execCommand('fontSize', false, '7');
-    this.richEditor?.nativeElement.querySelectorAll('font[size="7"]').forEach((font) => {
-      const span = document.createElement('span');
-      span.style.fontSize = `${size}px`;
-      while (font.firstChild) span.appendChild(font.firstChild);
-      font.parentNode?.replaceChild(span, font);
-    });
-    this.onRichInput();
-  }
-
-  public onRichInput(): void {
-    this.texto = this.richEditor?.nativeElement.innerHTML || '';
-    this.syncRichFmt();
-    if (!this.ignorarCambio) this.marcarCambio();
-  }
-
-  public syncRichFmt(): void {
-    if (this.editor?.kind !== 'text') return;
-    const root = this.richEditor?.nativeElement;
-    const sel = document.getSelection();
-    if (!root || !sel || !sel.anchorNode || !root.contains(sel.anchorNode)) return;
-    this.richFmt.bold = document.queryCommandState('bold');
-    this.richFmt.italic = document.queryCommandState('italic');
-    this.richFmt.underline = document.queryCommandState('underline');
-    const node = sel.anchorNode instanceof Element ? sel.anchorNode : sel.anchorNode.parentElement;
-    if (!node) return;
-    const cs = window.getComputedStyle(node);
-    this.richFmt.font = (cs.fontFamily.split(',')[0] || 'Arial').replace(/['"]/g, '').trim();
-    this.richFmt.size = Math.round(parseFloat(cs.fontSize)) || 15;
-    this.richFmt.color = this.rgbToHex(cs.color) || this.richFmt.color;
-    this.richFmt.align = cs.textAlign === 'center' || cs.textAlign === 'right' ? cs.textAlign : 'left';
-    const bg = this.rgbToHex(cs.backgroundColor);
-    this.richFmt.fill = bg && bg !== '#ffffff' && bg !== '#000000' ? bg : '';
-  }
-
-  private escapeHtml(value: string): string {
-    return String(value || '')
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
-  }
-
-  private pintarRich(): void {
-    setTimeout(() => {
-      const el = this.richEditor?.nativeElement;
-      if (!el) {
-        setTimeout(() => this.pintarRich(), 50);
-        return;
-      }
-      this.ignorarCambio = true;
-      const html = this.sanitizarHtml(this.texto || '');
-      if (/<[a-z][\s\S]*>/i.test(html)) {
-        el.innerHTML = html || '<p><br></p>';
-      } else {
-        el.innerHTML = (this.texto || '')
-          .split('\n')
-          .map((line) => `<p>${this.escapeHtml(line) || '<br>'}</p>`)
-          .join('');
-      }
-      setTimeout(() => {
-        this.ignorarCambio = false;
-      }, 0);
-    }, 0);
-  }
-
   public guardarTexto(silencioso = false): Promise<boolean> {
     if (!this.editor) return Promise.resolve(false);
-    this.ignorarCambio = true;
-    this.onRichInput();
-    this.ignorarCambio = false;
+    const html = this.wordEditor?.getHtml() || this.texto;
+    this.texto = html;
     const esWord = /\.docx?$/i.test(this.editor.item.name || '') || (this.editor.item.mimeType || '').includes('word');
     this.guardando = true;
     const request = esWord
-      ? this.drive.guardarDocumento(this.editor.item.id, this.sanitizarHtml(this.texto))
+      ? this.drive.guardarDocumento(this.editor.item.id, this.sanitizarHtml(html))
       : this.drive.guardarContenido(
           this.editor.item.id,
-          new File([this.richEditor?.nativeElement.innerText || this.texto], this.editor.item.name, {
+          new File([this.wordEditor?.getText() || html], this.editor.item.name, {
             type: this.editor.item.mimeType || 'text/plain'
           })
         );
@@ -815,22 +506,15 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
     });
   }
 
-  public peso(item: DriveItem): string {
-    if (item.isFolder || !item.size) return '—';
-    if (item.size < 1024) return `${item.size} B`;
-    if (item.size < 1024 * 1024) return `${Math.round(item.size / 1024)} KB`;
-    return `${(item.size / (1024 * 1024)).toFixed(1)} MB`;
-  }
-
-  public columna(index: number): string {
-    let n = index + 1;
-    let label = '';
-    while (n > 0) {
-      const rem = (n - 1) % 26;
-      label = String.fromCharCode(65 + rem) + label;
-      n = Math.floor((n - 1) / 26);
-    }
-    return label;
+  public cargarPersonal(): void {
+    this.profesoresService.obtenerProfesores().subscribe({
+      next: (list) => {
+        this.profesores = list || [];
+      },
+      error: () => {
+        this.profesores = [];
+      }
+    });
   }
 
   private iniciarHeartbeat(): void {
@@ -887,14 +571,8 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
     this.registrarCierre();
     this.editor = null;
     this.hojas = [];
-    this.hojaActiva = 0;
     this.texto = '';
-    this.sel = null;
-    this.paleta = null;
-    this.arrastrando = false;
     this.modificado = false;
-    this.ignorarCambio = false;
-    this.richFmt = this.fmtBase();
   }
 
   private registrarCierre(sync = false, stop = true): void {
@@ -914,8 +592,6 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
         const buffer = await blob.arrayBuffer();
         const wb = XLSX.read(buffer, { type: 'array', cellStyles: true });
         this.hojas = wb.SheetNames.map((name) => this.hojaDesdeSheet(name, wb.Sheets[name]));
-        this.hojaActiva = 0;
-        this.sel = { r1: 0, c1: 0, r2: 0, c2: 0 };
         this.loading = false;
       },
       error: (err) => {
@@ -931,7 +607,6 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
       next: async (blob) => {
         this.texto = await blob.text();
         this.loading = false;
-        this.pintarRich();
       },
       error: () => {
         this.texto = '';
@@ -942,45 +617,11 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
 
   private padGrid(rows: CeldaHoja[][], minRows = 16, minCols = 8): CeldaHoja[][] {
     const cols = Math.max(minCols, ...rows.map((row) => row?.length || 0), 1);
-    const next = (rows.length ? rows : [[this.celdaVacia()]]).map((row) =>
-      Array.from({ length: cols }, (_, i) => (row?.[i] ? { ...this.celdaVacia(), ...row[i] } : this.celdaVacia()))
+    const next = (rows.length ? rows : [[celdaVacia()]]).map((row) =>
+      Array.from({ length: cols }, (_, i) => (row?.[i] ? { ...celdaVacia(), ...row[i] } : celdaVacia()))
     );
-    while (next.length < minRows) next.push(Array.from({ length: cols }, () => this.celdaVacia()));
+    while (next.length < minRows) next.push(Array.from({ length: cols }, () => celdaVacia()));
     return next;
-  }
-
-  private celdaVacia(): CeldaHoja {
-    return {
-      v: '',
-      bold: false,
-      italic: false,
-      underline: false,
-      font: 'Arial',
-      size: 11,
-      color: '#000000',
-      fill: '',
-      align: 'left'
-    };
-  }
-
-  private fmtBase(): CeldaHoja {
-    return { ...this.celdaVacia(), size: 15 };
-  }
-
-  private celdasSeleccionadas(): CeldaHoja[] {
-    if (!this.sel) return [];
-    const r1 = Math.min(this.sel.r1, this.sel.r2);
-    const r2 = Math.max(this.sel.r1, this.sel.r2);
-    const c1 = Math.min(this.sel.c1, this.sel.c2);
-    const c2 = Math.max(this.sel.c1, this.sel.c2);
-    const out: CeldaHoja[] = [];
-    for (let r = r1; r <= r2; r++) {
-      for (let c = c1; c <= c2; c++) {
-        const celda = this.filas[r]?.[c];
-        if (celda) out.push(celda);
-      }
-    }
-    return out;
   }
 
   private hojaDesdeSheet(name: string, ws: XLSX.WorkSheet): HojaDrive {
@@ -997,7 +638,7 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
   }
 
   private celdaDesdeXlsx(cell: XLSX.CellObject | undefined): CeldaHoja {
-    const base = this.celdaVacia();
+    const base = celdaVacia();
     if (!cell) return base;
     const style = (cell as { s?: {
       font?: { bold?: boolean; italic?: boolean; underline?: boolean | object; name?: string; sz?: number; color?: { rgb?: string } };
@@ -1081,30 +722,6 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
     if (h.length === 8) h = h.slice(-6);
     if (h.length === 6) return `#${h.toLowerCase()}`;
     return '';
-  }
-
-  private rgbToHex(value: string): string {
-    const m = String(value || '').match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i);
-    if (m) {
-      const hex = (n: number) => n.toString(16).padStart(2, '0');
-      return `#${hex(+m[1])}${hex(+m[2])}${hex(+m[3])}`;
-    }
-    if (/^#([0-9a-f]{3})$/i.test(value)) {
-      return `#${value[1]}${value[1]}${value[2]}${value[2]}${value[3]}${value[3]}`.toLowerCase();
-    }
-    if (/^#([0-9a-f]{6})$/i.test(value)) return value.toLowerCase();
-    return '';
-  }
-
-  public cargarPersonal(): void {
-    this.profesoresService.obtenerProfesores().subscribe({
-      next: (list) => {
-        this.profesores = list || [];
-      },
-      error: () => {
-        this.profesores = [];
-      }
-    });
   }
 
   private cargarRaices(): void {

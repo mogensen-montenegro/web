@@ -1,0 +1,42 @@
+<article
+  class="drive-card"
+  [class.is-file]="!item.isFolder"
+  [class.is-compact]="item.isFolder"
+  [class.is-word]="tipo === 'word'"
+  [class.is-sheet]="tipo === 'sheet'"
+  [class.is-slides]="tipo === 'slides'"
+  (click)="abrir.emit(item)">
+  <div class="drive-card__top">
+    <div class="drive-card__heading">
+      <div
+        class="drive-card__icon"
+        [class.is-folder]="item.isFolder"
+        [class.is-word]="tipo === 'word'"
+        [class.is-sheet]="tipo === 'sheet'"
+        [class.is-slides]="tipo === 'slides'">
+        <i class="fa" [ngClass]="icono"></i>
+      </div>
+      <span class="drive-card__copy">
+        <strong [attr.title]="item.path || item.name">{{ item.name }}</strong>
+        <small class="drive-card__path" *ngIf="item.path">{{ item.path }}</small>
+      </span>
+    </div>
+    <app-drive-item-actions
+      [item]="item"
+      [puedeEditar]="puedeEditar"
+      [puedeBorrar]="puedeBorrar"
+      [esRaiz]="esRaiz"
+      [compact]="true"
+      (bajar)="bajar.emit($event)"
+      (renombrar)="renombrar.emit($event)"
+      (mover)="mover.emit($event)"
+      (borrar)="borrar.emit($event)">
+    </app-drive-item-actions>
+  </div>
+  <div class="drive-card__preview" *ngIf="!item.isFolder">
+    <img *ngIf="preview" [src]="preview" [alt]="item.name" />
+    <div class="drive-card__preview-fallback" *ngIf="!preview">
+      <i class="fa" [ngClass]="icono"></i>
+    </div>
+  </div>
+</article>

@@ -1,0 +1,30 @@
+@import './drive-fmt';
+
+.drive-rich {
+  display: flex;
+  flex-direction: column;
+  min-height: 58vh;
+  border: 2px solid rgba(28, 31, 58, 0.14);
+  border-radius: 16px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.drive-rich .drive-fmt {
+  border: 0;
+  border-radius: 0;
+  border-bottom: 1px solid rgba(28, 31, 58, 0.1);
+}
+
+.drive-rich__editor {
+  flex: 1;
+  min-height: 50vh;
+  padding: 1.1rem 1.25rem;
+  outline: none;
+  line-height: 1.6;
+  color: #1c1f3a;
+}
+
+.drive-rich__editor p {
+  margin: 0 0 0.35rem;
+}

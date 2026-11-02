@@ -2,7 +2,6 @@ import { inject } from '@angular/core';
 import { CanActivateFn, CanDeactivateFn, Router } from '@angular/router';
 import { catchError, map, of } from 'rxjs';
 import { ConfiguracionService } from '../configuracion/configuracion.service';
-import { DriveExplorerComponent } from './drive-explorer.component';
 
 export const DriveGuard: CanActivateFn = () => {
   const configuracion = inject(ConfiguracionService);
@@ -16,7 +15,7 @@ export const DriveGuard: CanActivateFn = () => {
   );
 };
 
-export const DriveDirtyGuard: CanDeactivateFn<DriveExplorerComponent> = (component) => {
+export const DriveDirtyGuard: CanDeactivateFn<{ puedeSalir?: () => boolean | Promise<boolean> }> = (component) => {
   if (typeof component?.puedeSalir === 'function') return component.puedeSalir();
   return true;
 };

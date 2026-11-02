@@ -1,0 +1,70 @@
+<div class="drive-rich">
+  <div class="drive-fmt" *ngIf="puedeEditar">
+    <select class="drive-fmt__select" [ngModel]="richFmt.font" (change)="aplicarFuente($event)" aria-label="Tipo de fuente">
+      <option *ngFor="let fuente of fuentes" [value]="fuente">{{ fuente }}</option>
+    </select>
+    <div class="drive-fmt__size">
+      <button type="button" (click)="cambiarTamanioRich(-1)" title="Reducir tamaño">−</button>
+      <input
+        type="number"
+        min="8"
+        max="72"
+        [value]="richFmt.size"
+        (change)="setTamanioRich($any($event.target).value)"
+        aria-label="Tamaño de fuente">
+      <button type="button" (click)="cambiarTamanioRich(1)" title="Aumentar tamaño">+</button>
+    </div>
+    <span class="drive-fmt__sep"></span>
+    <button type="button" [class.is-on]="richFmt.bold" (click)="aplicarFormato('bold')" title="Negrita"><b>B</b></button>
+    <button type="button" [class.is-on]="richFmt.italic" (click)="aplicarFormato('italic')" title="Cursiva"><i>I</i></button>
+    <button type="button" [class.is-on]="richFmt.underline" (click)="aplicarFormato('underline')" title="Subrayado"><u>U</u></button>
+    <span class="drive-fmt__sep"></span>
+    <div class="drive-fmt__swatch">
+      <button type="button" class="drive-fmt__tone" (click)="togglePaleta('color', $event)" title="Color de texto">
+        <span class="drive-fmt__letter">A</span>
+        <span class="drive-fmt__bar" [style.background]="richFmt.color"></span>
+      </button>
+      <div class="drive-fmt__pop" *ngIf="paleta === 'color'" (click)="$event.stopPropagation()">
+        <button
+          type="button"
+          *ngFor="let color of colores"
+          [style.background]="color"
+          [title]="color"
+          (click)="aplicarColorRich(color)"></button>
+      </div>
+    </div>
+    <div class="drive-fmt__swatch">
+      <button type="button" class="drive-fmt__tone" (click)="togglePaleta('fill', $event)" title="Color de resaltado">
+        <i class="fa fa-pencil"></i>
+        <span class="drive-fmt__bar" [style.background]="richFmt.fill || '#fff59d'"></span>
+      </button>
+      <div class="drive-fmt__pop" *ngIf="paleta === 'fill'" (click)="$event.stopPropagation()">
+        <button type="button" class="is-clear" (click)="aplicarColorRich('transparent', true)">Sin color</button>
+        <button
+          type="button"
+          *ngFor="let color of colores"
+          [style.background]="color"
+          [title]="color"
+          (click)="aplicarColorRich(color, true)"></button>
+      </div>
+    </div>
+    <span class="drive-fmt__sep"></span>
+    <button type="button" [class.is-on]="richFmt.align === 'left'" (click)="aplicarAlineacionRich('left')" title="Alinear a la izquierda">
+      <i class="fa fa-align-left"></i>
+    </button>
+    <button type="button" [class.is-on]="richFmt.align === 'center'" (click)="aplicarAlineacionRich('center')" title="Centrar">
+      <i class="fa fa-align-center"></i>
+    </button>
+    <button type="button" [class.is-on]="richFmt.align === 'right'" (click)="aplicarAlineacionRich('right')" title="Alinear a la derecha">
+      <i class="fa fa-align-right"></i>
+    </button>
+  </div>
+  <div
+    #richEditor
+    class="drive-rich__editor"
+    [attr.contenteditable]="puedeEditar"
+    (input)="onRichInput()"
+    (keyup)="syncRichFmt()"
+    (mouseup)="syncRichFmt()">
+  </div>
+</div>

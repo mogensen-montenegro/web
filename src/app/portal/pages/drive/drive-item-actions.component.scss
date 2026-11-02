@@ -1,0 +1,58 @@
+.drive-card__actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.drive-card__actions button {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(28, 31, 58, 0.12);
+  background: #fff;
+  border-radius: 999px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  color: #1c1f3a;
+}
+
+.drive-card__actions.is-compact button {
+  width: 34px;
+  height: 34px;
+}
+
+.drive-card__actions button::after {
+  content: attr(data-tip);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%) translateY(4px);
+  padding: 0.28rem 0.55rem;
+  border-radius: 8px;
+  background: #1c1f3a;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s ease, transform 0.12s ease;
+  z-index: 3;
+}
+
+.drive-card__actions button:hover::after {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.drive-card__actions .is-danger {
+  color: #b91828;
+  border-color: rgba(185, 24, 40, 0.28);
+}

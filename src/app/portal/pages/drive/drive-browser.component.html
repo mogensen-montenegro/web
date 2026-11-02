@@ -1,0 +1,140 @@
+<div class="drive-tools" *ngIf="puedeEditar && carpetaActual">
+  <button type="button" class="drive-tool is-word" (click)="nuevoDocumento.emit()">
+    <i class="fa fa-file-word"></i>
+    <span>Nuevo documento</span>
+  </button>
+  <button type="button" class="drive-tool is-sheet" (click)="nuevaPlanilla.emit()">
+    <i class="fa fa-file-excel"></i>
+    <span>Nueva planilla</span>
+  </button>
+  <button type="button" class="drive-tool is-slides" (click)="nuevaPresentacion.emit()">
+    <i class="fa fa-file-powerpoint"></i>
+    <span>Nueva presentación</span>
+  </button>
+  <button type="button" class="drive-tool is-folder" (click)="nuevaCarpeta.emit()">
+    <i class="fa fa-folder"></i>
+    <span>Nueva carpeta</span>
+  </button>
+  <button type="button" class="drive-tool is-upload" (click)="abrirFileInput()">
+    <i class="fa fa-cloud-upload"></i>
+    <span>Subir archivo</span>
+  </button>
+  <input #fileInput type="file" hidden (change)="archivo.emit($event)" />
+</div>
+
+<article class="drive-empty-card is-loading" *ngIf="loading && !visibles.length">
+  <div class="drive-empty-card__icon">
+    <i class="fa fa-cloud"></i>
+  </div>
+  <div class="drive-empty-card__body">
+    <strong>Cargando Drive</strong>
+    <p>Estamos trayendo el contenido de esta carpeta.</p>
+  </div>
+</article>
+
+<article class="drive-empty-card" *ngIf="!loading && !visibles.length && !hayRaices">
+  <div class="drive-empty-card__icon">
+    <i class="fa fa-link"></i>
+  </div>
+  <div class="drive-empty-card__body">
+    <strong>Drive todavía no está vinculado</strong>
+    <p>Cargá las credenciales en Configuración y compartí las carpetas con la cuenta de servicio como Editor.</p>
+  </div>
+</article>
+
+<article class="drive-empty-card" *ngIf="!loading && busqueda.trim() && !visibles.length">
+  <div class="drive-empty-card__icon">
+    <i class="fa fa-search"></i>
+  </div>
+  <div class="drive-empty-card__body">
+    <strong>Sin resultados</strong>
+    <p>No encontramos nada con “{{ busqueda.trim() }}”.</p>
+  </div>
+</article>
+
+<article class="drive-empty-card" *ngIf="!loading && !visibles.length && hayRaices && !busqueda.trim()">
+  <div class="drive-empty-card__icon">
+    <i class="fa fa-folder-open"></i>
+  </div>
+  <div class="drive-empty-card__body">
+    <strong>Esta carpeta está vacía</strong>
+    <p *ngIf="puedeEditar">
+      Todavía no hay archivos ni subcarpetas en {{ tituloActual }}.
+      Creá un documento, una planilla o subí un archivo para empezar a trabajar acá.
+    </p>
+    <p *ngIf="!puedeEditar">
+      Todavía no hay archivos ni subcarpetas en {{ tituloActual }}.
+    </p>
+  </div>
+</article>
+
+<div class="drive-boards" *ngIf="!loading && visibles.length && vista === 'grid'">
+  <div class="drive-grid drive-grid--folders" *ngIf="carpetas.length">
+    <app-drive-file-card
+      *ngFor="let item of carpetas"
+      [item]="item"
+      [preview]="previews[item.id] || ''"
+      [puedeEditar]="puedeEditar"
+      [puedeBorrar]="puedeBorrar"
+      [esRaiz]="esRaiz(item)"
+      (abrir)="abrir.emit($event)"
+      (bajar)="bajar.emit($event)"
+      (renombrar)="renombrar.emit($event)"
+      (mover)="mover.emit($event)"
+      (borrar)="borrar.emit($event)">
+    </app-drive-file-card>
+  </div>
+  <div class="drive-grid drive-grid--files" *ngIf="archivos.length">
+    <app-drive-file-card
+      *ngFor="let item of archivos"
+      [item]="item"
+      [preview]="previews[item.id] || ''"
+      [puedeEditar]="puedeEditar"
+      [puedeBorrar]="puedeBorrar"
+      [esRaiz]="esRaiz(item)"
+      (abrir)="abrir.emit($event)"
+      (bajar)="bajar.emit($event)"
+      (renombrar)="renombrar.emit($event)"
+      (mover)="mover.emit($event)"
+      (borrar)="borrar.emit($event)">
+    </app-drive-file-card>
+  </div>
+</div>
+
+<div class="drive-list" *ngIf="!loading && visibles.length && vista === 'list'">
+  <div class="drive-list__head">
+    <span>Nombre</span>
+    <span>Modificado</span>
+    <span>Tamaño</span>
+    <span></span>
+  </div>
+  <article class="drive-list__row" *ngFor="let item of visibles" (click)="abrir.emit(item)">
+    <span class="drive-list__name">
+      <span
+        class="drive-card__icon"
+        [class.is-folder]="item.isFolder"
+        [class.is-word]="tipo(item) === 'word'"
+        [class.is-sheet]="tipo(item) === 'sheet'"
+        [class.is-slides]="tipo(item) === 'slides'">
+        <i class="fa" [ngClass]="icono(item)"></i>
+      </span>
+      <span class="drive-card__copy">
+        <strong>{{ item.name }}</strong>
+        <small class="drive-card__path" *ngIf="item.path">{{ item.path }}</small>
+      </span>
+    </span>
+    <span class="drive-list__meta">{{ fecha(item) }}</span>
+    <span class="drive-list__meta">{{ peso(item) }}</span>
+    <app-drive-item-actions
+      [item]="item"
+      [puedeEditar]="puedeEditar"
+      [puedeBorrar]="puedeBorrar"
+      [esRaiz]="esRaiz(item)"
+      [compact]="true"
+      (bajar)="bajar.emit($event)"
+      (renombrar)="renombrar.emit($event)"
+      (mover)="mover.emit($event)"
+      (borrar)="borrar.emit($event)">
+    </app-drive-item-actions>
+  </article>
+</div>
