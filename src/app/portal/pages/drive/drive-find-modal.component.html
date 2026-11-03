@@ -1,0 +1,39 @@
+<div class="drive-find" (click)="closed.emit()">
+  <div class="drive-find__panel" (click)="$event.stopPropagation()">
+    <div class="drive-find__head">
+      <strong>{{ title }}</strong>
+      <button type="button" class="drive-find__close" (click)="closed.emit()" aria-label="Cerrar">×</button>
+    </div>
+    <div class="drive-find__bar">
+      <input
+        type="search"
+        [ngModel]="query"
+        (ngModelChange)="onQuery($event)"
+        (keydown.enter)="search.emit()"
+        placeholder="Palabra o frase..."
+        [attr.aria-label]="title" />
+      <button type="button" class="btn-find" [disabled]="busy || !query.trim()" (click)="search.emit()">
+        {{ busy ? 'Buscando...' : 'Buscar' }}
+      </button>
+    </div>
+    <div class="drive-find__meta" *ngIf="query.trim()">
+      <span *ngIf="!busy">{{ results.length }} resultado{{ results.length === 1 ? '' : 's' }}</span>
+      <div class="drive-find__nav" *ngIf="results.length">
+        <button type="button" (click)="prev.emit()" title="Anterior">↑</button>
+        <span>{{ activeIndex + 1 }} / {{ results.length }}</span>
+        <button type="button" (click)="next.emit()" title="Siguiente">↓</button>
+      </div>
+    </div>
+    <ul class="drive-find__list" *ngIf="results.length">
+      <li *ngFor="let item of results; let i = index">
+        <button type="button" [class.is-active]="i === activeIndex" (click)="select.emit(i)">
+          <strong>{{ item.title }}</strong>
+          <span>{{ item.preview }}</span>
+        </button>
+      </li>
+    </ul>
+    <p class="drive-find__empty" *ngIf="query.trim() && !busy && !results.length">
+      No hay coincidencias para “{{ query.trim() }}”.
+    </p>
+  </div>
+</div>

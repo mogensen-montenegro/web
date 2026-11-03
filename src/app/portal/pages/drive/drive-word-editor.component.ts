@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { AfterViewInit, Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { DriveFindModalComponent, DriveFindResult } from './drive-find-modal.component';
 import { AlineacionTexto, CeldaHoja, DRIVE_COLORES, DRIVE_FUENTES, PaletaFmt, celdaVacia } from './drive.models';
 
 interface HallazgoWord {
@@ -13,7 +14,7 @@ interface HallazgoWord {
 @Component({
   selector: 'app-drive-word-editor',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, DriveFindModalComponent],
   templateUrl: './drive-word-editor.component.html',
   styleUrls: ['./drive-word-editor.component.scss']
 })
@@ -41,6 +42,13 @@ export class DriveWordEditorComponent implements OnChanges, AfterViewInit {
 
   ngAfterViewInit(): void {
     this.pintar();
+  }
+
+  public get resultadosBusqueda(): DriveFindResult[] {
+    return this.hallazgos.map((item, index) => ({
+      title: `Coincidencia ${index + 1}`,
+      preview: item.preview
+    }));
   }
 
   @HostListener('document:click', ['$event'])

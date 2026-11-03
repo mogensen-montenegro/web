@@ -79,40 +79,17 @@
     (mouseup)="syncRichFmt()">
   </div>
 
-  <div class="drive-find" *ngIf="showFind" (click)="cerrarBuscador()">
-    <div class="drive-find__panel" (click)="$event.stopPropagation()">
-      <div class="drive-find__head">
-        <strong>Buscar en el documento</strong>
-        <button type="button" class="drive-find__close" (click)="cerrarBuscador()" aria-label="Cerrar">×</button>
-      </div>
-      <div class="drive-find__bar">
-        <input
-          type="search"
-          [(ngModel)]="findQuery"
-          (keydown.enter)="ejecutarBusqueda()"
-          placeholder="Palabra o frase..."
-          aria-label="Texto a buscar en el documento" />
-        <button type="button" class="btn-find" [disabled]="!findQuery.trim()" (click)="ejecutarBusqueda()">Buscar</button>
-      </div>
-      <div class="drive-find__meta" *ngIf="findQuery.trim()">
-        <span>{{ hallazgos.length }} resultado{{ hallazgos.length === 1 ? '' : 's' }}</span>
-        <div class="drive-find__nav" *ngIf="hallazgos.length">
-          <button type="button" (click)="hallazgoAnterior()" title="Anterior">↑</button>
-          <span>{{ hallazgoActivo + 1 }} / {{ hallazgos.length }}</span>
-          <button type="button" (click)="hallazgoSiguiente()" title="Siguiente">↓</button>
-        </div>
-      </div>
-      <ul class="drive-find__list" *ngIf="hallazgos.length">
-        <li *ngFor="let item of hallazgos; let i = index">
-          <button type="button" [class.is-active]="i === hallazgoActivo" (click)="irAHallazgo(i)">
-            <strong>Coincidencia {{ i + 1 }}</strong>
-            <span>{{ item.preview }}</span>
-          </button>
-        </li>
-      </ul>
-      <p class="drive-find__empty" *ngIf="findQuery.trim() && !hallazgos.length">
-        No hay coincidencias para “{{ findQuery.trim() }}”.
-      </p>
-    </div>
-  </div>
+  <app-drive-find-modal
+    *ngIf="showFind"
+    title="Buscar en el documento"
+    [query]="findQuery"
+    [results]="resultadosBusqueda"
+    [activeIndex]="hallazgoActivo"
+    (queryChange)="findQuery = $event"
+    (search)="ejecutarBusqueda()"
+    (closed)="cerrarBuscador()"
+    (select)="irAHallazgo($event)"
+    (prev)="hallazgoAnterior()"
+    (next)="hallazgoSiguiente()">
+  </app-drive-find-modal>
 </div>

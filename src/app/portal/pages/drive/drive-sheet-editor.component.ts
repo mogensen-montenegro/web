@@ -11,6 +11,7 @@ import {
   ViewChild
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { DriveFindModalComponent, DriveFindResult } from './drive-find-modal.component';
 import { CeldaHoja, DRIVE_COLORES, DRIVE_FUENTES, HojaDrive, PaletaFmt, SeleccionHoja, celdaVacia } from './drive.models';
 
 const ALTO_FILA = 34;
@@ -28,7 +29,7 @@ interface HallazgoHoja {
 @Component({
   selector: 'app-drive-sheet-editor',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, DriveFindModalComponent],
   templateUrl: './drive-sheet-editor.component.html',
   styleUrls: ['./drive-sheet-editor.component.scss']
 })
@@ -101,6 +102,13 @@ export class DriveSheetEditorComponent implements OnChanges {
 
   public get padBottom(): number {
     return Math.max(0, (this.filas.length - this.filaInicio - this.filasVisibles.length) * ALTO_FILA);
+  }
+
+  public get resultadosBusqueda(): DriveFindResult[] {
+    return this.hallazgos.map((item) => ({
+      title: `${item.hojaName} · ${item.celda}`,
+      preview: item.preview
+    }));
   }
 
   @HostListener('document:mouseup')
