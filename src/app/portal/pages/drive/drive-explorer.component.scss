@@ -11,18 +11,27 @@
   flex-wrap: wrap;
 }
 
-.drive-dirty-pill {
+.drive-dirty-pill,
+.drive-autosave-pill {
   display: inline-flex;
   align-items: center;
   margin-left: 0.55rem;
   padding: 0.15rem 0.6rem;
   border-radius: 999px;
-  background: #fff3cd;
-  color: #8a6d12;
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.02em;
   vertical-align: middle;
+}
+
+.drive-dirty-pill {
+  background: #fff3cd;
+  color: #8a6d12;
+}
+
+.drive-autosave-pill {
+  background: rgba(31, 157, 85, 0.12);
+  color: #1f9d55;
 }
 
 .drive-unsaved {

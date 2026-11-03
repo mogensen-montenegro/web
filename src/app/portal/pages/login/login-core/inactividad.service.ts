@@ -14,12 +14,15 @@ const ACTIVITY_EVENTS: Array<keyof WindowEventMap> = [
   'wheel'
 ];
 
+export type BeforeExpireHook = () => void | Promise<void>;
+
 @Injectable({ providedIn: 'root' })
 export class InactividadService implements OnDestroy {
   private started = false;
   private expiring = false;
   private timer: ReturnType<typeof setTimeout> | null = null;
   private lastReset = 0;
+  private beforeExpireHook: BeforeExpireHook | null = null;
   private readonly onActivity = () => this.reset();
   private readonly onVisibility = () => {
     if (document.visibilityState === 'visible') this.enforce();
@@ -27,12 +30,16 @@ export class InactividadService implements OnDestroy {
 
   constructor(private loginService: LoginService, private ngZone: NgZone) {}
 
+  public setBeforeExpireHook(hook: BeforeExpireHook | null): void {
+    this.beforeExpireHook = hook;
+  }
+
   public start(): void {
     if (this.started || this.loginService.getRole() !== 'personal') return;
     this.started = true;
     this.expiring = false;
     if (this.isExpired()) {
-      this.expire();
+      void this.expire();
       return;
     }
     if (!localStorage.getItem(STORAGE_KEY)) this.touch();
@@ -56,14 +63,29 @@ export class InactividadService implements OnDestroy {
       if (this.started) this.schedule();
       return false;
     }
-    this.expire();
+    void this.expire();
     return true;
   }
 
-  public expire(): void {
+  public async expire(): Promise<void> {
     if (this.expiring) return;
     this.expiring = true;
-    this.stop();
+    this.clearTimer();
+    this.unbind();
+    const hook = this.beforeExpireHook;
+    try {
+      if (hook) {
+        await Promise.race([
+          Promise.resolve(hook()),
+          new Promise<void>((resolve) => setTimeout(resolve, 8000))
+        ]);
+      }
+    } catch {
+      // El logout sigue aunque falle el guardado de emergencia.
+    }
+    this.started = false;
+    this.beforeExpireHook = null;
+    localStorage.removeItem(STORAGE_KEY);
     this.ngZone.run(() => {
       void Swal.fire({
         icon: 'info',
@@ -135,5 +157,6 @@ export class InactividadService implements OnDestroy {
   ngOnDestroy(): void {
     this.unbind();
     this.clearTimer();
+    this.beforeExpireHook = null;
   }
 }

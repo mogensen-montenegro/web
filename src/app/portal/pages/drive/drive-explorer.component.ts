@@ -11,6 +11,7 @@ import {
   DriveFolder,
   DriveItem
 } from '../configuracion/configuracion.service';
+import { InactividadService } from '../login/login-core/inactividad.service';
 import { LoginService } from '../login/login-core/login.service';
 import { ModalPermisosProfesorComponent } from '../tu-personal/modal-permisos-profesor/modal-permisos-profesor.component';
 import { Profesores } from '../tu-personal/profesor.interface';
@@ -20,6 +21,8 @@ import { DriveBrowserComponent } from './drive-browser.component';
 import { DriveSheetEditorComponent } from './drive-sheet-editor.component';
 import { DriveWordEditorComponent } from './drive-word-editor.component';
 import { CeldaHoja, HojaDrive, celdaVacia } from './drive.models';
+
+const AUTOSAVE_MS = 5 * 60 * 1000;
 
 interface DriveEditor {
   item: DriveItem;
@@ -68,9 +71,12 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
   public extrasBusqueda: DriveItem[] = [];
   public previews: Record<string, string> = {};
   public avisoPlanilla = '';
+  public avisoAutoguardado = '';
   private libro: XLSX.WorkBook | null = null;
   private openedAt: string | null = null;
   private heartbeat?: ReturnType<typeof setInterval>;
+  private autosaveTimer?: ReturnType<typeof setInterval>;
+  private avisoAutoguardadoTimer?: ReturnType<typeof setTimeout>;
   private listadoPedido = 0;
   private buscarPedido = 0;
   private buscarTimer?: ReturnType<typeof setTimeout>;
@@ -78,6 +84,7 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
   constructor(
     private drive: ConfiguracionService,
     private loginService: LoginService,
+    private inactividad: InactividadService,
     private permisos: ProfesorPermisosService,
     private profesoresService: ProfesoresService,
     private sanitizer: DomSanitizer,
@@ -92,12 +99,16 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
     this.esSuperuser = this.loginService.hasRole(['superuser']);
     const vistaGuardada = localStorage.getItem('driveVista');
     if (vistaGuardada === 'list' || vistaGuardada === 'grid') this.vista = vistaGuardada;
+    this.inactividad.setBeforeExpireHook(() => this.guardarEmergenciaPorInactividad());
     this.cargarRaices();
     if (this.puedeAsignar) this.cargarPersonal();
   }
 
   ngOnDestroy(): void {
     if (this.buscarTimer) clearTimeout(this.buscarTimer);
+    if (this.avisoAutoguardadoTimer) clearTimeout(this.avisoAutoguardadoTimer);
+    this.detenerAutosave();
+    this.inactividad.setBeforeExpireHook(null);
     this.limpiarPreviews();
     this.registrarCierre(true);
   }
@@ -474,7 +485,7 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
   }
 
   public guardarPlanilla(silencioso = false): Promise<boolean> {
-    if (!this.editor) return Promise.resolve(false);
+    if (!this.editor || this.guardando) return Promise.resolve(false);
     const wb = XLSX.utils.book_new();
     this.hojas.forEach((hoja) => {
       const ws = hoja.cargada || !this.libro?.Sheets[hoja.name]
@@ -495,12 +506,15 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
           this.guardando = false;
           this.modificado = false;
           this.openedAt = new Date().toISOString();
-          if (!silencioso) void this.aviso('success', 'Guardado', 'La planilla quedó actualizada en Drive.');
+          if (silencioso) this.mostrarAutoguardado();
+          else void this.aviso('success', 'Guardado', 'La planilla quedó actualizada en Drive.');
           resolve(true);
         },
         error: (err) => {
           this.guardando = false;
-          void this.aviso('error', 'No se pudo guardar', this.textoError(err, 'No se pudo guardar la planilla. Probá de nuevo.'));
+          if (!silencioso) {
+            void this.aviso('error', 'No se pudo guardar', this.textoError(err, 'No se pudo guardar la planilla. Probá de nuevo.'));
+          }
           resolve(false);
         }
       });
@@ -508,7 +522,7 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
   }
 
   public guardarTexto(silencioso = false): Promise<boolean> {
-    if (!this.editor) return Promise.resolve(false);
+    if (!this.editor || this.guardando) return Promise.resolve(false);
     const html = this.wordEditor?.getHtml() || this.texto;
     this.texto = html;
     const esWord = /\.docx?$/i.test(this.editor.item.name || '') || (this.editor.item.mimeType || '').includes('word');
@@ -527,12 +541,15 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
           this.guardando = false;
           this.modificado = false;
           this.openedAt = new Date().toISOString();
-          if (!silencioso) void this.aviso('success', 'Guardado', 'El archivo quedó actualizado en Drive.');
+          if (silencioso) this.mostrarAutoguardado();
+          else void this.aviso('success', 'Guardado', 'El archivo quedó actualizado en Drive.');
           resolve(true);
         },
         error: (err) => {
           this.guardando = false;
-          void this.aviso('error', 'No se pudo guardar', this.textoError(err, 'No se pudo guardar el documento. Probá de nuevo.'));
+          if (!silencioso) {
+            void this.aviso('error', 'No se pudo guardar', this.textoError(err, 'No se pudo guardar el documento. Probá de nuevo.'));
+          }
           resolve(false);
         }
       });
@@ -553,6 +570,7 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
   private iniciarHeartbeat(): void {
     this.detenerHeartbeat();
     this.heartbeat = setInterval(() => this.registrarCierre(false, false), 45000);
+    this.iniciarAutosave();
   }
 
   private detenerHeartbeat(): void {
@@ -560,11 +578,55 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
       clearInterval(this.heartbeat);
       this.heartbeat = undefined;
     }
+    this.detenerAutosave();
+  }
+
+  private iniciarAutosave(): void {
+    this.detenerAutosave();
+    this.autosaveTimer = setInterval(() => {
+      void this.autoguardarSiCorresponde();
+    }, AUTOSAVE_MS);
+  }
+
+  private detenerAutosave(): void {
+    if (this.autosaveTimer) {
+      clearInterval(this.autosaveTimer);
+      this.autosaveTimer = undefined;
+    }
+  }
+
+  private puedeAutoguardar(): boolean {
+    if (!this.editor || !this.puedeEditar || !this.modificado || this.guardando) return false;
+    if (this.editor.embedUrl) return false;
+    return this.editor.kind === 'sheet' || this.editor.kind === 'text';
+  }
+
+  private async autoguardarSiCorresponde(): Promise<boolean> {
+    if (!this.puedeAutoguardar() || !this.editor) return false;
+    if (this.editor.kind === 'sheet') return this.guardarPlanilla(true);
+    if (this.editor.kind === 'text') return this.guardarTexto(true);
+    return false;
+  }
+
+  private async guardarEmergenciaPorInactividad(): Promise<void> {
+    if (!this.puedeAutoguardar()) return;
+    await this.autoguardarSiCorresponde();
+  }
+
+  private mostrarAutoguardado(): void {
+    this.avisoAutoguardado = 'Autoguardado';
+    this.cdr.markForCheck();
+    if (this.avisoAutoguardadoTimer) clearTimeout(this.avisoAutoguardadoTimer);
+    this.avisoAutoguardadoTimer = setTimeout(() => {
+      this.avisoAutoguardado = '';
+      this.cdr.markForCheck();
+    }, 3500);
   }
 
   private marcarCambio(): void {
     if (!this.editor || !this.puedeEditar || this.editor.embedUrl) return;
     this.modificado = true;
+    this.avisoAutoguardado = '';
   }
 
   private async resolverCambios(): Promise<boolean> {
@@ -609,6 +671,7 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
     this.texto = '';
     this.modificado = false;
     this.avisoPlanilla = '';
+    this.avisoAutoguardado = '';
   }
 
   private registrarCierre(sync = false, stop = true): void {
