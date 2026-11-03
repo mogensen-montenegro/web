@@ -1,10 +1,29 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, HostListener, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  EventEmitter,
+  HostListener,
+  Input,
+  OnChanges,
+  Output,
+  SimpleChanges,
+  ViewChild
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CeldaHoja, DRIVE_COLORES, DRIVE_FUENTES, HojaDrive, PaletaFmt, SeleccionHoja, celdaVacia } from './drive.models';
 
 const ALTO_FILA = 34;
 const FILAS_VENTANA = 42;
+
+interface HallazgoHoja {
+  hojaIndex: number;
+  hojaName: string;
+  row: number;
+  col: number;
+  celda: string;
+  preview: string;
+}
 
 @Component({
   selector: 'app-drive-sheet-editor',
@@ -14,6 +33,7 @@ const FILAS_VENTANA = 42;
   styleUrls: ['./drive-sheet-editor.component.scss']
 })
 export class DriveSheetEditorComponent implements OnChanges {
+  @ViewChild('tableWrap') tableWrap?: ElementRef<HTMLElement>;
   @Input() hojas: HojaDrive[] = [];
   @Input() puedeEditar = false;
   @Input() cargando = false;
@@ -21,18 +41,29 @@ export class DriveSheetEditorComponent implements OnChanges {
   @Input() hojaActiva = 0;
   @Output() changed = new EventEmitter<void>();
   @Output() hojaChange = new EventEmitter<number>();
+  @Output() preloadSheets = new EventEmitter<void>();
   public busquedaHoja = '';
   public filaInicio = 0;
   public paleta: PaletaFmt = null;
   public sel: SeleccionHoja | null = { r1: 0, c1: 0, r2: 0, c2: 0 };
   public readonly fuentes = DRIVE_FUENTES;
   public readonly colores = DRIVE_COLORES;
+  public showFind = false;
+  public findQuery = '';
+  public findBusy = false;
+  public hallazgos: HallazgoHoja[] = [];
+  public hallazgoActivo = -1;
   private arrastrando = false;
+  private pendienteFind: { row: number; col: number } | null = null;
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['hojaActiva']) {
-      this.filaInicio = 0;
-      this.sel = { r1: 0, c1: 0, r2: 0, c2: 0 };
+      if (this.pendienteFind) {
+        this.aplicarPendienteFind();
+      } else {
+        this.filaInicio = 0;
+        this.sel = { r1: 0, c1: 0, r2: 0, c2: 0 };
+      }
     }
   }
 
@@ -85,6 +116,16 @@ export class DriveSheetEditorComponent implements OnChanges {
 
   @HostListener('document:keydown', ['$event'])
   public onDocKey(event: KeyboardEvent): void {
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'f') {
+      event.preventDefault();
+      this.abrirBuscador();
+      return;
+    }
+    if (event.key === 'Escape' && this.showFind) {
+      event.preventDefault();
+      this.cerrarBuscador();
+      return;
+    }
     if (!this.puedeEditar) return;
     if (!(event.ctrlKey || event.metaKey)) return;
     const key = event.key.toLowerCase();
@@ -98,6 +139,89 @@ export class DriveSheetEditorComponent implements OnChanges {
       event.preventDefault();
       this.toggleEstiloHoja('underline');
     }
+  }
+
+  public abrirBuscador(): void {
+    this.showFind = true;
+    this.preloadSheets.emit();
+  }
+
+  public cerrarBuscador(): void {
+    this.showFind = false;
+    this.hallazgoActivo = -1;
+  }
+
+  public ejecutarBusqueda(): void {
+    const q = this.normalizar(this.findQuery);
+    this.preloadSheets.emit();
+    this.findBusy = true;
+    // Deja precargar hojas lazy antes de escanear.
+    setTimeout(() => {
+      const out: HallazgoHoja[] = [];
+      if (q) {
+        this.hojas.forEach((hoja, hojaIndex) => {
+          (hoja.rows || []).forEach((row, r) => {
+            row.forEach((celda, c) => {
+              const texto = String(celda?.v || '');
+              if (!texto || !this.normalizar(texto).includes(q)) return;
+              out.push({
+                hojaIndex,
+                hojaName: hoja.name || `Hoja ${hojaIndex + 1}`,
+                row: r,
+                col: c,
+                celda: `${this.columna(c)}${r + 1}`,
+                preview: texto.length > 80 ? `${texto.slice(0, 80)}…` : texto
+              });
+            });
+          });
+        });
+      }
+      this.hallazgos = out.slice(0, 300);
+      this.hallazgoActivo = this.hallazgos.length ? 0 : -1;
+      this.findBusy = false;
+      if (this.hallazgoActivo >= 0) this.irAHallazgo(this.hallazgoActivo);
+    }, 0);
+  }
+
+  public irAHallazgo(index: number): void {
+    const item = this.hallazgos[index];
+    if (!item) return;
+    this.hallazgoActivo = index;
+    this.pendienteFind = { row: item.row, col: item.col };
+    if (item.hojaIndex !== this.hojaActiva) {
+      this.hojaChange.emit(item.hojaIndex);
+      return;
+    }
+    this.aplicarPendienteFind();
+  }
+
+  public hallazgoAnterior(): void {
+    if (!this.hallazgos.length) return;
+    const next = this.hallazgoActivo <= 0 ? this.hallazgos.length - 1 : this.hallazgoActivo - 1;
+    this.irAHallazgo(next);
+  }
+
+  public hallazgoSiguiente(): void {
+    if (!this.hallazgos.length) return;
+    const next = this.hallazgoActivo >= this.hallazgos.length - 1 ? 0 : this.hallazgoActivo + 1;
+    this.irAHallazgo(next);
+  }
+
+  public esHallazgo(row: number, col: number): boolean {
+    const actual = this.hallazgos[this.hallazgoActivo];
+    return !!actual && actual.hojaIndex === this.hojaActiva && actual.row === row && actual.col === col;
+  }
+
+  private aplicarPendienteFind(): void {
+    const pending = this.pendienteFind;
+    if (!pending) return;
+    this.pendienteFind = null;
+    this.sel = { r1: pending.row, c1: pending.col, r2: pending.row, c2: pending.col };
+    this.filaInicio = Math.max(0, pending.row - 4);
+    setTimeout(() => {
+      const wrap = this.tableWrap?.nativeElement;
+      if (wrap) wrap.scrollTop = pending.row * ALTO_FILA;
+    }, 0);
   }
 
   public onBusquedaHoja(value: string): void {

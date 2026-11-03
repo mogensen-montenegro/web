@@ -3,6 +3,13 @@ import { AfterViewInit, Component, ElementRef, EventEmitter, HostListener, Input
 import { FormsModule } from '@angular/forms';
 import { AlineacionTexto, CeldaHoja, DRIVE_COLORES, DRIVE_FUENTES, PaletaFmt, celdaVacia } from './drive.models';
 
+interface HallazgoWord {
+  node: Text;
+  start: number;
+  end: number;
+  preview: string;
+}
+
 @Component({
   selector: 'app-drive-word-editor',
   standalone: true,
@@ -20,6 +27,10 @@ export class DriveWordEditorComponent implements OnChanges, AfterViewInit {
   public readonly colores = DRIVE_COLORES;
   public paleta: PaletaFmt = null;
   public richFmt: CeldaHoja = { ...celdaVacia(), size: 15 };
+  public showFind = false;
+  public findQuery = '';
+  public hallazgos: HallazgoWord[] = [];
+  public hallazgoActivo = -1;
   private ignorarCambio = false;
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -41,6 +52,82 @@ export class DriveWordEditorComponent implements OnChanges, AfterViewInit {
   @HostListener('document:selectionchange')
   public onSelectionChange(): void {
     this.syncRichFmt();
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  public onDocKey(event: KeyboardEvent): void {
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'f') {
+      event.preventDefault();
+      this.abrirBuscador();
+      return;
+    }
+    if (event.key === 'Escape' && this.showFind) {
+      event.preventDefault();
+      this.cerrarBuscador();
+    }
+  }
+
+  public abrirBuscador(): void {
+    this.showFind = true;
+  }
+
+  public cerrarBuscador(): void {
+    this.showFind = false;
+    this.hallazgoActivo = -1;
+  }
+
+  public ejecutarBusqueda(): void {
+    const root = this.richEditor?.nativeElement;
+    const raw = this.findQuery.trim();
+    this.hallazgos = [];
+    this.hallazgoActivo = -1;
+    if (!root || !raw) return;
+    const needle = raw.toLowerCase();
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    while (walker.nextNode()) {
+      const node = walker.currentNode as Text;
+      const text = node.nodeValue || '';
+      const lower = text.toLowerCase();
+      let idx = lower.indexOf(needle);
+      while (idx >= 0) {
+        const preview = text.slice(Math.max(0, idx - 18), Math.min(text.length, idx + raw.length + 28)).trim();
+        this.hallazgos.push({
+          node,
+          start: idx,
+          end: idx + raw.length,
+          preview: preview.length < text.trim().length ? `${preview}…` : preview
+        });
+        idx = lower.indexOf(needle, idx + raw.length);
+      }
+    }
+    this.hallazgos = this.hallazgos.slice(0, 200);
+    if (this.hallazgos.length) this.irAHallazgo(0);
+  }
+
+  public irAHallazgo(index: number): void {
+    const item = this.hallazgos[index];
+    if (!item) return;
+    this.hallazgoActivo = index;
+    const range = document.createRange();
+    range.setStart(item.node, item.start);
+    range.setEnd(item.node, item.end);
+    const sel = window.getSelection();
+    sel?.removeAllRanges();
+    sel?.addRange(range);
+    const parent = item.node.parentElement;
+    parent?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }
+
+  public hallazgoAnterior(): void {
+    if (!this.hallazgos.length) return;
+    const next = this.hallazgoActivo <= 0 ? this.hallazgos.length - 1 : this.hallazgoActivo - 1;
+    this.irAHallazgo(next);
+  }
+
+  public hallazgoSiguiente(): void {
+    if (!this.hallazgos.length) return;
+    const next = this.hallazgoActivo >= this.hallazgos.length - 1 ? 0 : this.hallazgoActivo + 1;
+    this.irAHallazgo(next);
   }
 
   public getHtml(): string {

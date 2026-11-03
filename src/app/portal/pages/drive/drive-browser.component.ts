@@ -5,6 +5,9 @@ import { DriveFileCardComponent } from './drive-file-card.component';
 import { DriveItemActionsComponent } from './drive-item-actions.component';
 import { fechaDrive, iconoDrive, pesoDrive, tipoArchivo } from './drive.models';
 
+type DriveSortKey = 'name' | 'modified' | 'size';
+type DriveSortDir = 'asc' | 'desc';
+
 @Component({
   selector: 'app-drive-browser',
   standalone: true,
@@ -42,6 +45,20 @@ export class DriveBrowserComponent {
   public icono = iconoDrive;
   public fecha = fechaDrive;
   public peso = pesoDrive;
+  public sortKey: DriveSortKey = 'name';
+  public sortDir: DriveSortDir = 'asc';
+
+  public get visiblesOrdenados(): DriveItem[] {
+    return this.ordenar(this.visibles);
+  }
+
+  public get carpetasOrdenadas(): DriveItem[] {
+    return this.ordenar(this.carpetas);
+  }
+
+  public get archivosOrdenados(): DriveItem[] {
+    return this.ordenar(this.archivos);
+  }
 
   public esRaiz(item: DriveItem): boolean {
     return this.raicesIds.includes(item.id);
@@ -49,5 +66,41 @@ export class DriveBrowserComponent {
 
   public abrirFileInput(): void {
     this.fileInput?.nativeElement.click();
+  }
+
+  public ordenarPor(key: DriveSortKey): void {
+    if (this.sortKey === key) {
+      this.sortDir = this.sortDir === 'asc' ? 'desc' : 'asc';
+      return;
+    }
+    this.sortKey = key;
+    this.sortDir = key === 'name' ? 'asc' : 'desc';
+  }
+
+  public ariaSort(key: DriveSortKey): 'ascending' | 'descending' | 'none' {
+    if (this.sortKey !== key) return 'none';
+    return this.sortDir === 'asc' ? 'ascending' : 'descending';
+  }
+
+  private ordenar(items: DriveItem[]): DriveItem[] {
+    const dir = this.sortDir === 'asc' ? 1 : -1;
+    return [...(items || [])].sort((a, b) => {
+      if (a.isFolder !== b.isFolder) return a.isFolder ? -1 : 1;
+      const cmp = this.comparar(a, b);
+      if (cmp !== 0) return cmp * dir;
+      return a.name.localeCompare(b.name, 'es', { sensitivity: 'base', numeric: true });
+    });
+  }
+
+  private comparar(a: DriveItem, b: DriveItem): number {
+    if (this.sortKey === 'name') {
+      return a.name.localeCompare(b.name, 'es', { sensitivity: 'base', numeric: true });
+    }
+    if (this.sortKey === 'modified') {
+      const ta = a.modifiedTime ? new Date(a.modifiedTime).getTime() : 0;
+      const tb = b.modifiedTime ? new Date(b.modifiedTime).getTime() : 0;
+      return ta - tb;
+    }
+    return (a.size || 0) - (b.size || 0);
   }
 }

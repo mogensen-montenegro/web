@@ -69,9 +69,9 @@
 </article>
 
 <div class="drive-boards" *ngIf="!loading && visibles.length && vista === 'grid'">
-  <div class="drive-grid drive-grid--folders" *ngIf="carpetas.length">
+  <div class="drive-grid drive-grid--folders" *ngIf="carpetasOrdenadas.length">
     <app-drive-file-card
-      *ngFor="let item of carpetas"
+      *ngFor="let item of carpetasOrdenadas"
       [item]="item"
       [preview]="previews[item.id] || ''"
       [puedeEditar]="puedeEditar"
@@ -84,9 +84,9 @@
       (borrar)="borrar.emit($event)">
     </app-drive-file-card>
   </div>
-  <div class="drive-grid drive-grid--files" *ngIf="archivos.length">
+  <div class="drive-grid drive-grid--files" *ngIf="archivosOrdenados.length">
     <app-drive-file-card
-      *ngFor="let item of archivos"
+      *ngFor="let item of archivosOrdenados"
       [item]="item"
       [preview]="previews[item.id] || ''"
       [puedeEditar]="puedeEditar"
@@ -103,12 +103,45 @@
 
 <div class="drive-list" *ngIf="!loading && visibles.length && vista === 'list'">
   <div class="drive-list__head">
-    <span>Nombre</span>
-    <span>Modificado</span>
-    <span>Tamaño</span>
+    <button
+      type="button"
+      class="drive-sort"
+      [class.is-active]="sortKey === 'name'"
+      [attr.aria-sort]="ariaSort('name')"
+      (click)="ordenarPor('name')">
+      <span>Nombre</span>
+      <span class="drive-sort__icons" aria-hidden="true">
+        <i class="fa fa-caret-up" [class.is-on]="sortKey === 'name' && sortDir === 'asc'"></i>
+        <i class="fa fa-caret-down" [class.is-on]="sortKey === 'name' && sortDir === 'desc'"></i>
+      </span>
+    </button>
+    <button
+      type="button"
+      class="drive-sort"
+      [class.is-active]="sortKey === 'modified'"
+      [attr.aria-sort]="ariaSort('modified')"
+      (click)="ordenarPor('modified')">
+      <span>Modificado</span>
+      <span class="drive-sort__icons" aria-hidden="true">
+        <i class="fa fa-caret-up" [class.is-on]="sortKey === 'modified' && sortDir === 'asc'"></i>
+        <i class="fa fa-caret-down" [class.is-on]="sortKey === 'modified' && sortDir === 'desc'"></i>
+      </span>
+    </button>
+    <button
+      type="button"
+      class="drive-sort"
+      [class.is-active]="sortKey === 'size'"
+      [attr.aria-sort]="ariaSort('size')"
+      (click)="ordenarPor('size')">
+      <span>Tamaño</span>
+      <span class="drive-sort__icons" aria-hidden="true">
+        <i class="fa fa-caret-up" [class.is-on]="sortKey === 'size' && sortDir === 'asc'"></i>
+        <i class="fa fa-caret-down" [class.is-on]="sortKey === 'size' && sortDir === 'desc'"></i>
+      </span>
+    </button>
     <span></span>
   </div>
-  <article class="drive-list__row" *ngFor="let item of visibles" (click)="abrir.emit(item)">
+  <article class="drive-list__row" *ngFor="let item of visiblesOrdenados" (click)="abrir.emit(item)">
     <span class="drive-list__name">
       <span
         class="drive-card__icon"

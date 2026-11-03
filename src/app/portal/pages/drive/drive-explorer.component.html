@@ -133,7 +133,8 @@
         [aviso]="avisoPlanilla"
         [hojaActiva]="hojaActiva"
         (changed)="onEditorChange()"
-        (hojaChange)="seleccionarHoja($event)">
+        (hojaChange)="seleccionarHoja($event)"
+        (preloadSheets)="precargarHojasBusqueda()">
       </app-drive-sheet-editor>
 
       <div class="drive-doc" *ngIf="editor.kind === 'document' || editor.kind === 'presentation' || editor.kind === 'preview' || (editor.kind === 'sheet' && editor.embedUrl)">

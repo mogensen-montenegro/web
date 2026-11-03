@@ -63,10 +63,19 @@
     <button type="button" [class.is-on]="estiloCelda.align === 'right'" (click)="aplicarEstiloHoja({ align: 'right' })" title="Alinear a la derecha">
       <i class="fa fa-align-right"></i>
     </button>
+    <span class="drive-fmt__sep"></span>
+    <button type="button" (click)="abrirBuscador()" title="Buscar en la planilla (Ctrl+F)">
+      <i class="fa fa-search"></i>
+      Buscar
+    </button>
   </div>
 
-  <div class="drive-sheet__nav" *ngIf="hojas.length > 1 && !cargando">
-    <label class="drive-sheet__search">
+  <div class="drive-sheet__nav" *ngIf="!cargando && (!puedeEditar || hojas.length > 1)">
+    <button type="button" class="drive-sheet__find-btn" *ngIf="!puedeEditar" (click)="abrirBuscador()" title="Buscar en la planilla (Ctrl+F)">
+      <i class="fa fa-search"></i>
+      Buscar en planilla
+    </button>
+    <label class="drive-sheet__search" *ngIf="hojas.length > 1">
       <i class="fa fa-search"></i>
       <input
         type="search"
@@ -75,8 +84,8 @@
         placeholder="Buscar hoja..."
         aria-label="Buscar hoja del Excel">
     </label>
-    <span class="drive-sheet__count">{{ hojasFiltradas.length }} de {{ hojas.length }}</span>
-    <nav class="drive-sheet__tabs">
+    <span class="drive-sheet__count" *ngIf="hojas.length > 1">{{ hojasFiltradas.length }} de {{ hojas.length }}</span>
+    <nav class="drive-sheet__tabs" *ngIf="hojas.length > 1">
       <button
         type="button"
         *ngFor="let item of hojasFiltradas; trackBy: trackHoja"
@@ -87,10 +96,10 @@
         {{ item.hoja.name }}
       </button>
     </nav>
-    <p class="drive-sheet__empty" *ngIf="!hojasFiltradas.length">Ninguna hoja coincide con “{{ busquedaHoja.trim() }}”.</p>
+    <p class="drive-sheet__empty" *ngIf="hojas.length > 1 && !hojasFiltradas.length">Ninguna hoja coincide con “{{ busquedaHoja.trim() }}”.</p>
   </div>
 
-  <div class="drive-sheet__table-wrap" (scroll)="onScroll($event)">
+  <div class="drive-sheet__table-wrap" #tableWrap (scroll)="onScroll($event)">
     <p class="drive-sheet__loading" *ngIf="cargando">Leyendo la planilla...</p>
     <ng-container *ngFor="let hojaId of [hojaActiva]">
       <table *ngIf="!cargando">
@@ -107,6 +116,7 @@
             <td
               *ngFor="let celda of item.row; let c = index"
               [class.is-sel]="esSeleccionada(item.r, c)"
+              [class.is-find]="esHallazgo(item.r, c)"
               [style.background]="celda.fill || null"
               (mousedown)="iniciarSeleccion(item.r, c, $event)"
               (mouseenter)="extenderSeleccion(item.r, c)">
@@ -132,5 +142,45 @@
   <div class="drive-sheet__tools" *ngIf="puedeEditar && !cargando">
     <button type="button" (click)="agregarFila()">+ Fila</button>
     <button type="button" (click)="agregarColumna()">+ Columna</button>
+  </div>
+
+  <div class="drive-find" *ngIf="showFind" (click)="cerrarBuscador()">
+    <div class="drive-find__panel" (click)="$event.stopPropagation()">
+      <div class="drive-find__head">
+        <strong>Buscar en la planilla</strong>
+        <button type="button" class="drive-find__close" (click)="cerrarBuscador()" aria-label="Cerrar">×</button>
+      </div>
+      <div class="drive-find__bar">
+        <input
+          type="search"
+          [(ngModel)]="findQuery"
+          (keydown.enter)="ejecutarBusqueda()"
+          placeholder="Palabra o frase..."
+          aria-label="Texto a buscar en la planilla"
+          autofocus />
+        <button type="button" class="btn-find" [disabled]="findBusy || !findQuery.trim()" (click)="ejecutarBusqueda()">
+          {{ findBusy ? 'Buscando...' : 'Buscar' }}
+        </button>
+      </div>
+      <div class="drive-find__meta" *ngIf="findQuery.trim()">
+        <span *ngIf="!findBusy">{{ hallazgos.length }} resultado{{ hallazgos.length === 1 ? '' : 's' }}</span>
+        <div class="drive-find__nav" *ngIf="hallazgos.length">
+          <button type="button" (click)="hallazgoAnterior()" title="Anterior">↑</button>
+          <span>{{ hallazgoActivo + 1 }} / {{ hallazgos.length }}</span>
+          <button type="button" (click)="hallazgoSiguiente()" title="Siguiente">↓</button>
+        </div>
+      </div>
+      <ul class="drive-find__list" *ngIf="hallazgos.length">
+        <li *ngFor="let item of hallazgos; let i = index">
+          <button type="button" [class.is-active]="i === hallazgoActivo" (click)="irAHallazgo(i)">
+            <strong>{{ item.hojaName }} · {{ item.celda }}</strong>
+            <span>{{ item.preview }}</span>
+          </button>
+        </li>
+      </ul>
+      <p class="drive-find__empty" *ngIf="findQuery.trim() && !findBusy && !hallazgos.length">
+        No hay coincidencias para “{{ findQuery.trim() }}”.
+      </p>
+    </div>
   </div>
 </div>

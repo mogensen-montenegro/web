@@ -173,6 +173,43 @@
   border-bottom: 1px solid rgba(28, 31, 58, 0.1);
 }
 
+.drive-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: left;
+}
+
+.drive-sort:hover,
+.drive-sort.is-active {
+  color: #1c1f3a;
+}
+
+.drive-sort__icons {
+  display: inline-flex;
+  flex-direction: column;
+  line-height: 0.55;
+  font-size: 0.7rem;
+  color: rgba(28, 31, 58, 0.28);
+}
+
+.drive-sort__icons .fa {
+  opacity: 0.45;
+}
+
+.drive-sort__icons .fa.is-on {
+  opacity: 1;
+  color: #b91828;
+}
+
 .drive-list__row {
   width: 100%;
   border: 0;
@@ -264,13 +301,13 @@
   width: 100%;
 }
 
-.drive-list__head span:nth-child(2),
-.drive-list__head span:nth-child(3) {
+.drive-list__head > :nth-child(2),
+.drive-list__head > :nth-child(3) {
   justify-self: start;
   width: 100%;
 }
 
-.drive-list__head span:last-child,
+.drive-list__head > :last-child,
 .drive-list app-drive-item-actions {
   justify-self: end;
   width: 148px;
@@ -287,8 +324,8 @@
     grid-template-columns: minmax(0, 1fr) auto;
   }
 
-  .drive-list__head span:nth-child(2),
-  .drive-list__head span:nth-child(3),
+  .drive-list__head > :nth-child(2),
+  .drive-list__head > :nth-child(3),
   .drive-list__meta {
     display: none;
   }

@@ -201,6 +201,10 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
+  public precargarHojasBusqueda(): void {
+    this.hojas.forEach((_, index) => this.asegurarHoja(index));
+  }
+
   private worksheetDe(index: number, name: string): XLSX.WorkSheet {
     if (!this.libro) return {};
     const porNombre = name ? this.libro.Sheets[name] : undefined;
