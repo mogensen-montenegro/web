@@ -3,7 +3,7 @@ import { LoginService } from './login.service';
 import Swal from 'sweetalert2';
 
 const STORAGE_KEY = 'lastActivityAt';
-const TIMEOUT_MS = 10 * 60 * 1000;
+const TIMEOUT_MS = 15 * 60 * 1000;
 const RESET_THROTTLE_MS = 1000;
 const ACTIVITY_EVENTS: Array<keyof WindowEventMap> = [
   'click',
