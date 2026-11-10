@@ -17,9 +17,9 @@
   </button>
   <button type="button" class="drive-tool is-upload" (click)="abrirFileInput()">
     <i class="fa fa-cloud-upload"></i>
-    <span>Subir archivo</span>
+    <span>Subir archivos</span>
   </button>
-  <input #fileInput type="file" hidden (change)="archivo.emit($event)" />
+  <input #fileInput type="file" multiple hidden (change)="archivo.emit($event)" />
 </div>
 
 <article class="drive-empty-card is-loading" *ngIf="loading && !visibles.length">

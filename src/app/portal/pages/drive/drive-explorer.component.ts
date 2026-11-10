@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
+import { firstValueFrom } from 'rxjs';
 import * as XLSX from 'xlsx-js-style';
 import {
   ConfiguracionService,
@@ -384,21 +385,82 @@ export class DriveExplorerComponent implements OnInit, OnDestroy {
     });
   }
 
-  public onFile(event: Event): void {
+  public async onFile(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
+    const elegidos = Array.from(input.files || []);
     input.value = '';
-    if (!file || !this.carpetaActual) return;
+    if (!elegidos.length || !this.carpetaActual) return;
+
+    const maxBytes = 25 * 1024 * 1024;
+    const grandes = elegidos.filter((f) => f.size > maxBytes);
+    const files = elegidos.filter((f) => f.size <= maxBytes);
+    if (!files.length) {
+      void this.aviso('warning', 'Archivos muy pesados', 'Ninguno se puede subir: el límite es 25 MB por archivo.');
+      return;
+    }
+
+    const parentId = this.carpetaActual;
+    const total = files.length;
     this.loading = true;
-    this.drive.subirArchivo(this.carpetaActual, file).subscribe({
-      next: () => {
-        this.loading = false;
-        this.cargarItems(this.carpetaActual || undefined);
-      },
-      error: (err) => {
-        this.loading = false;
-        void this.aviso('error', 'No se pudo subir', this.textoError(err, 'No se pudo subir el archivo. Revisá que no supere 25 MB.'));
+    void Swal.fire({
+      title: total === 1 ? 'Subiendo archivo' : 'Subiendo archivos',
+      html: `0 / ${total}`,
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      showConfirmButton: false,
+      didOpen: () => Swal.showLoading()
+    });
+
+    let ok = 0;
+    const fallidos: string[] = [];
+    const concurrency = 3;
+    let index = 0;
+
+    const worker = async () => {
+      while (index < files.length) {
+        const current = index++;
+        const file = files[current];
+        try {
+          await firstValueFrom(this.drive.subirArchivo(parentId, file));
+          ok += 1;
+        } catch (err: any) {
+          fallidos.push(
+            `${file.name}: ${this.textoError(err, 'No se pudo subir (máx. 25 MB).')}`
+          );
+        }
+        Swal.update({ html: `${ok + fallidos.length} / ${total}` });
       }
+    };
+
+    await Promise.all(Array.from({ length: Math.min(concurrency, files.length) }, () => worker()));
+    this.loading = false;
+    this.cargarItems(parentId);
+
+    const extras =
+      grandes.length > 0
+        ? `<p style="margin-top:8px">Se omitieron ${grandes.length} por superar 25 MB.</p>`
+        : '';
+
+    if (!fallidos.length) {
+      await Swal.fire({
+        icon: 'success',
+        title: ok === 1 ? 'Archivo subido' : 'Archivos subidos',
+        html: `Se subieron ${ok} archivo${ok === 1 ? '' : 's'}.${extras}`,
+        confirmButtonColor: '#b91828'
+      });
+      return;
+    }
+
+    await Swal.fire({
+      icon: ok ? 'warning' : 'error',
+      title: ok ? 'Subida parcial' : 'No se pudo subir',
+      html:
+        `<p>OK: ${ok} · Fallaron: ${fallidos.length}</p>${extras}` +
+        `<ul style="text-align:left;max-height:180px;overflow:auto;margin:8px 0 0;padding-left:18px">${fallidos
+          .slice(0, 12)
+          .map((f) => `<li>${f}</li>`)
+          .join('')}</ul>`,
+      confirmButtonColor: '#b91828'
     });
   }
 
