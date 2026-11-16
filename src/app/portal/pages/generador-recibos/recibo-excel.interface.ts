@@ -29,30 +29,72 @@ export interface ReciboAsegurado {
   total: number; // suma de efectivo + debito de todos los items
 }
 
+const redondearCentavos = (n: number): number => Math.round(n * 100) / 100;
+
 /**
- * Parsea valor monetario: número (Excel) o string en formato argentino.
- * - Si ya es número (ej: 7023.79), se usa tal cual (los centavos se preservan).
- * - Si es string "7023,79" o "$ 7.023,79": coma = decimal, punto = miles.
+ * Parsea importes desde Excel o Google Sheets (formato AR o US).
+ * - Número nativo de la planilla: se usa tal cual.
+ * - "1.234,56" / "$ 1.234,56" → argentino
+ * - "1,234.56" / "$ 1,234.56" → estadounidense (típico al exportar desde Google)
+ * - "415,91" → decimal argentino
+ * - "415.91" → decimal US / valor Excel
  */
 export function parseImporteArgentino(val: unknown): number {
   if (val == null || val === '') return 0;
-  if (typeof val === 'number' && !isNaN(val)) return Math.round(val * 100) / 100;
-  const s = String(val).trim().replace(/\$/g, '').trim();
+  if (typeof val === 'number' && !isNaN(val)) return redondearCentavos(val);
+  if (typeof val === 'bigint') return redondearCentavos(Number(val));
+
+  let s = String(val).trim();
   if (!s) return 0;
+  s = s
+    .replace(/\u00a0/g, ' ')
+    .replace(/\$/g, '')
+    .replace(/\s/g, '')
+    .replace(/^[A-Za-z]{1,3}/, ''); // ARS, USD, etc. al inicio
+  if (!s) return 0;
+
+  const negativo = s.startsWith('-') || s.startsWith('(');
+  s = s.replace(/[()]/g, '').replace(/^\+/, '');
+  if (!s) return 0;
+
   const hasComma = s.includes(',');
   const hasDot = s.includes('.');
   let numStr: string;
+
   if (hasComma && hasDot) {
-    numStr = s.replace(/\./g, '').replace(',', '.');
+    // El separador decimal es el que aparece último.
+    if (s.lastIndexOf(',') > s.lastIndexOf('.')) {
+      // AR: 1.234,56
+      numStr = s.replace(/\./g, '').replace(',', '.');
+    } else {
+      // US: 1,234.56 (común en Google Sheets)
+      numStr = s.replace(/,/g, '');
+    }
   } else if (hasComma) {
-    numStr = s.replace(',', '.');
+    const partes = s.split(',');
+    const dec = partes[partes.length - 1] || '';
+    // "1,234,567" o "1,234" (3 dígitos) → miles US; "415,91" → decimal AR
+    if (partes.length > 2 || (partes.length === 2 && dec.length === 3 && /^\d+$/.test(dec))) {
+      numStr = s.replace(/,/g, '');
+    } else {
+      numStr = `${partes[0]}.${dec}`;
+    }
   } else if (hasDot) {
-    numStr = s;
+    const partes = s.split('.');
+    const dec = partes[partes.length - 1] || '';
+    // "1.234.567" → miles AR; "1.234" (3 dígitos) → miles AR; "415.91" → decimal
+    if (partes.length > 2 || (partes.length === 2 && dec.length === 3 && /^\d+$/.test(dec))) {
+      numStr = s.replace(/\./g, '');
+    } else {
+      numStr = s;
+    }
   } else {
     numStr = s;
   }
+
   const n = parseFloat(numStr);
-  return isNaN(n) ? 0 : Math.round(n * 100) / 100;
+  if (isNaN(n)) return 0;
+  return redondearCentavos(negativo ? -Math.abs(n) : n);
 }
 
 /** Normaliza nombre de columna para matchear con el Excel */

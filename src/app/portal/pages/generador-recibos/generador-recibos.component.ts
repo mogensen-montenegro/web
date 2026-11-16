@@ -53,8 +53,8 @@ export class GeneradorRecibosComponent {
     this.cantidadRecibos = 0;
     if (!file) return;
     const nombre = file.name.toLowerCase();
-    if (!nombre.endsWith('.xlsx') && !nombre.endsWith('.xls')) {
-      this.error = 'El archivo debe ser Excel (.xlsx o .xls).';
+    if (!nombre.endsWith('.xlsx') && !nombre.endsWith('.xls') && !nombre.endsWith('.csv')) {
+      this.error = 'El archivo debe ser Excel o CSV (.xlsx, .xls o .csv). Podés exportar desde Google Sheets.';
       input.value = '';
       return;
     }
@@ -184,12 +184,15 @@ export class GeneradorRecibosComponent {
   }
 
   private leerExcel(file: File): Promise<FilaReciboExcel[]> {
+    const esCsv = file.name.toLowerCase().endsWith('.csv');
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = (e) => {
         try {
-          const data = new Uint8Array((e.target as FileReader).result as ArrayBuffer);
-          const wb = XLSX.read(data, { type: 'array' });
+          const result = (e.target as FileReader).result;
+          const wb = esCsv
+            ? XLSX.read(String(result || ''), { type: 'string', FS: ',' })
+            : XLSX.read(new Uint8Array(result as ArrayBuffer), { type: 'array' });
           const firstSheetName = wb.SheetNames[0];
           const sheet = wb.Sheets[firstSheetName];
           const raw = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' }) as unknown[][];
@@ -232,7 +235,8 @@ export class GeneradorRecibosComponent {
         }
       };
       reader.onerror = () => reject(new Error('No se pudo leer el archivo'));
-      reader.readAsArrayBuffer(file);
+      if (esCsv) reader.readAsText(file);
+      else reader.readAsArrayBuffer(file);
     });
   }
 

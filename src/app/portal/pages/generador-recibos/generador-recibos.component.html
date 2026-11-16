@@ -3,12 +3,12 @@
     <div class="panel-page__copy">
       <span class="panel-page__eyebrow">Herramientas</span>
       <h3 class="panel-page__title">Generador de recibos</h3>
-      <p class="panel-page__subtitle">Cargá un Excel con las columnas ASEGURADO, PÓLIZA, CUIT, COMPAÑÍA, RIESGO, CUOTA, EFECTIVO, DEBITO, VENCIMIENTO. Se genera un PDF por asegurado (todas las filas del mismo asegurado en una hoja con tabla).</p>
+      <p class="panel-page__subtitle">Cargá un Excel o una exportación de Google Sheets con las columnas ASEGURADO, PÓLIZA, CUIT, COMPAÑÍA, RIESGO, CUOTA, EFECTIVO, DEBITO, VENCIMIENTO. Los importes se interpretan en formato argentino o estadounidense (sin invertir puntos y comas a mano).</p>
     </div>
     <div class="panel-page__actions">
       <button type="button" class="btn btn-color" (click)="descargarExcelBase()">
         <i class="fa fa-download mr-2"></i>
-        Excel base
+        Plantilla base
       </button>
     </div>
   </section>
@@ -22,10 +22,10 @@
     <div class="d-flex flex-wrap align-items-center gap-3">
       <label class="btn btn-color btn-upload mb-0">
         <i class="fa fa-file-excel-o mr-2"></i>
-        {{ procesando ? 'Procesando...' : 'Seleccionar archivo Excel' }}
+        {{ procesando ? 'Procesando...' : 'Seleccionar Excel o CSV' }}
         <input
           type="file"
-          accept=".xlsx,.xls"
+          accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv"
           class="d-none"
           [disabled]="procesando"
           (change)="onArchivoSeleccionado($event)"
@@ -48,22 +48,25 @@
     </div>
 
     <div class="panel-page__form-card info-box">
-      <h6>Columnas esperadas en el Excel</h6>
+      <h6>Columnas esperadas</h6>
+      <p class="mb-2 small text-muted">
+        <strong>ASEGURADO</strong>, <strong>PÓLIZA</strong>, <strong>CUIT</strong>, <strong>COMPAÑÍA</strong>, <strong>RIESGO</strong>, <strong>CUOTA</strong>, <strong>EFECTIVO</strong>, <strong>DEBITO</strong>, <strong>VENCIMIENTO</strong>. La primera fila debe ser el encabezado. Se ignora la fila con "Total" en CUOTA. Un mismo asegurado puede tener varias filas; se agrupan en una sola hoja con tabla.
+      </p>
       <p class="mb-0 small text-muted">
-        <strong>ASEGURADO</strong>, <strong>PÓLIZA</strong>, <strong>CUIT</strong>, <strong>COMPAÑÍA</strong>, <strong>RIESGO</strong>, <strong>CUOTA</strong>, <strong>EFECTIVO</strong>, <strong>DEBITO</strong>, <strong>VENCIMIENTO</strong>. La primera fila debe ser el encabezado. Los importes en formato argentino. Se ignora la fila con "Total" en CUOTA. Un mismo asegurado puede tener varias filas; se agrupan en una sola hoja con tabla.
+        Desde Google Sheets: Archivo → Descargar → Excel (.xlsx) o CSV. Los montos pueden venir como <strong>415,91</strong> o <strong>415.91</strong> / <strong>1.234,56</strong> o <strong>1,234.56</strong>; el generador los unifica solo.
       </p>
     </div>
 
     <div class="panel-page__empty" *ngIf="!archivoNombre && !error && !procesando">
       <img class="icono" src="assets/img/default.png" alt="Generador de recibos" />
-      <span>Seleccioná un archivo Excel para generar los recibos en PDF.</span>
+      <span>Seleccioná un Excel o CSV (también desde Google Sheets) para generar los recibos en PDF.</span>
     </div>
 
     <div class="panel-page__empty" *ngIf="procesando">
       <div class="spinner-border text-primary" role="status">
         <span class="sr-only">Procesando...</span>
       </div>
-      <span>Procesando Excel y generando PDF...</span>
+      <span>Procesando archivo y generando PDF...</span>
     </div>
   </section>
 </div>
