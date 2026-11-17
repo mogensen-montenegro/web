@@ -10,6 +10,7 @@ import {NoticiasComponent} from './pages/noticias/noticias.component';
 import {CotizarComponent} from './pages/cotizar/cotizar.component';
 import {CotizarResultadoComponent} from './pages/cotizar/cotizar-resultado.component';
 import {BasesCondicionesComponent} from './pages/bases-condiciones/bases-condiciones.component';
+import {PrivacidadComponent} from './pages/privacidad/privacidad.component';
 import {LoginComponent} from './portal/pages/login/login.component';
 import {PanelControlComponent} from './portal/pages/panel-control/panel-control.component';
 import {AdministradorComponent} from './portal/pages/administrador/administrador.component';
@@ -45,7 +46,9 @@ const routes: Routes = [
       {path: 'cotizar', component: CotizarComponent},
       {path: 'cotizar/exito', component: CotizarResultadoComponent, data: {tipo: 'exito'}},
       {path: 'cotizar/error', component: CotizarResultadoComponent, data: {tipo: 'error'}},
-      {path: 'basesCondiciones', component: BasesCondicionesComponent}
+      {path: 'basesCondiciones', component: BasesCondicionesComponent},
+      {path: 'privacidad', component: PrivacidadComponent},
+      {path: 'politicas', redirectTo: 'privacidad', pathMatch: 'full'}
     ]
   },
   {

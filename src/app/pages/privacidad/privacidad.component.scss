@@ -1,0 +1,68 @@
+.bases {
+  background: linear-gradient(180deg, #f7f4f2 0%, #ffffff 220px);
+  padding: 3rem 1.25rem 4.5rem;
+}
+
+.bases__hero,
+.bases__doc {
+  width: min(860px, 100%);
+  margin: 0 auto;
+}
+
+.bases__hero {
+  margin-bottom: 1.75rem;
+}
+
+.bases__eyebrow {
+  margin: 0 0 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #b91828;
+}
+
+.bases h1 {
+  margin: 0;
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  font-weight: 800;
+  color: #1c1f3a;
+}
+
+.bases__lead {
+  margin: 0.6rem 0 1.25rem;
+  color: #5c584f;
+  font-size: 1.05rem;
+}
+
+.bases__doc {
+  background: #fff;
+  border: 1px solid #ebe6e0;
+  border-radius: 16px;
+  padding: 1.75rem 1.5rem 2rem;
+  box-shadow: 0 10px 30px rgba(28, 31, 58, 0.04);
+}
+
+.bases__doc h2 {
+  margin: 0 0 1rem;
+  font-size: 1.35rem;
+  color: #1c1f3a;
+}
+
+.bases__doc h3 {
+  margin: 1.4rem 0 0.55rem;
+  font-size: 1.05rem;
+  color: #1c1f3a;
+}
+
+.bases__doc p,
+.bases__doc li {
+  color: #4a463f;
+  line-height: 1.6;
+  font-size: 0.98rem;
+}
+
+.bases__doc ul {
+  margin: 0.4rem 0 0.8rem;
+  padding-left: 1.2rem;
+}
